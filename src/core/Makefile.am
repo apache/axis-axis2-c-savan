@@ -1,4 +1,4 @@
-prglibdir=$(prefix)/savan
+prglibdir=$(prefix)/modules/savan
 prglib_LTLIBRARIES = libmod_savan.la
 prglib_DATA= ../data/module.xml
 
