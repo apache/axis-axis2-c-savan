@@ -14,3 +14,5 @@ INCLUDES =  -I$(AXIS2C_HOME)/include \
 			-I ../../../../axis2c/include \
 			-I ../../../../axis2c/axiom/include \
 			-I ../../../../axis2c/util/include 
+
+EXTRA_DIST=services.xml
