@@ -12,7 +12,7 @@
 SAVANSRC = ..\..
 SAVANDISTDIR = ..\savanc
 SAVANINTDIR = .\int.msvc
-SAVANDLL = savan
+SAVANDLL = mod_savan
 
 SAVAN_CODE = $(SAVANSRC)\src\core\*.c \
 		 $(SAVANSRC)\src\client\*.c \
