@@ -183,7 +183,6 @@ savan_msg_recv_handle_sub_request(
     axis2_char_t *expires = NULL;
     savan_subscriber_t *subscriber = NULL;
     
-    printf("[savan][msg recv] handle sub request...\n");
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] "
         "handle sub request...");
     
@@ -259,7 +258,6 @@ savan_msg_recv_handle_unsub_request(
     axiom_element_t *response_elem = NULL;
     savan_subscriber_t *subscriber = NULL;
     
-    printf("[savan][msg recv] handle unsub request...\n");
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] "
         "handle unsub request...");
 
@@ -324,7 +322,6 @@ savan_msg_recv_handle_renew_request(
     savan_subscriber_t *subscriber = NULL;
     axis2_bool_t renewed = AXIS2_FALSE;
     
-    printf("[savan][msg recv] handle renew request...\n");
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] "
         "handle renew request...");
 
@@ -397,7 +394,6 @@ savan_msg_recv_handle_get_status_request(
     axis2_char_t *expires = NULL;
     savan_subscriber_t *subscriber = NULL;
     
-    printf("[savan][msg recv] handle get status request...\n");
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] "
         "handle get status request...");
 

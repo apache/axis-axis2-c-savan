@@ -226,7 +226,6 @@ savan_subscriber_publish(
     axis2_status_t status = AXIS2_SUCCESS;
     axutil_qname_t *op_qname = NULL;
 
-    printf("[savan][subscribe] publish...\n");
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][subscribe] publish...");
 	
     path = AXIS2_GETENV("AXIS2C_HOME");

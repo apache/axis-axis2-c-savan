@@ -86,7 +86,6 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     if (svc)
         svc_name = axis2_svc_get_name(svc, env);
     
-    printf("[%s][savan][in handler] invoke...\n", svc_name);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[%s][savan][in handler] invoke...",
         svc_name);
     

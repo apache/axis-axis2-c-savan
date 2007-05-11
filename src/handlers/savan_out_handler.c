@@ -94,7 +94,6 @@ savan_out_handler_invoke(
     if (svc)
         svc_name = axis2_svc_get_name (svc, env);
     
-    printf("[%s][savan][out handler] invoke...\n", svc_name);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[%s][savan][out handler] invoke...",
         svc_name);
     
@@ -140,7 +139,6 @@ savan_out_handler_invoke(
             if (sub)
             {
                 axis2_char_t *id = savan_subscriber_get_id(sub, env);
-                printf("[savan][out handler] Publishing to %s...\n", id);
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][out handler] "
                     "Publishing to %s...", id);
                 savan_subscriber_publish(sub, env, msg_ctx);
