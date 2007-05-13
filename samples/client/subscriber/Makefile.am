@@ -1,4 +1,4 @@
-prgbindir=$(prefix)/bin/samples
+prgbindir=$(prefix)/bin/samples/savan
 prgbin_PROGRAMS = subscriber 
 samplesdir=$(prefix)/samples/client/subscriber
 subscriber_SOURCES = subscriber.c
@@ -6,13 +6,12 @@ subscriber_SOURCES = subscriber.c
 subscriber_LDADD   = $(LDFLAGS) \
                     -L$(AXIS2C_HOME)/lib \
 					-L../../../src/core \
-					-laxutil \
-                    -laxis2_axiom \
-                    -laxis2_engine \
-                    -laxis2_parser \
+			../../../../axis2c/util/src/libaxutil.la \
+			../../../../axis2c/axiom/src/om/libaxis2_axiom.la \
+			../../../../axis2c/src/core/engine/libaxis2_engine.la \
+			../../../../axis2c/src/core/transport/http/sender/libaxis2_http_sender.la \
+			../../../../axis2c/src/core/transport/http/receiver/libaxis2_http_receiver.la \
                     -lpthread \
-                    -laxis2_http_sender \
-                    -laxis2_http_receiver \
                     $(GUTHTHILA_LIBS) \
                     $(LIBXML2_LIBS)\
 					-lmod_savan
