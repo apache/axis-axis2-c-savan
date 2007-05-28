@@ -6,10 +6,10 @@
         <item name="Download Savan/C" href="download.cgi">
             <item name="Releases" href="download.cgi"/>
         </item>
-        <item name="Documentation" href="docs/index.html">
+        <!--item name="Documentation" href="docs/index.html">
 	        <item name="Installation Guide" href="docs/installationguide.html"/>
 	        <item name="Savan/C manual" href="docs/savanc_manual.html"/>
-        </item>
+        </item-->
         <item name="Get Involved" href="lists_issues.html">
 	        <item name="Mailing Lists &amp; Issue Tracking" href="lists_issues.html"/>
             <item name="Checkout Source Code" href="svn.html"/>
