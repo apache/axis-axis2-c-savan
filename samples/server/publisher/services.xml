@@ -1,6 +1,5 @@
 <service name="publisher">
     <parameter name="ServiceClass" locked="xsd:false">publisher</parameter>
-    <parameter name="SubscriptionMgrURL" locked="xsd:false">http://localhost:9090/axis2/services/subscription</parameter>
 
    <description>
         This is a testing service , to test the system is working or not
