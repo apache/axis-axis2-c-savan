@@ -129,8 +129,11 @@ savan_sub_processor_subscribe(
     module_desc = axis2_conf_get_module(conf, env, qname);
     axutil_qname_free(qname, env);
     param = axis2_module_desc_get_param(module_desc, env, "SubscriptionMgrName");
-    subs_svc_name = axutil_param_get_value(param, env);
-    subs_svc = axis2_conf_get_svc(conf, env, subs_svc_name);
+    if(param)
+    {
+        subs_svc_name = axutil_param_get_value(param, env);
+        subs_svc = axis2_conf_get_svc(conf, env, subs_svc_name);
+    }
     if(!subs_svc)
     {
         subs_svc = axis2_msg_ctx_get_svc(msg_ctx, env);
