@@ -162,24 +162,36 @@ savan_util_get_subscriber_store(
     const axutil_env_t *env,
     axis2_msg_ctx_t *msg_ctx)
 {
-    axis2_svc_t *svc = NULL;
+    axis2_svc_t *subs_svc = NULL;
     axutil_param_t *param = NULL;
     axutil_hash_t *store = NULL;
+    axutil_qname_t *qname = NULL;
+    axis2_module_desc_t *module_desc = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
+    axis2_char_t *subs_svc_name = NULL;
 
     AXIS2_ENV_CHECK(env, NULL);
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][util] "
         "get subscriber store...");
 
-    svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
-    if (!svc)
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+    qname = axutil_qname_create(env, "savan", NULL, NULL);
+    module_desc = axis2_conf_get_module(conf, env, qname);
+    axutil_qname_free(qname, env);
+    param = axis2_module_desc_get_param(module_desc, env, "SubscriptionMgrName");
+    subs_svc_name = axutil_param_get_value(param, env);
+    subs_svc = axis2_conf_get_svc(conf, env, subs_svc_name);
+    if (!subs_svc)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to extract the "
             "service"); 
         return NULL;
     }
 
-    param = axis2_svc_get_param(svc, env, SUBSCRIBER_STORE);
+    param = axis2_svc_get_param(subs_svc, env, SUBSCRIBER_STORE);
     if (!param)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to extract the "

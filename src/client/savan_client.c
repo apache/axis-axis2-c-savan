@@ -26,6 +26,7 @@
 struct savan_client_t
 {
     axis2_char_t *sub_id;
+    axis2_char_t *sub_url;
 };
 
 /******************************************************************************/
@@ -38,6 +39,12 @@ savan_client_add_sub_id_to_soap_header(
 
 axis2_char_t * AXIS2_CALL
 savan_client_get_sub_id_from_response(
+    axiom_element_t *response_elem, 
+    axiom_node_t *response_node,
+    const axutil_env_t *env);
+
+axis2_char_t * AXIS2_CALL
+savan_client_get_sub_url_from_response(
     axiom_element_t *response_elem, 
     axiom_node_t *response_node,
     const axutil_env_t *env);
@@ -96,6 +103,7 @@ savan_client_subscribe(
     axis2_char_t *expires = NULL;
     axiom_element_t *body_elem = NULL;
     axis2_char_t *sub_id = NULL;
+    axis2_char_t *sub_url = NULL;
     axis2_char_t *sub_elem_local_name = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][client] "
@@ -169,6 +177,8 @@ savan_client_subscribe(
 
     sub_id = savan_client_get_sub_id_from_response(body_elem, reply, env);
     client->sub_id = axutil_strdup(env, sub_id);
+    sub_url = savan_client_get_sub_url_from_response(body_elem, reply, env);
+    client->sub_url = axutil_strdup(env, sub_url);
 
     return AXIS2_SUCCESS;
 }
@@ -361,6 +371,13 @@ savan_client_get_sub_id(
     return client->sub_id;
 }
 
+AXIS2_EXTERN axis2_char_t * AXIS2_CALL
+savan_client_get_sub_url(
+    savan_client_t *client)
+{
+    return client->sub_url;
+}
+
 /*****************************************************************************/
 
 axis2_status_t AXIS2_CALL
@@ -442,3 +459,40 @@ savan_client_get_sub_id_from_response(
 
     return sub_id;
 }
+
+axis2_char_t * AXIS2_CALL
+savan_client_get_sub_url_from_response(
+    axiom_element_t *response_elem, 
+    axiom_node_t *response_node,
+    const axutil_env_t *env)
+{
+    axutil_qname_t *qname = NULL;
+    axiom_element_t *submgr_elem = NULL;
+    axiom_element_t *address_elem = NULL;
+    axiom_node_t *submgr_node = NULL;
+    axiom_node_t *address_node = NULL;
+    axis2_char_t *address = NULL;
+
+    /* Format:
+     *  <SubscribeResponse>
+     *    <SubscriptionManager>
+     *      <Address>
+     */
+    /* Get Sub Mgr sub element */
+    qname = axutil_qname_create(env, ELEM_NAME_SUB_MGR, EVENTING_NAMESPACE, NULL);
+    submgr_elem = axiom_element_get_first_child_with_qname(response_elem, env, qname,
+        response_node, &submgr_node);
+    axutil_qname_free(qname, env);
+    
+    /* Get Address sub element */
+    qname = axutil_qname_create(env, ELEM_NAME_ADDR,
+        AXIS2_WSA_NAMESPACE_SUBMISSION, NULL);
+    address_elem = axiom_element_get_first_child_with_qname(submgr_elem, env, qname,
+        submgr_node, &address_node);
+    axutil_qname_free(qname, env);
+
+    address = axiom_element_get_text(address_elem, env, address_node);
+
+    return address;
+}
+

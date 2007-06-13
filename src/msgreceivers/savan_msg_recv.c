@@ -162,6 +162,8 @@ savan_msg_recv_handle_sub_request(
     axiom_namespace_t *addr_ns = NULL;
     axis2_msg_info_headers_t* info_header = NULL;
     axis2_msg_info_headers_t* old_info_header = NULL;
+    axutil_param_t *subs_mgr_url_param = NULL;
+    axutil_qname_t *qname = NULL;
     axiom_soap_envelope_t *default_envelope = NULL;
     axiom_node_t *body_node = NULL;
     axutil_property_t *property = NULL;
@@ -181,6 +183,9 @@ savan_msg_recv_handle_sub_request(
     const axis2_char_t *submgr_addr = NULL;
     axis2_char_t *id = NULL;
     axis2_char_t *expires = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
+    axis2_module_desc_t *module_desc = NULL;
     savan_subscriber_t *subscriber = NULL;
     
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] "
@@ -213,9 +218,23 @@ savan_msg_recv_handle_sub_request(
         &submgr_node);
     addr_elem = axiom_element_create(env, submgr_node, ELEM_NAME_ADDR, addr_ns,
         &addr_node);
-    old_info_header =  axis2_msg_ctx_get_msg_info_headers(msg_ctx, env);
-    submgr_epr = axis2_msg_info_headers_get_to(old_info_header, env);
-    submgr_addr = axis2_endpoint_ref_get_address(submgr_epr, env);
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+    qname = axutil_qname_create(env, "savan", NULL, NULL);
+    module_desc = axis2_conf_get_module(conf, env, qname);
+    axutil_qname_free(qname, env);
+    subs_mgr_url_param = axis2_module_desc_get_param(module_desc, env, 
+        "SubscriptionMgrURL");
+    if(subs_mgr_url_param)
+    {
+        submgr_addr = axutil_param_get_value(subs_mgr_url_param, env);
+    }
+    else 
+    {
+        old_info_header =  axis2_msg_ctx_get_msg_info_headers(msg_ctx, env);
+        submgr_epr = axis2_msg_info_headers_get_to(old_info_header, env);
+        submgr_addr = axis2_endpoint_ref_get_address(submgr_epr, env);
+    }
     axiom_element_set_text(addr_elem, env, submgr_addr, addr_node);
     
     /* Get subscriber id from the msg ctx */

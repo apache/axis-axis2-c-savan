@@ -107,7 +107,17 @@ extern "C"
     AXIS2_EXTERN axis2_char_t * AXIS2_CALL
     savan_client_get_sub_id(
         savan_client_t *client);
-    
+ 
+    /**
+     * Get the subscription url assigned by the event source
+     * @param client the client object
+     * @param env pointer to environment struct
+     * @return id string on success, NULL on failure
+     */
+    AXIS2_EXTERN axis2_char_t * AXIS2_CALL
+    savan_client_get_sub_url(
+        savan_client_t *client);
+   
     /**
      * Create a savan client
      * @param env pointer to environment struct
