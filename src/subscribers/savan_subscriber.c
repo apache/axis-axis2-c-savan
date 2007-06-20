@@ -248,15 +248,16 @@ savan_subscriber_publish(
     axis2_endpoint_ref_t *notify_to = NULL;
     axiom_node_t *ret_node = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][subscribe] publish...");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subscriber_publish");
 	
     path = AXIS2_GETENV("AXIS2C_HOME");
 
     svc_client = axis2_svc_client_create(env, path);
-
     /* Setup options */
     options = axis2_options_create(env);
     notify_to = savan_subscriber_get_notify_to(subscriber, env);
+    if(notify_to)
+        printf("publishing to:%s\n", axis2_endpoint_ref_get_address(notify_to, env));
     axis2_options_set_to(options, env, notify_to);
     /* Set service client options */
     axis2_svc_client_set_options(svc_client, env, options);
@@ -265,6 +266,7 @@ savan_subscriber_publish(
     axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
     ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
     
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_subscriber_publish");
     return status;
 }
 
