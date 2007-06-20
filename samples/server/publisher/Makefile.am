@@ -11,6 +11,7 @@ libpublisher_la_LIBADD  = $(top_builddir)/src/core/libmod_savan.la
 
 INCLUDES =  -I$(AXIS2C_HOME)/include \
 		    -I$(top_builddir)/include \
+		    	@AXIOMINC@ \
 			-I ../../../../axis2c/include \
 			-I ../../../../axis2c/axiom/include \
 			-I ../../../../axis2c/util/include \
