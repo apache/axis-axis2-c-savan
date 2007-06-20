@@ -34,12 +34,7 @@ struct savan_sub_processor_t
 };
 
 /* Function Prototypes ********************************************************/
-    
-axis2_status_t AXIS2_CALL 
-savan_sub_processor_set_sub_store(
-    axis2_svc_t *svc,
-    const axutil_env_t *env);
-    
+     
 savan_subscriber_t * AXIS2_CALL 
 savan_sub_processor_create_subscriber_from_msg(
     const axutil_env_t *env,
@@ -93,17 +88,9 @@ savan_sub_processor_subscribe(
     const axutil_env_t *env,
     axis2_msg_ctx_t *msg_ctx)
 {
-    axis2_svc_t *subs_svc = NULL;
-    axutil_param_t *param = NULL;
-    axutil_hash_t *store = NULL;
     savan_subscriber_t *subscriber = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *id = NULL;
-    axutil_qname_t *qname = NULL;
-    axis2_module_desc_t *module_desc = NULL;
-    axis2_conf_ctx_t *conf_ctx = NULL;
-    axis2_conf_t *conf = NULL;
-    axis2_char_t *subs_svc_name = NULL;
     
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
     
@@ -120,54 +107,17 @@ savan_sub_processor_subscribe(
             AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }    
-
-    /* Set this subscriber inside a subscriber store maintained in the svc */
-
-    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-    qname = axutil_qname_create(env, "savan", NULL, NULL);
-    module_desc = axis2_conf_get_module(conf, env, qname);
-    axutil_qname_free(qname, env);
-    param = axis2_module_desc_get_param(module_desc, env, "SubscriptionMgrName");
-    if(param)
-    {
-        subs_svc_name = axutil_param_get_value(param, env);
-        subs_svc = axis2_conf_get_svc(conf, env, subs_svc_name);
-    }
-    if(!subs_svc)
-    {
-        subs_svc = axis2_msg_ctx_get_svc(msg_ctx, env);
-    }
-    if (!subs_svc)
-    {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to extract "
-            "the service"); 
-        return AXIS2_FAILURE;
-    }
-    
-    param = axis2_svc_get_param(subs_svc, env, SUBSCRIBER_STORE);
-    if (!param)
-    {
-        /* Store not found. Create and set it as a param */
-        savan_sub_processor_set_sub_store(subs_svc, env);
-        param = axis2_svc_get_param(subs_svc, env, SUBSCRIBER_STORE);
-    }
-    
-    store = (axutil_hash_t*)axutil_param_get_value(param, env);
-         
     /* Set the expiry time on the subscription */
     /* TODO : For now we are ignoring the Expiry sent by the client. Add support
      * to consider this when setting the expiry time */
     expires = savan_util_get_expiry_time(env);
     savan_subscriber_set_expires(subscriber, env, expires);
 
-    /* Store the created subscriber in the svc */
-    axutil_hash_set(store, savan_subscriber_get_id(subscriber, env),
-        AXIS2_HASH_KEY_STRING, subscriber);
-
     /* Store sub id in msg ctx to be used by the msg receiver */
     id = savan_subscriber_get_id(subscriber, env);
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);
+
+    savan_util_add_subscriber(env, msg_ctx, subscriber);
     
     return AXIS2_SUCCESS;
 }
@@ -289,40 +239,6 @@ savan_sub_processor_get_status(
 
 /******************************************************************************/
 
-axis2_status_t AXIS2_CALL 
-savan_sub_processor_set_sub_store(
-    axis2_svc_t *svc,
-    const axutil_env_t *env)
-{
-    axutil_hash_t *store = NULL;
-    axutil_param_t *param = NULL;
-    
-    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
-    
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][sub processor] "
-        "set sub store...");
-    
-    /* Create a hash map */
-    store = axutil_hash_make(env);
-    if (!store)
-    {
-        /* TODO : error reporting */
-        return AXIS2_FAILURE;
-    }
-    
-    /* Add the hash map as a parameter to the given service */
-    param = axutil_param_create(env, SUBSCRIBER_STORE, (void*)store);
-    if (!param)
-    {
-        /* TODO : error reporting */
-        return AXIS2_FAILURE;
-    }
-    
-    axis2_svc_add_param(svc, env, param);
-    
-    return AXIS2_SUCCESS;       
-}
-
 /******************************************************************************/
 
 savan_subscriber_t * AXIS2_CALL 
@@ -356,9 +272,11 @@ savan_sub_processor_create_subscriber_from_msg(
     axis2_char_t *notify = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *filter = NULL;
+    axis2_char_t *topic = NULL;
     
     axis2_endpoint_ref_t *endto_epr = NULL;
     axis2_endpoint_ref_t *notify_epr = NULL;
+    axis2_endpoint_ref_t *topic_epr = NULL;
     
     AXIS2_ENV_CHECK(env, NULL);
     
@@ -460,6 +378,9 @@ savan_sub_processor_create_subscriber_from_msg(
     
     savan_subscriber_set_filter(subscriber, env, filter);
     
+    topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
+    topic = (axis2_char_t *)axis2_endpoint_ref_get_address(topic_epr, env);
+    savan_subscriber_set_topic(subscriber, env, topic);
     return subscriber;    
 }
 

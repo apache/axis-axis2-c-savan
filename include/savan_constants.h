@@ -52,9 +52,13 @@ typedef enum savan_message_types
 #define SAVAN_ACTIONS_GET_STATUS "http://schemas.xmlsoap.org/ws/2004/08/eventing/GetStatus"
 #define SAVAN_ACTIONS_GET_STATUS_RESPONSE "http://schemas.xmlsoap.org/ws/2004/08/eventing/GetStatusResponse"
 
-#define SUBSCRIBER_STORE "SubscriberStore"
 #define EVENTING_NAMESPACE "http://schemas.xmlsoap.org/ws/2004/08/eventing"
 #define EVENTING_NS_PREFIX "wse"
+#define SAVAN_NAMESPACE "http://ws.apache.org/savan"
+#define SAVAN_NS_PREFIX "savan"
+#define ELEM_NAME_SUBSCRIBERS "Subscribers"
+#define ELEM_NAME_ADD_SUBSCRIBER "AddSubscriber"
+#define ELEM_NAME_TOPIC "Topic"
 #define DEFAULT_DELIVERY_MODE "http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push"
 
 /* Eventing element names */
@@ -86,6 +90,7 @@ typedef enum savan_message_types
 #define SAVAN_OP_KEY_FILTER         "savan_op_key_filter"
 
 #define SAVAN_KEY_SUB_ID            "savan_key_subscriber_id"
+#define SAVAN_SUBSCRIBER_LIST       "savan_subs_list"
 
 /** @} */
 #ifdef __cplusplus

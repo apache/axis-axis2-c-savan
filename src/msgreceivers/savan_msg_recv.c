@@ -186,7 +186,7 @@ savan_msg_recv_handle_sub_request(
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     axis2_module_desc_t *module_desc = NULL;
-    savan_subscriber_t *subscriber = NULL;
+    /*savan_subscriber_t *subscriber = NULL;*/
     
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] "
         "handle sub request...");
@@ -248,8 +248,8 @@ savan_msg_recv_handle_sub_request(
     axiom_element_set_text(id_elem, env, id, id_node);
     
     /* Expires element. Get expiry time from subscriber and set */
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, id);
-    expires = savan_subscriber_get_expires(subscriber, env);
+    /*subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, id);
+    expires = savan_subscriber_get_expires(subscriber, env);*/
     
     expires_elem = axiom_element_create(env, response_node, ELEM_NAME_EXPIRES, ns,
         &expires_node);

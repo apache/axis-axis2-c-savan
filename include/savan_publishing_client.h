@@ -45,6 +45,7 @@ extern "C"
      * Publish the given message to all subscribed clients
      * @param client the publishing client object
      * @param env pointer to environment struct
+     * @param payload
      * @return AXIS2_SUCCESS on success, else AXIS2_FAILURE 
      */
     AXIS2_EXTERN axis2_status_t AXIS2_CALL
@@ -56,8 +57,7 @@ extern "C"
     AXIS2_EXTERN savan_publishing_client_t * AXIS2_CALL
     savan_publishing_client_create(
         const axutil_env_t *env,
-        axis2_conf_ctx_t *conf_ctx,
-        axis2_svc_t *svc);
+        axutil_hash_t *subscriber_list);
 
 /** @} */
 #ifdef __cplusplus

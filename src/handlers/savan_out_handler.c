@@ -23,6 +23,7 @@
 #include <axiom_soap_const.h>
 #include <axiom_soap_envelope.h>
 #include <axiom_soap_header.h>
+#include <axiom_soap_body.h>
 #include <axiom_soap_header_block.h>
 #include <axis2_op.h>
 #include <axis2_msg_ctx.h>
@@ -79,60 +80,40 @@ savan_out_handler_invoke(
     struct axis2_msg_ctx *msg_ctx)
 {
     savan_message_types_t msg_type = SAVAN_MSG_TYPE_UNKNOWN;
-    /*axis2_svc_t *svc = NULL;*/
-    axutil_param_t *param = NULL;
-    axutil_hash_t *store = NULL;
-    const axis2_svc_t *svc = NULL;
-    const axis2_char_t *svc_name = NULL;
-    axutil_hash_index_t *hi = NULL;
-    void *val = NULL;
     
     AXIS2_ENV_CHECK( env, AXIS2_FAILURE);
     AXIS2_PARAM_CHECK(env->error, msg_ctx, AXIS2_FAILURE);
     
-    svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
-    if (svc)
-        svc_name = axis2_svc_get_name (svc, env);
-    
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[%s][savan][out handler] invoke...",
-        svc_name);
-    
     /* Determine the eventing msg type */
     msg_type = savan_util_get_message_type(msg_ctx, env);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[%s][savan][out handler] msg type:"
-        " %d", svc_name, msg_type);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][out handler] msg type:"
+        " %d", msg_type);
     if (msg_type == SAVAN_MSG_TYPE_UNKNOWN)
     {
+        axutil_property_t *subs_list_property = NULL;
+        axutil_hash_t *subscriber_list = NULL;
+        axutil_hash_index_t *hi = NULL;
+        void *val = NULL;
         /* Treat unknown msgs as msgs for publishing */
-        
-        svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
-        if (!svc)
+        subs_list_property = axis2_msg_ctx_get_property(msg_ctx, env, 
+            SAVAN_SUBSCRIBER_LIST);
+        if(subs_list_property)
+            subscriber_list = axutil_property_get_value(subs_list_property, env);    
+        if (!subscriber_list)
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][out handler] "
-                "Service not found");
-            return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
-        }
-        
-        param = axis2_svc_get_param(svc, env, SUBSCRIBER_STORE);
-        if (!param)
-        {
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][out handler] "
-                "Subscribe store not found");
-            return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
-        }
-        
-        store = (axutil_hash_t*)axutil_param_get_value(param, env);
-        if (!store)
-        {
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][out handler] "
-                "Subscribe store is null");
+                "Subscribe subscriber_list is null");
             return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
         }
         
         /* Iterate the subscribe store and send the msg to each one */
-        
-        for (hi = axutil_hash_first(store, env); hi; hi = axutil_hash_next(env, hi))
+
+        for (hi = axutil_hash_first(subscriber_list, env); hi; hi = 
+            axutil_hash_next(env, hi))
         {
+            axiom_soap_envelope_t *soap_env = NULL;
+            axiom_soap_body_t *soap_body = NULL;
+            axiom_node_t *payload = NULL;
             savan_subscriber_t * sub = NULL;
             axutil_hash_this(hi, NULL, NULL, &val);
             sub = (savan_subscriber_t *)val;
@@ -141,14 +122,19 @@ savan_out_handler_invoke(
                 axis2_char_t *id = savan_subscriber_get_id(sub, env);
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][out handler] "
                     "Publishing to %s...", id);
-                savan_subscriber_publish(sub, env, msg_ctx);
+                soap_env = axis2_msg_ctx_get_soap_envelope(msg_ctx, env);
+                soap_body = axiom_soap_envelope_get_body(soap_env, env);
+                payload = axiom_soap_body_get_base_node(soap_body, env);
+                savan_subscriber_publish(sub, env, payload);
             }
-        
+
             val = NULL;
         }
 
-         axis2_msg_ctx_set_paused(msg_ctx, env, AXIS2_TRUE);
+
+        axis2_msg_ctx_set_paused(msg_ctx, env, AXIS2_TRUE);
     }
        
     return AXIS2_SUCCESS;
 }
+

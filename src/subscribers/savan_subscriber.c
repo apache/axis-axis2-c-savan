@@ -30,6 +30,7 @@ struct savan_subscriber_t
     axis2_char_t *delivery_mode;
     axis2_char_t *expires;
     axis2_char_t *filter;
+    axis2_char_t *topic;
     axis2_bool_t renewed;
 };
 
@@ -112,6 +113,14 @@ savan_subscriber_set_end_to(
     return AXIS2_SUCCESS;
 }
 
+axis2_endpoint_ref_t *AXIS2_CALL
+savan_subscriber_get_end_to(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env)
+{
+    return subscriber->end_to;
+}
+
 /******************************************************************************/
 
 axis2_status_t AXIS2_CALL
@@ -127,6 +136,14 @@ savan_subscriber_set_notify_to(
     return AXIS2_SUCCESS;
 }    
             
+axis2_endpoint_ref_t *AXIS2_CALL
+savan_subscriber_get_notify_to(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env)
+{
+    return subscriber->notify_to;
+}
+
 /******************************************************************************/
 
 axis2_status_t AXIS2_CALL
@@ -208,54 +225,45 @@ savan_subscriber_set_filter(
     return AXIS2_SUCCESS;
 }
 
+axis2_char_t *AXIS2_CALL
+savan_subscriber_get_filter(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env)
+{
+    return subscriber->filter;
+}
+
 /******************************************************************************/
 
 axis2_status_t AXIS2_CALL
 savan_subscriber_publish(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
-    struct axis2_msg_ctx *msg_ctx)
+    const void *payload)
 {
     axis2_svc_client_t *svc_client = NULL;
-    axis2_op_client_t *op_client = NULL;
-    axis2_conf_ctx_t *conf_ctx = NULL;
-    axis2_conf_t *conf = NULL;
-    axis2_svc_t *svc = NULL;
     axis2_char_t *path = NULL;
     axis2_options_t *options = NULL;
     axis2_status_t status = AXIS2_SUCCESS;
-    axutil_qname_t *op_qname = NULL;
+    axis2_endpoint_ref_t *notify_to = NULL;
+    axiom_node_t *ret_node = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][subscribe] publish...");
 	
     path = AXIS2_GETENV("AXIS2C_HOME");
-    conf_ctx =  axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    conf =  axis2_conf_ctx_get_conf(conf_ctx, env);
 
-    /* Get anonymous service from conf. This will be null for the first time, 
-     * but then it will be created when we create the svc_client */
-    svc = axis2_conf_get_svc(conf, env, AXIS2_ANON_SERVICE);
-
-    svc_client = axis2_svc_client_create_with_conf_ctx_and_svc(env, path,
-        conf_ctx, svc);
+    svc_client = axis2_svc_client_create(env, path);
 
     /* Setup options */
     options = axis2_options_create(env);
-    axis2_options_set_to(options, env, subscriber->notify_to);
-    
+    notify_to = savan_subscriber_get_notify_to(subscriber, env);
+    axis2_options_set_to(options, env, notify_to);
     /* Set service client options */
     axis2_svc_client_set_options(svc_client, env, options);
 
     /* Engage addressing module */
-    /*axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);*/
-    
-    op_qname = axutil_qname_create(env, AXIS2_ANON_OUT_ONLY_OP, NULL, NULL);
-
-    op_client = axis2_svc_client_create_op_client(svc_client, env,
-        op_qname);
-
-    axis2_op_client_add_msg_ctx(op_client, env, msg_ctx);
-    status = axis2_op_client_execute(op_client, env, AXIS2_TRUE);
+    axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
+    ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
     
     return status;
 }
@@ -282,3 +290,26 @@ savan_subscriber_get_renew_status(
 {
     return subscriber->renewed;
 }
+
+axis2_status_t AXIS2_CALL
+savan_subscriber_set_topic(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env,
+    axis2_char_t *topic)
+{
+    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
+    
+    subscriber->topic = topic;
+
+    return AXIS2_SUCCESS;
+}
+
+axis2_char_t *AXIS2_CALL
+savan_subscriber_get_topic(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env)
+{
+    return subscriber->topic;
+}
+
+

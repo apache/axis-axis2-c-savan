@@ -40,6 +40,7 @@ typedef struct publisher_data
     axutil_env_t *env;
     axis2_svc_t *svc;
     axis2_conf_ctx_t *conf_ctx;
+    axutil_hash_t *subscriber_list;
 }publisher_data_t;
 
 int AXIS2_CALL
@@ -54,15 +55,22 @@ publisher_free_void_arg(void *svc_skeleton,
  * This method invokes the right service method 
  */
 axiom_node_t* AXIS2_CALL 
-publisher_invoke(axis2_svc_skeleton_t *svc_skeleton,
-            const axutil_env_t *env,
-            axiom_node_t *node,
-            axis2_msg_ctx_t *msg_ctx);
-            
+publisher_invoke(
+    axis2_svc_skeleton_t *svc_skeleton,
+    const axutil_env_t *env,
+    axiom_node_t *node,
+    axis2_msg_ctx_t *msg_ctx);
+        
 
 int AXIS2_CALL 
 publisher_init(axis2_svc_skeleton_t *svc_skeleton,
           const axutil_env_t *env);
+
+int AXIS2_CALL 
+publisher_init_with_conf(
+    axis2_svc_skeleton_t *svc_skeleton,
+    const axutil_env_t *env,
+    axis2_conf_t *conf);
 
 axiom_node_t* AXIS2_CALL
 publisher_on_fault(axis2_svc_skeleton_t *svc_skeli, 
@@ -77,7 +85,8 @@ static const axis2_svc_skeleton_ops_t publisher_skeleton_ops_var = {
     publisher_init,
     publisher_invoke,
     publisher_on_fault,
-    publisher_free
+    publisher_free,
+    publisher_init_with_conf
 };
     
 /*Create function */
@@ -126,14 +135,17 @@ publisher_init(axis2_svc_skeleton_t *svc_skeleton,
  * This method invokes the right service method 
  */
 axiom_node_t* AXIS2_CALL
-publisher_invoke(axis2_svc_skeleton_t *svc_skeleton,
-            const axutil_env_t *env,
-            axiom_node_t *node,
-            axis2_msg_ctx_t *msg_ctx)
+publisher_invoke(
+    axis2_svc_skeleton_t *svc_skeleton,
+    const axutil_env_t *env,
+    axiom_node_t *node,
+    axis2_msg_ctx_t *msg_ctx)
 {
 
 	axutil_thread_t *worker_thread = NULL;
 	publisher_data_t *data = NULL;
+    axutil_param_t *param = NULL;
+    axutil_hash_t *subs_list = NULL;
 
     printf("publisher invoke called.\n");
 
@@ -145,6 +157,9 @@ publisher_invoke(axis2_svc_skeleton_t *svc_skeleton,
     data->env = (axutil_env_t*)env;
     data->svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
     data->conf_ctx =  axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    param = axis2_svc_get_param(data->svc, env, SAVAN_SUBSCRIBER_LIST);
+    subs_list = axutil_param_get_value(param, env);
+    data->subscriber_list = subs_list;
     
     worker_thread = axutil_thread_pool_get_thread(env->thread_pool,
         publisher_worker_func, (void*)data);
@@ -212,11 +227,13 @@ publisher_worker_func(
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_svc_t *svc = NULL;
     savan_publishing_client_t *pub_client = NULL;
+    axutil_hash_t *subs_list = NULL;
     
     publisher_data_t *mydata = (publisher_data_t*)data;
     main_env = mydata->env;
     conf_ctx = mydata->conf_ctx;
     svc = mydata->svc;
+    subs_list = mydata->subscriber_list;
     
     env = axutil_init_thread_env(main_env);
 
@@ -229,7 +246,7 @@ publisher_worker_func(
     
     axiom_element_set_text(test_elem, env, "test data", test_node);
 
-    pub_client = savan_publishing_client_create(env, conf_ctx, svc);
+    pub_client = savan_publishing_client_create(env, subs_list);
     
     while(1)
     {

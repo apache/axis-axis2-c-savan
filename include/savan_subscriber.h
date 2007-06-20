@@ -73,7 +73,18 @@ extern "C"
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
         axis2_endpoint_ref_t *end_to);
-                
+ 
+    /**
+     * Get EndTo end point.
+     * @param subscriber pointer to subscriber
+     * @param env pointer to environment struct
+     * @return end_to 
+     */
+    axis2_endpoint_ref_t *AXIS2_CALL
+    savan_subscriber_get_end_to(
+        savan_subscriber_t *subscriber,
+        const axutil_env_t *env);
+               
     /**
      * Set NotifyTo end point.
      * @param subscriber pointer to subscriber
@@ -85,6 +96,17 @@ extern "C"
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
         axis2_endpoint_ref_t *notify_to);
+
+    /**
+     * Get NotifyTo end point.
+     * @param subscriber pointer to subscriber
+     * @param env pointer to environment struct
+     * @return notify_to
+     */
+    axis2_endpoint_ref_t *AXIS2_CALL
+    savan_subscriber_get_notify_to(
+        savan_subscriber_t *subscriber,
+        const axutil_env_t *env);
 
     /**
      * Set delivery mode.
@@ -114,7 +136,7 @@ extern "C"
      * Get expires.
      * @param subscriber pointer to subscriber
      * @param env pointer to environment struct
-     * @return expire time on success, else NULL
+     * @return expire date and time as string
      */
     axis2_char_t * AXIS2_CALL
     savan_subscriber_get_expires(
@@ -134,17 +156,28 @@ extern "C"
         const axis2_char_t *filter);
 
     /**
+     * Get filter.
+     * @param subscriber pointer to subscriber
+     * @param env pointer to environment struct
+     * @return filter the filter string
+     */
+    axis2_char_t *AXIS2_CALL
+    savan_subscriber_get_filter(
+        savan_subscriber_t *subscriber,
+        const axutil_env_t *env);
+
+    /**
      * Publishes the given msg to the client.
      * @param subscriber pointer to subscriber
      * @param env pointer to environment struct
-     * @param msg_ctx the msg to be published
+     * @param payload the content to be published
      * @return AXIS2_SUCCESS on success, else AXIS2_FAILURE 
      */
     axis2_status_t AXIS2_CALL
     savan_subscriber_publish(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
-        struct axis2_msg_ctx *msg_ctx);
+        const void *payload);
 
     /**
      * Set whether the subscription is renewed or not.
@@ -180,6 +213,17 @@ extern "C"
     savan_subscriber_create(
         const axutil_env_t *env);
     
+    axis2_status_t AXIS2_CALL
+        savan_subscriber_set_topic(
+        savan_subscriber_t *subscriber,
+        const axutil_env_t *env,
+        axis2_char_t *topic);
+
+    axis2_char_t *AXIS2_CALL
+    savan_subscriber_get_topic(
+        savan_subscriber_t *subscriber,
+        const axutil_env_t *env);
+
 /** @} */
 #ifdef __cplusplus
 }

@@ -18,6 +18,7 @@
 #include <axiom_element.h>
 #include <axiom_soap_body.h>
 #include <axis2_options.h>
+#include <axutil_array_list.h>
 #include <platforms/axutil_platform_auto_sense.h>
 
 #include <savan_publishing_client.h>
@@ -25,8 +26,7 @@
 
 struct savan_publishing_client_t
 {
-    axis2_conf_ctx_t *conf_ctx;
-    axis2_svc_t *svc;
+    axutil_hash_t *subscriber_list;
 };
 
 /******************************************************************************/
@@ -37,8 +37,7 @@ struct savan_publishing_client_t
 AXIS2_EXTERN savan_publishing_client_t * AXIS2_CALL
 savan_publishing_client_create(
     const axutil_env_t *env,
-    axis2_conf_ctx_t *conf_ctx,
-    axis2_svc_t *svc)
+    axutil_hash_t *subscriber_list)
 {
     savan_publishing_client_t *client = NULL;
     
@@ -51,9 +50,8 @@ savan_publishing_client_create(
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
         return NULL;        
     }
-    
-    client->conf_ctx = conf_ctx;
-    client->svc = svc;
+    if(subscriber_list) 
+        client->subscriber_list = subscriber_list;
 
     return client;
 }
@@ -72,6 +70,7 @@ savan_publishing_client_publish(
     axis2_options_t *options = NULL;
     axis2_svc_client_t* svc_client = NULL;
     axutil_qname_t *op_qname = NULL;
+    axutil_property_t *property = NULL;
 
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
@@ -95,9 +94,7 @@ savan_publishing_client_publish(
     op_qname = axutil_qname_create(env, "publish", NULL, NULL);
         
     /* Create service client */
-    svc_client = axis2_svc_client_create_with_conf_ctx_and_svc(env, repo_path,
-        client->conf_ctx, client->svc);
-    
+    svc_client = axis2_svc_client_create(env, repo_path); 
     if (!svc_client)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create a"
@@ -105,6 +102,9 @@ savan_publishing_client_publish(
         return AXIS2_FAILURE;
     }
 
+    property = axutil_property_create_with_args(env, 0, 1,
+        axutil_hash_free_void_arg, client->subscriber_list);
+    axis2_options_set_property(options, env, SAVAN_SUBSCRIBER_LIST, property);
     /* Set service client options */
     axis2_svc_client_set_options(svc_client, env, options);
 
@@ -115,3 +115,4 @@ savan_publishing_client_publish(
     
     return AXIS2_SUCCESS;
 }
+
