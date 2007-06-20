@@ -260,7 +260,6 @@ savan_util_add_subscriber(
         return AXIS2_FAILURE;
     }
     param = axis2_svc_get_param(subs_svc, env, "SubscriptionMgrName");
-    printf("came10\n");
     if(param)
     {
         subs_svc_name = axutil_param_get_value(param, env);
