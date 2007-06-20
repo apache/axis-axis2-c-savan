@@ -13,6 +13,7 @@ INCLUDES =  -I$(AXIS2C_HOME)/include \
 		    -I$(top_builddir)/include \
 			-I ../../../../axis2c/include \
 			-I ../../../../axis2c/axiom/include \
-			-I ../../../../axis2c/util/include 
+			-I ../../../../axis2c/util/include \
+			-I ../../../../axis2c/neethi/include
 
 EXTRA_DIST=services.xml

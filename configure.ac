@@ -35,8 +35,8 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 dnl AC_C_CONST
 
 dnl Checks for library functions.
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
+dnl AC_FUNC_MALLOC
+dnl AC_FUNC_REALLOC
 #AC_CHECK_FUNCS([memmove])
 
 AC_MSG_CHECKING(To Use Axis2 C AXIOM. This is a compulsory module to build Axis2 C)
@@ -75,8 +75,8 @@ AC_ARG_WITH(axis2_util,
     if test -d $withval; then
         axis2_utilinc="-I$withval"
     dnl else find the axis2_util include dir in $(AXIS2C_HOME)/include
-    elif test -d '$(AXIS2C_HOME)/include'; then
-        axis2_utilinc="-I$(AXIS2C_HOME)/include"
+    elif test -d './axis2c/include'; then
+        axis2_utilinc="-I./axis2c/include"
     else
         AC_MSG_ERROR(could not find axis2_util. stop)
     fi
