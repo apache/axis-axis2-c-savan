@@ -8,4 +8,5 @@ libsavan_client_la_LIBADD = ../subscribers/libsavan_subscribers.la \
 INCLUDES = -I$(top_builddir)/include \
 		-I ../../../axis2c/util/include \
 		-I ../../../axis2c/axiom/include \
+		-I ../../../axis2c/neethi/include \
 		-I ../../../axis2c/include
