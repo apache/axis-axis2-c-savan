@@ -19,8 +19,6 @@ subscriber_LDADD   = $(LDFLAGS) \
 INCLUDES = -I$(AXIS2C_HOME)/include \
 			@AXIOMINC@ \
 			@UTILINC@ \
-			-I ../../../../axis2c/include \
-			-I ../../../../axis2c/axiom/include \
-			-I ../../../../axis2c/util/include \
-			-I ../../../../axis2c/neethi/include \
+			@AXIS2INC@ \
+			@NEETHIINC@ \
 			-I../../../include

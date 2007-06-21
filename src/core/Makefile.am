@@ -5,10 +5,9 @@ prglib_DATA= ../data/module.xml
 libmod_savan_la_SOURCES = mod_savan.c savan_sub_processor.c
 
 INCLUDES = -I$(top_builddir)/include \
-		-I ../../../axis2c/include \
 		@AXIOMINC@ \
-		-I ../../../axis2c/axiom/include \
-		-I ../../../axis2c/util/include 
+		@UTILINC@ \
+		@AXIS2INC@ 
 
 libmod_savan_la_LIBADD = ../client/libsavan_client.la\
                         ../handlers/libsavan_handlers.la\

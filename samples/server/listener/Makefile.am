@@ -7,10 +7,9 @@ SUBDIRS =
 liblistener_la_SOURCES = listener.c listener_skeleton.c
 liblistener_la_LIBADD  =
 INCLUDES = -I$(AXIS2C_HOME)/include \
-		-I ../../../../axis2c/include \
 		@AXIOMINC@ \
-		-I ../../../../axis2c/axiom/include \
-		-I ../../../../axis2c/util/include \
-		-I ../../../../axis2c/neethi/include
+		@AXIS2INC@ \
+		@UTILINC@ \
+		@NEETHIINC@ 
 
 EXTRA_DIST=services.xml

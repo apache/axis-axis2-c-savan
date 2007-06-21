@@ -6,7 +6,7 @@ libsavan_client_la_LIBADD = ../subscribers/libsavan_subscribers.la \
 							../util/libsavan_util.la
 
 INCLUDES = -I$(top_builddir)/include \
-		-I ../../../axis2c/util/include \
-		-I ../../../axis2c/axiom/include \
-		-I ../../../axis2c/neethi/include \
-		-I ../../../axis2c/include
+		@AXIS2INC@ \
+		@UTILINC@ \
+		@AXIOMINC@ \
+		@NEETHIINC@ 
