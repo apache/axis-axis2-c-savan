@@ -57,7 +57,13 @@ extern "C"
     AXIS2_EXTERN savan_publishing_client_t * AXIS2_CALL
     savan_publishing_client_create(
         const axutil_env_t *env,
-        axutil_hash_t *subscriber_list);
+        axis2_conf_ctx_t *conf_ctx,
+        axis2_svc_t *svc);
+
+    AXIS2_EXTERN void AXIS2_CALL
+    savan_publishing_client_free(
+        savan_publishing_client_t *client, 
+        const axutil_env_t *env);
 
 /** @} */
 #ifdef __cplusplus

@@ -38,9 +38,7 @@
 typedef struct publisher_data
 {
     axutil_env_t *env;
-    axis2_svc_t *svc;
-    axis2_conf_ctx_t *conf_ctx;
-    axutil_hash_t *subscriber_list;
+    axis2_conf_t *conf;
 }publisher_data_t;
 
 int AXIS2_CALL
@@ -65,6 +63,11 @@ publisher_invoke(
 int AXIS2_CALL 
 publisher_init(axis2_svc_skeleton_t *svc_skeleton,
           const axutil_env_t *env);
+
+static void
+start_publisher_thread(
+    const axutil_env_t *env,
+    axis2_conf_t *conf);
 
 int AXIS2_CALL 
 publisher_init_with_conf(
@@ -131,6 +134,17 @@ publisher_init(axis2_svc_skeleton_t *svc_skeleton,
     return AXIS2_SUCCESS;
 }
 
+int AXIS2_CALL 
+publisher_init_with_conf(
+    axis2_svc_skeleton_t *svc_skeleton,
+    const axutil_env_t *env,
+    axis2_conf_t *conf)
+{
+    publisher_init(svc_skeleton, env);
+    start_publisher_thread(env, conf); 
+    return AXIS2_SUCCESS;
+}
+
 /*
  * This method invokes the right service method 
  */
@@ -141,13 +155,24 @@ publisher_invoke(
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx)
 {
+    axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    axis2_conf_t *conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+
+    start_publisher_thread(env, conf); 
+    return axis2_publisher_start(env, node);
+}
+
+static void
+start_publisher_thread(
+    const axutil_env_t *env,
+    axis2_conf_t *conf)
+{
 
 	axutil_thread_t *worker_thread = NULL;
 	publisher_data_t *data = NULL;
-    axutil_param_t *param = NULL;
-    axutil_hash_t *subs_list = NULL;
 
     printf("publisher invoke called.\n");
+    
 
     /* Invoke the business logic.
      * Depending on the function name invoke the correct impl method.
@@ -155,22 +180,16 @@ publisher_invoke(
 
     data = AXIS2_MALLOC(env->allocator, sizeof(publisher_data_t));
     data->env = (axutil_env_t*)env;
-    data->svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
-    data->conf_ctx =  axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    param = axis2_svc_get_param(data->svc, env, SAVAN_SUBSCRIBER_LIST);
-    subs_list = axutil_param_get_value(param, env);
-    data->subscriber_list = subs_list;
+    data->conf = conf;
     
     worker_thread = axutil_thread_pool_get_thread(env->thread_pool,
         publisher_worker_func, (void*)data);
     if(! worker_thread)
     {
         printf("failed to create thread");
-        return AXIS2_FAILURE;
+        return;
     }
     axutil_thread_pool_thread_detach(env->thread_pool, worker_thread);
-    
-    return axis2_publisher_start(env, node);
 }
 
 /* On fault, handle the fault */
@@ -224,16 +243,14 @@ publisher_worker_func(
     axiom_namespace_t *test_ns = NULL;
     axiom_node_t *test_node = NULL;
     axiom_element_t* test_elem = NULL;
-    axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
     axis2_svc_t *svc = NULL;
-    savan_publishing_client_t *pub_client = NULL;
-    axutil_hash_t *subs_list = NULL;
+    axutil_param_t *param = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
     
     publisher_data_t *mydata = (publisher_data_t*)data;
     main_env = mydata->env;
-    conf_ctx = mydata->conf_ctx;
-    svc = mydata->svc;
-    subs_list = mydata->subscriber_list;
+    conf = mydata->conf;
     
     env = axutil_init_thread_env(main_env);
 
@@ -246,12 +263,23 @@ publisher_worker_func(
     
     axiom_element_set_text(test_elem, env, "test data", test_node);
 
-    pub_client = savan_publishing_client_create(env, subs_list);
-    
+    svc = axis2_conf_get_svc(conf, env, "publisher");
+    conf_ctx = axis2_conf_ctx_create(env, conf);
     while(1)
     {
-        savan_publishing_client_publish(pub_client, env, test_node);
+        axutil_hash_t *subs_list = NULL;
 
+        param = axis2_svc_get_param(svc, env, SAVAN_SUBSCRIBER_LIST);
+        if(param)
+            subs_list = axutil_param_get_value(param, env);
+        if(subs_list)
+        {
+            savan_publishing_client_t *pub_client = NULL;
+
+            pub_client = savan_publishing_client_create(env, conf_ctx, svc);
+            savan_publishing_client_publish(pub_client, env, test_node);
+            savan_publishing_client_free(pub_client, env);
+        }
         AXIS2_SLEEP(10);
         
         printf("Returned from sleep\n");

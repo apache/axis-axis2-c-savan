@@ -116,7 +116,6 @@ savan_sub_processor_subscribe(
     /* Store sub id in msg ctx to be used by the msg receiver */
     id = savan_subscriber_get_id(subscriber, env);
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);
-
     savan_util_add_subscriber(env, msg_ctx, subscriber);
     
     return AXIS2_SUCCESS;

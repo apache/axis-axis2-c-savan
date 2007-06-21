@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 
     client_home = AXIS2_GETENV("AXIS2C_HOME");
     
-    init_event_source((axutil_env_t*)env, client_home);
+    /*init_event_source((axutil_env_t*)env, client_home);*/
     
     /* Set end point reference of echo service */
     address = "http://localhost:9090/axis2/services/publisher";

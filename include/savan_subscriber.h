@@ -177,7 +177,7 @@ extern "C"
     savan_subscriber_publish(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
-        const void *payload);
+        struct axis2_msg_ctx *msg_ctx);
 
     /**
      * Set whether the subscription is renewed or not.
