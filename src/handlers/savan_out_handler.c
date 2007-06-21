@@ -99,7 +99,6 @@ savan_out_handler_invoke(
         svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
         if (!svc)
         {
-            printf("came201\n");
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][out handler] "
                 "Service not found");
             return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
@@ -108,7 +107,6 @@ savan_out_handler_invoke(
         param = axis2_svc_get_param(svc, env, SAVAN_SUBSCRIBER_LIST);
         if (!param)
         {
-            printf("came202\n");
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][out handler] "
                 "Subscribe store not found");
             return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
@@ -117,7 +115,6 @@ savan_out_handler_invoke(
         store = (axutil_hash_t*)axutil_param_get_value(param, env);
         if (!store)
         {
-            printf("came203\n");
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][out handler] "
                 "Subscribe store is null");
             return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
@@ -130,14 +127,12 @@ savan_out_handler_invoke(
         for (hi = axutil_hash_first(store, env); hi; hi = 
             axutil_hash_next(env, hi))
         {
-            printf("came204\n");
             void *val = NULL;
             savan_subscriber_t * sub = NULL;
             axutil_hash_this(hi, NULL, NULL, &val);
             sub = (savan_subscriber_t *)val;
             if (sub)
             {
-                printf("came104\n");
                 axis2_char_t *id = savan_subscriber_get_id(sub, env);
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][out handler] "
                     "Publishing to %s...", id);

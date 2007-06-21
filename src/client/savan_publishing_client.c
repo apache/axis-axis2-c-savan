@@ -89,7 +89,6 @@ savan_publishing_client_publish(
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][pub client] "
         "publish...");
     
-    printf("came11\n");    
     repo_path = AXIS2_GETENV("AXIS2C_HOME");
     
     /* Set end point reference of a dummy service */
