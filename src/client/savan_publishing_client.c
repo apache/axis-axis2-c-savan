@@ -86,8 +86,8 @@ savan_publishing_client_publish(
 
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][pub client] "
-        "publish...");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] "
+        "Start:savan_publishing_client_publish");
     
     repo_path = AXIS2_GETENV("AXIS2C_HOME");
     
@@ -123,6 +123,8 @@ savan_publishing_client_publish(
     /* Send publishing message */
     axis2_svc_client_send_robust_with_op_qname(svc_client, env, op_qname, 
         payload); 
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] "
+        "End:savan_publishing_client_publish");
     
     return AXIS2_SUCCESS;
 }

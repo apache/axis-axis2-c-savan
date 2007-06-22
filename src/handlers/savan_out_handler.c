@@ -97,6 +97,15 @@ savan_out_handler_invoke(
         /* Treat unknown msgs as msgs for publishing */
 
         svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
+        const axis2_char_t *svc_name = axis2_svc_get_name(svc, env);
+        {
+            /* Temporarily code block */
+            if(0 == axutil_strcmp(svc_name, "subscription"))
+            {
+                return AXIS2_SUCCESS;
+            }
+        }
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "************************:svc_name:%s\n", svc_name);
         if (!svc)
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][out handler] "
@@ -135,7 +144,7 @@ savan_out_handler_invoke(
             {
                 axis2_char_t *id = savan_subscriber_get_id(sub, env);
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][out handler] "
-                    "Publishing to %s...", id);
+                    "Publishing to %s", id);
                 savan_subscriber_publish(sub, env, msg_ctx);
             }
 

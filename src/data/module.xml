@@ -9,13 +9,13 @@
 
     <outflow>
         <handler name="SavanOutHandler" class="mod_savan">
-            <order phase="MessageOut"/>
+            <order phase="SavanPhase"/>
         </handler>
     </outflow>
 
     <Outfaultflow>
         <handler name="SavanOutHandler" class="mod_savan">
-            <order phase="MessageOut"/>
+            <order phase="SavanPhase"/>
         </handler>
     </Outfaultflow>
 

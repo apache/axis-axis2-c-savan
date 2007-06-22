@@ -126,6 +126,19 @@ extern "C"
         axis2_svc_t *svc,
         const axutil_env_t *env);
 
+    /**
+    * Get the subscribers registered for a topic
+    * @param env pointer to environment struct
+    * @param topic topic for which the subscribers are registered
+    * @param subs_mgr_url url of the subscription manager
+    * @return subscribers in a hash table
+    */
+    AXIS2_EXTERN axutil_hash_t *AXIS2_CALL
+    savan_util_get_subscriber_list_from_remote_subs_mgr(
+        const axutil_env_t *env,
+        axis2_char_t *topic,
+        axis2_char_t *subs_mgr_url);
+
 /** @} */
 #ifdef __cplusplus
 }

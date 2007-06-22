@@ -32,12 +32,6 @@ add_subscriber_to_remote_subs_mgr(
     savan_subscriber_t *subscriber,
     axis2_char_t *subs_mgr_url);
 
-static axutil_hash_t *
-get_subscriber_list_from_remote_subs_mgr(
-    const axutil_env_t *env,
-    axis2_char_t *topic,
-    axis2_char_t *subs_mgr_url);
-
 static axiom_node_t *
 build_add_subscriber_om_payload(
     const axutil_env_t *env,
@@ -224,7 +218,7 @@ savan_util_get_subscriber_store(
         subs_mgr_url = axutil_param_get_value(param, env);
         topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
         topic = (axis2_char_t *) axis2_endpoint_ref_get_address(topic_epr, env);
-        store = get_subscriber_list_from_remote_subs_mgr(env, topic, subs_mgr_url);
+        store = savan_util_get_subscriber_list_from_remote_subs_mgr(env, topic, subs_mgr_url);
     }
     else
     {
@@ -343,9 +337,6 @@ add_subscriber_to_remote_subs_mgr(
     axis2_svc_client_t* svc_client = NULL;
     axiom_node_t *payload = NULL;
 
-    /* Set up the environment */
-    env = axutil_env_create_all("savan.log", AXIS2_LOG_LEVEL_TRACE);
-
     /* Set end point reference of echo service */
     address = subs_mgr_url;
     printf("[savan] Using endpoint : %s\n", address);
@@ -393,8 +384,8 @@ add_subscriber_to_remote_subs_mgr(
     return AXIS2_SUCCESS;
 }
 
-static axutil_hash_t *
-get_subscriber_list_from_remote_subs_mgr(
+axutil_hash_t *AXIS2_CALL
+savan_util_get_subscriber_list_from_remote_subs_mgr(
     const axutil_env_t *env,
     axis2_char_t *topic,
     axis2_char_t *subs_mgr_url)
@@ -408,7 +399,7 @@ get_subscriber_list_from_remote_subs_mgr(
     axutil_hash_t *subscriber_list = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:get_subscriber_list_from_remote_subs_mgr");
+        "[savan] Start:savan_util_get_subscriber_list_from_remote_subs_mgr");
     options = axis2_options_create(env);
     axis2_options_set_action(options, env,
         "http://ws.apache.org/axis2/c/subscription/get_subscriber_list");
@@ -420,16 +411,14 @@ get_subscriber_list_from_remote_subs_mgr(
     svc_client = axis2_svc_client_create(env, client_home);
     if (!svc_client)
     {
-        printf("Error creating service client\n");
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[ML] Stub invoke FAILED: Error code:"
+            "[savan] Stub invoke FAILED: Error code:"
             " %d :: %s", env->error->error_number,
             AXIS2_ERROR_GET_MESSAGE(env->error));
         return NULL;
     }
     endpoint_ref = axis2_endpoint_ref_create(env, subs_mgr_url);
     axis2_options_set_to(options, env, endpoint_ref);
-    printf("[savan] Using endpoint : %s\n", subs_mgr_url);
     axis2_options_set_soap_version(options, env, AXIOM_SOAP11);
     axis2_svc_client_set_options(svc_client, env, options);    
     
@@ -442,13 +431,13 @@ get_subscriber_list_from_remote_subs_mgr(
     }
     else
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[ML] Stub invoke FAILED: Error code:"
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[savan] Stub invoke FAILED: Error code:"
             " %d :: %s", env->error->error_number,
             AXIS2_ERROR_GET_MESSAGE(env->error));
-        printf("Retrieving subscriber list FAILED!\n");
     }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:get_subscriber_list_from_remote_subs_mgr");
+        "[savan] End:savan_util_get_subscriber_list_from_remote_subs_mgr");
     return subscriber_list;
 }
 
@@ -491,21 +480,27 @@ process_subscriber_list_node(
     axutil_hash_t *subscriber_list = axutil_hash_make(env);
     axutil_qname_t *qname = NULL;
 
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] Start:process_subscriber_list_node");
     subs_list_element = axiom_node_get_data_element(subs_list_node, env); 
     
     /* Get Subscriber elements from subscriber list */
-    qname = axutil_qname_create(env, ELEM_NAME_SUBSCRIBE, EVENTING_NAMESPACE, NULL);
+    qname = axutil_qname_create(env, ELEM_NAME_SUBSCRIBE, EVENTING_NAMESPACE, 
+        NULL);
     subs_iter = axiom_element_get_children_with_qname(subs_list_element, env,
         qname, subs_list_node);
+    axutil_qname_free(qname, env);
     if(!subs_iter)
     {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[ML] Subscribers list is empty");
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[savan] Subscribers list is empty");
         return NULL;
     }
     while(axiom_children_qname_iterator_has_next(subs_iter, env))
     {
         savan_subscriber_t *subscriber = NULL;
         axiom_node_t *sub_node = NULL;
+        axiom_node_t *id_node = NULL;
         axiom_node_t *endto_node = NULL;
         axiom_node_t *delivery_node = NULL;
         axiom_node_t *notify_node = NULL;
@@ -513,12 +508,14 @@ process_subscriber_list_node(
         axiom_node_t *expires_node = NULL;
 
         axiom_element_t *sub_elem = NULL;
+        axiom_element_t *id_elem = NULL;
         axiom_element_t *endto_elem = NULL;
         axiom_element_t *delivery_elem = NULL;
         axiom_element_t *notify_elem = NULL;
         axiom_element_t *expires_elem = NULL;
         axiom_element_t *filter_elem = NULL;
 
+        axis2_char_t *id = NULL;
         axis2_char_t *endto = NULL;
         axis2_char_t *notify = NULL;
         axis2_char_t *expires = NULL;
@@ -533,11 +530,18 @@ process_subscriber_list_node(
             subscriber = savan_subscriber_create(env);
             if (!subscriber)
             {
-                AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[ML] Failed to create a"
+                AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create a"
                     "subscriber instance");
                 return NULL;
             }
             /* Now read each sub element of Subscribe element */
+            /* Id */
+            qname = axutil_qname_create(env, ELEM_NAME_ID, SAVAN_NAMESPACE, NULL);
+            id_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+                sub_node, &id_node);
+            axutil_qname_free(qname, env);
+            id = axiom_element_get_text(id_elem, env, id_node);
+            savan_subscriber_set_id(subscriber, env, id);
 
             /* EndTo */
             qname = axutil_qname_create(env, ELEM_NAME_ENDTO, EVENTING_NAMESPACE, NULL);
@@ -590,7 +594,8 @@ process_subscriber_list_node(
                 env), AXIS2_HASH_KEY_STRING, subscriber);
         }
     }
-    axutil_qname_free(qname, env);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] End:process_subscriber_list_node");
     return subscriber_list;
 }
 

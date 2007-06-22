@@ -283,7 +283,8 @@ savan_subscriber_publish(
 
     axis2_op_client_add_msg_ctx(op_client, env, msg_ctx);
     status = axis2_op_client_execute(op_client, env, AXIS2_TRUE);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][subscribe] publish...");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] End:savan_subscriber_publish");
     return status;
 }
 
