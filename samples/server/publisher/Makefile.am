@@ -7,7 +7,7 @@ SUBDIRS =
 
 libpublisher_la_SOURCES = publisher.c publisher_skeleton.c
 
-libpublisher_la_LIBADD  = $(top_builddir)/src/core/libmod_savan.la -lsavan_client
+libpublisher_la_LIBADD  = $(top_builddir)/src/core/libmod_savan.la
 
 INCLUDES =  -I$(AXIS2C_HOME)/include \
 		    -I$(top_builddir)/include \
