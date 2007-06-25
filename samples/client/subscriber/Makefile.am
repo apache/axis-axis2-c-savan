@@ -6,11 +6,11 @@ subscriber_SOURCES = subscriber.c
 subscriber_LDADD   = $(LDFLAGS) \
                     -L$(AXIS2C_HOME)/lib \
 					-L../../../src/core \
-                    ../../../../../c/axis2c/util/src/libaxutil.la\
-                    ../../../../../c/axis2c/axiom/src/om/libaxis2_axiom.la\
-                    ../../../../../c/axis2c/src/core/engine/libaxis2_engine.la\
-                    $(AXIS2C_HOME)/lib/libaxis2_http_sender.la \
-                    $(AXIS2C_HOME)/lib/libaxis2_http_receiver.la \
+                    ../../../../axis2c/util/src/libaxutil.la\
+                    ../../../../axis2c/axiom/src/om/libaxis2_axiom.la\
+                    ../../../../axis2c/src/core/engine/libaxis2_engine.la\
+                    ../../../../axis2c/src/core/transport/http/sender/libaxis2_http_sender.la \
+                    ../../../../axis2c/src/core/transport/http/receiver/libaxis2_http_receiver.la \
                     -lpthread \
                     $(GUTHTHILA_LIBS) \
                     $(LIBXML2_LIBS)\
