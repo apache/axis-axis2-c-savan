@@ -94,10 +94,11 @@ savan_out_handler_invoke(
         axutil_hash_index_t *hi = NULL;
         axis2_svc_t *svc = NULL;
         axutil_param_t *param = NULL;
+		axis2_char_t *svc_name = NULL;
         /* Treat unknown msgs as msgs for publishing */
 
         svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
-        const axis2_char_t *svc_name = axis2_svc_get_name(svc, env);
+        svc_name = axis2_svc_get_name(svc, env);
         {
             /* Temporarily code block */
             if(0 == axutil_strcmp(svc_name, "subscription"))

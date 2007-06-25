@@ -632,10 +632,10 @@ build_add_subscriber_om_payload(
     const axis2_char_t *expires = NULL;
     axis2_char_t *topic = NULL;
     axis2_char_t *id = NULL;
-
+	axis2_endpoint_ref_t *notify_ref = NULL;
     axis2_endpoint_ref_t *endto_ref = savan_subscriber_get_end_to(subscriber, env);
     endto = axis2_endpoint_ref_get_address(endto_ref, env);
-    axis2_endpoint_ref_t *notify_ref = savan_subscriber_get_notify_to(subscriber, env);
+    notify_ref = savan_subscriber_get_notify_to(subscriber, env);
     notify = axis2_endpoint_ref_get_address(notify_ref, env);
     filter = savan_subscriber_get_filter(subscriber, env); 
     expires = savan_subscriber_get_expires(subscriber, env); 
