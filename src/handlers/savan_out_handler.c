@@ -94,17 +94,14 @@ savan_out_handler_invoke(
         axutil_hash_index_t *hi = NULL;
         axis2_svc_t *svc = NULL;
         axutil_param_t *param = NULL;
-		axis2_char_t *svc_name = NULL;
+		const axis2_char_t *svc_name = NULL;
         /* Treat unknown msgs as msgs for publishing */
 
         svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
         svc_name = axis2_svc_get_name(svc, env);
+        if(0 == axutil_strcmp(svc_name, "subscription"))
         {
-            /* Temporarily code block */
-            if(0 == axutil_strcmp(svc_name, "subscription"))
-            {
-                return AXIS2_SUCCESS;
-            }
+            return AXIS2_SUCCESS;
         }
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "************************:svc_name:%s\n", svc_name);
         if (!svc)
