@@ -19,6 +19,7 @@
 
 #include <axis2_const.h>
 #include <axutil_error.h>
+#include <axutil_hash.h>
 #include <axis2_defines.h>
 #include <axutil_utils_defines.h>
 #include <axutil_env.h>
