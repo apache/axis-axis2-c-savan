@@ -50,6 +50,7 @@ distdir:
 	if not exist $(SAVANDISTDIR)\include mkdir $(SAVANDISTDIR)\include
 	if not exist $(SAVANDISTDIR)\samples mkdir $(SAVANDISTDIR)\samples
 	if not exist $(SAVANDISTDIR)\bin\samples mkdir $(SAVANDISTDIR)\bin\samples
+	if not exist $(SAVANDISTDIR)\bin\samples\savan mkdir $(SAVANDISTDIR)\bin\samples\savan
 	if not exist $(SAVANDISTDIR)\services\listener mkdir $(SAVANDISTDIR)\services\listener
 	if not exist $(SAVANDISTDIR)\services\publisher mkdir $(SAVANDISTDIR)\services\publisher
 
@@ -100,7 +101,7 @@ listener:
 subscriber:
 	$(CC) $(CFLAGS) $(SAVANSRC)\samples\client\subscriber\*.c /Fo$(SAVANINTDIR)\samples\subscriber\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscriber\*.obj $(SAVANDLL).lib \
-	/OUT:$(SAVANDISTDIR)\bin\samples\subscriber.exe
+	/OUT:$(SAVANDISTDIR)\bin\samples\savan\subscriber.exe
 	
 dist: clean distdir intdir savan publisher listener subscriber copy_include copy_samples copy_extra
 
