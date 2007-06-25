@@ -99,10 +99,6 @@ axis2_publisher_create(const axutil_env_t *env)
 
 	axis2_svc_skeleton_t *svc_skeleton = NULL;
 
-    printf("publisher create called.\n");
-
-    
-    
     /* Allocate memory for the structs */
     svc_skeleton = AXIS2_MALLOC(env->allocator, 
         sizeof(axis2_svc_skeleton_t));
@@ -171,9 +167,6 @@ start_publisher_thread(
 	axutil_thread_t *worker_thread = NULL;
 	publisher_data_t *data = NULL;
 
-    printf("publisher invoke called.\n");
-    
-
     /* Invoke the business logic.
      * Depending on the function name invoke the correct impl method.
      */
@@ -186,7 +179,6 @@ start_publisher_thread(
         publisher_worker_func, (void*)data);
     if(! worker_thread)
     {
-        printf("failed to create thread");
         return;
     }
     axutil_thread_pool_thread_detach(env->thread_pool, worker_thread);
@@ -215,8 +207,6 @@ int AXIS2_CALL
 publisher_free(axis2_svc_skeleton_t *svc_skeleton,
             const axutil_env_t *env)
 {
-    printf("free called.\n");
-
     /* Free the function array */
     if(svc_skeleton->func_array)
     {
@@ -254,7 +244,6 @@ publisher_worker_func(
     
     env = axutil_init_thread_env(main_env);
 
-    printf("inside thread worker func...\n");
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "inside thread worker func...");
 
     /* Build a payload and pass it to the savan publishing client */ 
@@ -281,8 +270,6 @@ publisher_worker_func(
             savan_publishing_client_free(pub_client, env);
         }
         AXIS2_SLEEP(10);
-        
-        printf("Returned from sleep\n");
     }
 }
 
@@ -293,7 +280,6 @@ AXIS2_EXPORT int
 axis2_get_instance(axis2_svc_skeleton_t **inst,
                    const axutil_env_t *env)
 {
-    printf("get instance called.\n");
    *inst = axis2_publisher_create(env);
     if(!(*inst))
     {
@@ -309,8 +295,6 @@ axis2_remove_instance(axis2_svc_skeleton_t *inst,
 {
 	axis2_status_t status = AXIS2_FAILURE;
 
-    printf("remove instance called.\n");
-    
    if (inst)
    {
         status = AXIS2_SVC_SKELETON_FREE(inst, env);
