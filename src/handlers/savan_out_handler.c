@@ -98,8 +98,12 @@ savan_out_handler_invoke(
         /* Treat unknown msgs as msgs for publishing */
 
         svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
-        svc_name = axis2_svc_get_name(svc, env);
-        if(0 == axutil_strcmp(svc_name, "subscription"))
+        if (svc)
+        {
+            svc_name = axis2_svc_get_name(svc, env);
+        }
+        
+        if(svc_name && (0 == axutil_strcmp(svc_name, "subscription")))
         {
             return AXIS2_SUCCESS;
         }
