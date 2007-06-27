@@ -58,9 +58,28 @@ savan_subscriber_create(
     subscriber->delivery_mode = NULL;
     subscriber->expires = NULL;
     subscriber->filter = NULL;
+    subscriber->topic = NULL;
     subscriber->renewed = AXIS2_FALSE;
         
     return subscriber;
+}
+
+AXIS2_EXTERN void AXIS2_CALL
+savan_subscriber_free(
+    savan_subscriber_t *subscriber, 
+    const axutil_env_t *env)
+{
+    if(subscriber->id)
+        AXIS2_FREE(env->allocator, subscriber->id);
+    if(subscriber->delivery_mode)
+        AXIS2_FREE(env->allocator, subscriber->delivery_mode);
+    if(subscriber->expires)
+        AXIS2_FREE(env->allocator, subscriber->expires);
+    if(subscriber->filter)
+        AXIS2_FREE(env->allocator, subscriber->filter);
+    if(subscriber->topic)
+        AXIS2_FREE(env->allocator, subscriber->topic);
+    AXIS2_FREE(env->allocator, subscriber);
 }
 
 /******************************************************************************/

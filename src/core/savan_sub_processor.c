@@ -46,12 +46,6 @@ savan_sub_processor_set_sub_id_to_msg_ctx(
     axis2_msg_ctx_t *msg_ctx,
     axis2_char_t *id);
 
-axis2_status_t AXIS2_CALL
-savan_sub_processor_remove_subscriber(
-    const axutil_env_t *env,
-    axis2_msg_ctx_t *msg_ctx,
-    savan_subscriber_t *subscriber);
-
 axis2_bool_t AXIS2_CALL
 savan_sub_processor_is_subscription_renewable(
     const axutil_env_t *env,
@@ -151,7 +145,7 @@ savan_sub_processor_unsubscribe(
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);
 
     /* Remove from store */
-    status = savan_sub_processor_remove_subscriber(env, msg_ctx, subscriber);
+    status = savan_util_remove_subscriber(env, msg_ctx, subscriber);
     if (status != AXIS2_SUCCESS)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to remove the"
@@ -406,37 +400,6 @@ savan_sub_processor_set_sub_id_to_msg_ctx(
 }
 
 /******************************************************************************/
-
-axis2_status_t AXIS2_CALL
-savan_sub_processor_remove_subscriber(
-    const axutil_env_t *env,
-    axis2_msg_ctx_t *msg_ctx,
-    savan_subscriber_t *subscriber)
-{
-    axis2_char_t *id = NULL;
-    axutil_hash_t *store = NULL;
-
-    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
-
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][sub processor] "
-        "remove subscriber...");
-
-    id = savan_subscriber_get_id(subscriber, env);
-
-    /* Extract the store from the svc and remove the given subscriber */
-    store = savan_util_get_subscriber_store(env, msg_ctx);
-    if (!store)
-    {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscriber store is "
-            "null"); 
-        return AXIS2_FAILURE;
-    }
-
-    /* Setting NULL as value will remove the entry */
-    axutil_hash_set(store, id, AXIS2_HASH_KEY_STRING, NULL);
-
-    return AXIS2_SUCCESS;
-}
 
 /******************************************************************************/
 

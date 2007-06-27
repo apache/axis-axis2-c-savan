@@ -32,8 +32,19 @@ add_subscriber_to_remote_subs_mgr(
     savan_subscriber_t *subscriber,
     axis2_char_t *subs_mgr_url);
 
+static axis2_status_t
+remove_subscriber_from_remote_subs_mgr(
+    const axutil_env_t *env,
+    savan_subscriber_t *subscriber,
+    axis2_char_t *subs_mgr_url);
+
 static axiom_node_t *
 build_add_subscriber_om_payload(
+    const axutil_env_t *env,
+    savan_subscriber_t *subscriber);
+
+static axiom_node_t *
+build_remove_subscriber_om_payload(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
@@ -284,6 +295,62 @@ savan_util_add_subscriber(
     return AXIS2_SUCCESS;
 }
 
+axis2_status_t AXIS2_CALL
+savan_util_remove_subscriber(
+    const axutil_env_t *env,
+    axis2_msg_ctx_t *msg_ctx,
+    savan_subscriber_t *subscriber)
+{
+    axis2_svc_t *subs_svc = NULL;
+    axutil_param_t *param = NULL;
+    axutil_hash_t *store = NULL;
+    axis2_char_t *subs_svc_name = NULL;
+
+    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][sub processor] "
+        "remove subscriber...");
+
+    subs_svc = axis2_msg_ctx_get_svc(msg_ctx, env);
+    if (!subs_svc)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to extract "
+            "the service"); 
+        return AXIS2_FAILURE;
+    }
+    param = axis2_svc_get_param(subs_svc, env, "SubscriptionMgrName");
+    if(param)
+    {
+        subs_svc_name = axutil_param_get_value(param, env);
+    }
+    if(subs_svc_name)
+    {
+        axis2_char_t *subs_mgr_url = NULL;
+        param = axis2_svc_get_param(subs_svc, env, "SubscriptionMgrURL");
+        subs_mgr_url = axutil_param_get_value(param, env);
+        remove_subscriber_from_remote_subs_mgr(env, subscriber, subs_mgr_url);
+    }
+    else
+    {
+        axis2_char_t *id = NULL;
+
+        id = savan_subscriber_get_id(subscriber, env);
+        /* Extract the store from the svc and remove the given subscriber */
+        store = savan_util_get_subscriber_store(env, msg_ctx);
+        if (!store)
+        {
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscriber store is "
+                "null"); 
+            return AXIS2_FAILURE;
+        }
+
+        /* Setting NULL as value will remove the entry */
+        axutil_hash_set(store, id, AXIS2_HASH_KEY_STRING, NULL);
+    }
+        return AXIS2_SUCCESS;
+}
+
+
 axis2_status_t AXIS2_CALL 
 savan_util_set_sub_store(
     axis2_svc_t *svc,
@@ -378,6 +445,66 @@ add_subscriber_to_remote_subs_mgr(
     
     axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
     payload = build_add_subscriber_om_payload(env, subscriber);
+    /* Send request */
+    axis2_svc_client_send_robust(svc_client, env, payload);
+
+    return AXIS2_SUCCESS;
+}
+
+static axis2_status_t
+remove_subscriber_from_remote_subs_mgr(
+    const axutil_env_t *env,
+    savan_subscriber_t *subscriber,
+    axis2_char_t *subs_mgr_url)
+{
+    const axis2_char_t *address = NULL;
+    axis2_endpoint_ref_t* endpoint_ref = NULL;
+    axis2_options_t *options = NULL;
+    const axis2_char_t *client_home = NULL;
+    axis2_svc_client_t* svc_client = NULL;
+    axiom_node_t *payload = NULL;
+
+    /* Set end point reference of echo service */
+    address = subs_mgr_url;
+    printf("[savan] Using endpoint : %s\n", address);
+
+    /* Create EPR with given address */
+    endpoint_ref = axis2_endpoint_ref_create(env, address);
+
+    /* Setup options */
+    options = axis2_options_create(env);
+    axis2_options_set_to(options, env, endpoint_ref);
+    axis2_options_set_action(options, env,
+        "http://ws.apache.org/axis2/c/subscription/remove_subscriber");
+
+    /* Set up deploy folder. It is from the deploy folder, the configuration is 
+     * picked up using the axis2.xml file.
+     * In this sample client_home points to the Axis2/C default deploy folder. 
+     * The client_home can be different from this folder on your system. For 
+     * example, you may have a different folder (say, my_client_folder) with its 
+     * own axis2.xml file. my_client_folder/modules will have the modules that 
+     * the client uses
+     */
+    client_home = (const axis2_char_t *) AXIS2_GETENV("AXIS2C_HOME");
+    if (!client_home)
+        client_home = "../../deploy";
+
+    /* Create service client */
+    svc_client = axis2_svc_client_create(env, client_home);
+    if (!svc_client)
+    {
+        printf("Error creating service client\n");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Stub invoke FAILED: Error code:"
+            " %d :: %s", env->error->error_number,
+            AXIS2_ERROR_GET_MESSAGE(env->error));
+        return -1;
+    }
+    axis2_options_set_soap_version(options, env, AXIOM_SOAP11);
+    /* Set service client options */
+    axis2_svc_client_set_options(svc_client, env, options);    
+    
+    axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
+    payload = build_remove_subscriber_om_payload(env, subscriber);
     /* Send request */
     axis2_svc_client_send_robust(svc_client, env, payload);
 
@@ -479,11 +606,21 @@ process_subscriber_list_node(
     axiom_children_qname_iterator_t *subs_iter = NULL;
     axutil_hash_t *subscriber_list = axutil_hash_make(env);
     axutil_qname_t *qname = NULL;
+    axiom_node_t *topic_node = NULL;
+    axiom_element_t *topic_elem = NULL;
+    axis2_char_t *topic_url = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] Start:process_subscriber_list_node");
     subs_list_element = axiom_node_get_data_element(subs_list_node, env); 
-    
+         
+    /* Topic */
+    qname = axutil_qname_create(env, ELEM_NAME_TOPIC, SAVAN_NAMESPACE, NULL);
+    topic_elem = axiom_element_get_first_child_with_qname(subs_list_element, 
+        env, qname, subs_list_node, &topic_node);
+    axutil_qname_free(qname, env);
+    topic_url = axiom_element_get_text(topic_elem, env, topic_node);
+   
     /* Get Subscriber elements from subscriber list */
     qname = axutil_qname_create(env, ELEM_NAME_SUBSCRIBE, EVENTING_NAMESPACE, 
         NULL);
@@ -535,6 +672,10 @@ process_subscriber_list_node(
                 return NULL;
             }
             /* Now read each sub element of Subscribe element */
+
+            /* Topic */
+            savan_subscriber_set_topic(subscriber, env, topic_url);
+
             /* Id */
             qname = axutil_qname_create(env, ELEM_NAME_ID, SAVAN_NAMESPACE, NULL);
             id_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
@@ -598,8 +739,6 @@ process_subscriber_list_node(
         "[savan] End:process_subscriber_list_node");
     return subscriber_list;
 }
-
-
 
 static axiom_node_t *
 build_add_subscriber_om_payload(
@@ -684,6 +823,43 @@ build_add_subscriber_om_payload(
     return add_node;
 }
 
+static axiom_node_t *
+build_remove_subscriber_om_payload(
+    const axutil_env_t *env,
+    savan_subscriber_t *subscriber)
+{
+    axiom_node_t *remove_node = NULL;
+    axiom_element_t* remove_ele = NULL;
+    axiom_namespace_t *ns = NULL;
+    axiom_namespace_t *ns1 = NULL;
+    axiom_node_t *id_node = NULL;
+    axiom_node_t *topic_node = NULL;
+    axiom_element_t* id_elem = NULL;
+    axiom_element_t* topic_elem = NULL;
+    axis2_char_t *topic = NULL;
+    axis2_char_t *id = NULL;
+
+    id = savan_subscriber_get_id(subscriber, env);
+
+    ns = axiom_namespace_create (env, EVENTING_NAMESPACE, EVENTING_NS_PREFIX);
+    ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
+    remove_ele = axiom_element_create(env, NULL, ELEM_NAME_REMOVE_SUBSCRIBER, 
+        ns1, &remove_node);
+    
+    /* create the id element */
+    if(id)
+    {
+        id_elem = axiom_element_create(env, remove_node, ELEM_NAME_ID, ns1, &id_node);
+            axiom_element_set_text(id_elem, env, id, id_node);
+    }
+    /* create the topic element */
+    topic_elem = axiom_element_create(env, remove_node, ELEM_NAME_TOPIC, ns1, &topic_node);
+    topic = savan_subscriber_get_topic(subscriber, env);
+    if(topic)
+        axiom_element_set_text(topic_elem, env, topic, topic_node);
+    
+    return remove_node;
+}
 
 /******************************************************************************/
 

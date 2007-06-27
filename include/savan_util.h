@@ -96,6 +96,19 @@ extern "C"
         savan_subscriber_t *subscriber);
 
     /**
+    * Remove the subscriber from subscription manager services' store
+    * @param env pointer to environment struct
+    * @param msg_ctx pointer to message context
+    * @param subscriber
+    * @return the store on success, else NULL
+    */
+    axis2_status_t AXIS2_CALL
+    savan_util_remove_subscriber(
+        const axutil_env_t *env,
+        axis2_msg_ctx_t *msg_ctx,
+        savan_subscriber_t *subscriber);
+
+    /**
     * Calculate and return an expiry time for the subscription
     * @param env pointer to environment struct
     * @return the expiry time on success, else NULL

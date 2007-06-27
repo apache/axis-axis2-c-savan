@@ -58,6 +58,7 @@ typedef enum savan_message_types
 #define SAVAN_NS_PREFIX "savan"
 #define ELEM_NAME_SUBSCRIBERS "Subscribers"
 #define ELEM_NAME_ADD_SUBSCRIBER "AddSubscriber"
+#define ELEM_NAME_REMOVE_SUBSCRIBER "RemoveSubscriber"
 #define ELEM_NAME_TOPIC "Topic"
 #define DEFAULT_DELIVERY_MODE "http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push"
 
