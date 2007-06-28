@@ -406,7 +406,6 @@ add_subscriber_to_remote_subs_mgr(
 
     /* Set end point reference of echo service */
     address = subs_mgr_url;
-    printf("[savan] Using endpoint : %s\n", address);
 
     /* Create EPR with given address */
     endpoint_ref = axis2_endpoint_ref_create(env, address);
@@ -466,7 +465,6 @@ remove_subscriber_from_remote_subs_mgr(
 
     /* Set end point reference of echo service */
     address = subs_mgr_url;
-    printf("[savan] Using endpoint : %s\n", address);
 
     /* Create EPR with given address */
     endpoint_ref = axis2_endpoint_ref_create(env, address);
@@ -589,7 +587,6 @@ build_subscribers_request_om_payload(
     om_str = axiom_node_to_string(om_node, env);
     if (om_str)
     {
-        printf("\nSending OM : %s\n", om_str);
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "Sending OM : %s", om_str);
         AXIS2_FREE(env->allocator, om_str);
         om_str =  NULL;
