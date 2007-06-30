@@ -108,14 +108,16 @@ int main(int argc, char** argv)
     printf("Renewing subscription...\n");
     /* Set end point reference for assigned subscription manager */
     address = savan_client_get_sub_url(savan_client);
-    printf("address:%s********************************\n", address); 
+    printf("address:%s\n", address); 
     endpoint_ref = axis2_options_get_to(options, env);
     axis2_endpoint_ref_set_address(endpoint_ref, env, address);
     status = savan_client_renew(savan_client, env, svc_client, savan_options);
+    expire_time = savan_client_get_status(savan_client, env, svc_client);
     if (status == AXIS2_SUCCESS)
     {
         printf("Renew successful\n");
-        printf("New expire time: %s\n", expire_time);
+        if (expire_time)
+            printf("New expire time: %s\n", expire_time);
     }
 
 
@@ -128,7 +130,7 @@ int main(int argc, char** argv)
     endpoint_ref = axis2_options_get_to(options, env);
     axis2_endpoint_ref_set_address(endpoint_ref, env, address);
     expire_time = savan_client_get_status(savan_client, env, svc_client);
-    if (expire_time != NULL)
+    if (expire_time)
     {
         printf("GetStatus successful\n");
         printf("New expire time: %s\n", expire_time);
