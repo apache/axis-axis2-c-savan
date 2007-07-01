@@ -6,7 +6,9 @@
 # nmake samples  - samples 			               #
 ####################################################
 
-!include configure.in
+AUTOCONF = configure.in
+!include $(AUTOCONF)
+
 #define folders 
 
 SAVANSRC = ..\..
