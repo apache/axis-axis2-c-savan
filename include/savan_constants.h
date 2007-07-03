@@ -42,6 +42,15 @@ typedef enum savan_message_types
     SAVAN_MSG_TYPE_GET_STATUS_RESPONSE
 } savan_message_types_t;
 
+typedef struct savan_subs_mgr_info
+{
+    axis2_char_t *url;
+    axis2_char_t *name;
+    axutil_hash_t *list;
+    axis2_svc_t *svc;
+    axutil_env_t *env;
+}savan_subs_mgr_info_t;
+
 /* Eventing actions */
 #define SAVAN_ACTIONS_SUB "http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe"
 #define SAVAN_ACTIONS_SUB_RESPONSE  "http://schemas.xmlsoap.org/ws/2004/08/eventing/SubscribeResponse"

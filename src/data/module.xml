@@ -3,7 +3,7 @@
     <parameter name="SubscriptionMgrURL" locked="xsd:false">http://localhost:9090/axis2/services/subscription</parameter-->
     <inflow>
         <handler name="SavanInHandler" class="mod_savan">
-            <order phase="PostDispatch"/>
+            <order phase="SavanPhase"/>
         </handler>
     </inflow>
 

@@ -86,7 +86,7 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     if (svc)
         svc_name = axis2_svc_get_name(svc, env);
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[%s][savan][in handler] invoke...",
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[%s][savan][in handler] invoke",
         svc_name);
     
     /* create a subscription processor */

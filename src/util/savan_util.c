@@ -412,6 +412,7 @@ add_subscriber_to_remote_subs_mgr(
 
     /* Setup options */
     options = axis2_options_create(env);
+    axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
     axis2_options_set_to(options, env, endpoint_ref);
     axis2_options_set_action(options, env,
         "http://ws.apache.org/axis2/c/subscription/add_subscriber");
@@ -436,7 +437,7 @@ add_subscriber_to_remote_subs_mgr(
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Stub invoke FAILED: Error code:"
             " %d :: %s", env->error->error_number,
             AXIS2_ERROR_GET_MESSAGE(env->error));
-        return -1;
+        return AXIS2_FAILURE;
     }
     axis2_options_set_soap_version(options, env, AXIOM_SOAP11);
     /* Set service client options */
@@ -446,6 +447,8 @@ add_subscriber_to_remote_subs_mgr(
     payload = build_add_subscriber_om_payload(env, subscriber);
     /* Send request */
     axis2_svc_client_send_robust(svc_client, env, payload);
+    if(svc_client)
+        axis2_svc_client_free(svc_client, env);
 
     return AXIS2_SUCCESS;
 }
@@ -471,6 +474,7 @@ remove_subscriber_from_remote_subs_mgr(
 
     /* Setup options */
     options = axis2_options_create(env);
+    axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
     axis2_options_set_to(options, env, endpoint_ref);
     axis2_options_set_action(options, env,
         "http://ws.apache.org/axis2/c/subscription/remove_subscriber");
@@ -495,7 +499,7 @@ remove_subscriber_from_remote_subs_mgr(
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Stub invoke FAILED: Error code:"
             " %d :: %s", env->error->error_number,
             AXIS2_ERROR_GET_MESSAGE(env->error));
-        return -1;
+        return AXIS2_FAILURE;
     }
     axis2_options_set_soap_version(options, env, AXIOM_SOAP11);
     /* Set service client options */
@@ -505,6 +509,8 @@ remove_subscriber_from_remote_subs_mgr(
     payload = build_remove_subscriber_om_payload(env, subscriber);
     /* Send request */
     axis2_svc_client_send_robust(svc_client, env, payload);
+    if(svc_client)
+        axis2_svc_client_free(svc_client, env);
 
     return AXIS2_SUCCESS;
 }
@@ -526,6 +532,7 @@ savan_util_get_subscriber_list_from_remote_subs_mgr(
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] Start:savan_util_get_subscriber_list_from_remote_subs_mgr");
     options = axis2_options_create(env);
+    axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
     axis2_options_set_action(options, env,
         "http://ws.apache.org/axis2/c/subscription/get_subscriber_list");
 
@@ -561,6 +568,8 @@ savan_util_get_subscriber_list_from_remote_subs_mgr(
             " %d :: %s", env->error->error_number,
             AXIS2_ERROR_GET_MESSAGE(env->error));
     }
+    if(svc_client)
+        axis2_svc_client_free(svc_client, env);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] End:savan_util_get_subscriber_list_from_remote_subs_mgr");
     return subscriber_list;

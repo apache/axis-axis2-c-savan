@@ -219,6 +219,8 @@ void init_event_source(axutil_env_t* env, axis2_char_t *home)
             " %d :: %s", env->error->error_number, AXIS2_ERROR_GET_MESSAGE(env->error));
         printf("\nPublisher init failed\n");
     }
+    if(svc_client)
+        axis2_svc_client_free(svc_client, env);
 }
 
 

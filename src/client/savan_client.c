@@ -202,6 +202,7 @@ savan_client_renew(
     axiom_element_t *renew_elem = NULL;
     axiom_element_t *expires_elem = NULL;
     axis2_char_t *expires = NULL;
+    axis2_status_t status = AXIS2_FAILURE;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][client] "
         "renew...");
@@ -230,16 +231,17 @@ savan_client_renew(
     
     /* reset the old action */
     axis2_options_set_action(wsa_options, env, old_action);
-    
+   
     if (!reply)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to send renew "
             "request. Error: %d Reason: %s", env->error->error_number,
             AXIS2_ERROR_GET_MESSAGE(env->error));
-        return AXIS2_FAILURE;
+        status = AXIS2_FAILURE;
     }
     else
-        return AXIS2_SUCCESS;
+        status = AXIS2_SUCCESS;
+    return status;
 }
 
 /******************************************************************************/
@@ -256,6 +258,7 @@ savan_client_unsubscribe(
     axiom_node_t *reply = NULL;
     axiom_node_t *unsub_node = NULL;
     axiom_element_t *unsub_elem = NULL;
+    axis2_status_t status = AXIS2_FAILURE;
     
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][client] "
         "unsubscribe...");
@@ -282,10 +285,11 @@ savan_client_unsubscribe(
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to send unsubscribe "
             "request. Error: %d Reason: %s", env->error->error_number,
             AXIS2_ERROR_GET_MESSAGE(env->error));
-        return AXIS2_FAILURE;
+        status = AXIS2_FAILURE;
     }
     else
-        return AXIS2_SUCCESS;
+        status = AXIS2_SUCCESS;
+    return status;
 }
 
 /******************************************************************************/

@@ -123,6 +123,8 @@ savan_publishing_client_publish(
     /* Send publishing message */
     axis2_svc_client_send_robust_with_op_qname(svc_client, env, op_qname, 
         payload); 
+    if(svc_client)
+        axis2_svc_client_free(svc_client, env);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] "
         "End:savan_publishing_client_publish");
     
