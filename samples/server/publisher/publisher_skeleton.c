@@ -151,11 +151,7 @@ publisher_invoke(
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx)
 {
-    axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    axis2_conf_t *conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-
-    start_publisher_thread(env, conf); 
-    return axis2_publisher_start(env, node);
+    return NULL;
 }
 
 static void
@@ -246,17 +242,13 @@ publisher_worker_func(
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "inside thread worker func...");
 
-    /* Build a payload and pass it to the savan publishing client */ 
-    test_ns = axiom_namespace_create (env, "http://www.wso2.com/savan/c/publisher", "test");
-    test_elem = axiom_element_create(env, NULL, "notify", test_ns, &test_node);
-    
-    axiom_element_set_text(test_elem, env, "test data", test_node);
 
     svc = axis2_conf_get_svc(conf, env, "publisher");
     conf_ctx = axis2_conf_ctx_create(env, conf);
     while(1)
     {
         axutil_hash_t *subs_list = NULL;
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "Inside while loop");
 
         param = axis2_svc_get_param(svc, env, SAVAN_SUBSCRIBER_LIST);
         if(param)
@@ -266,6 +258,10 @@ publisher_worker_func(
             savan_publishing_client_t *pub_client = NULL;
 
             pub_client = savan_publishing_client_create(env, conf_ctx, svc);
+            /* Build a payload and pass it to the savan publishing client */ 
+            test_ns = axiom_namespace_create (env, "http://www.wso2.com/savan/c/publisher", "test");
+            test_elem = axiom_element_create(env, NULL, "notify", test_ns, &test_node);
+            axiom_element_set_text(test_elem, env, "test data", test_node);
             savan_publishing_client_publish(pub_client, env, test_node);
             savan_publishing_client_free(pub_client, env);
         }

@@ -24,6 +24,7 @@
 #include <platforms/axutil_platform_auto_sense.h>
 
 #include <savan_publishing_client.h>
+#include <savan_subscriber.h>
 #include <savan_constants.h>
 
 struct savan_publishing_client_t
@@ -77,54 +78,47 @@ savan_publishing_client_publish(
     const axutil_env_t *env,
     axiom_node_t *payload)
 {
-    const axis2_char_t *repo_path = NULL;
-    const axis2_char_t *address = NULL;
-    axis2_endpoint_ref_t* endpoint_ref = NULL;
-    axis2_options_t *options = NULL;
-    axis2_svc_client_t* svc_client = NULL;
-    axutil_qname_t *op_qname = NULL;
+    axutil_hash_t *store = NULL;
+    axutil_param_t *param = NULL;
+    axutil_hash_index_t *hi = NULL;
 
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] "
         "Start:savan_publishing_client_publish");
     
-    repo_path = AXIS2_GETENV("AXIS2C_HOME");
-    
-    /* Set end point reference of a dummy service */
-    address = "http://localhost:9090/axis2/services/dummy";
-    
-    /* Create EPR with given address */
-    endpoint_ref = axis2_endpoint_ref_create(env, address);
-
-    /* Setup options */
-    options = axis2_options_create(env);
-    axis2_options_set_to(options, env, endpoint_ref);
-    axis2_options_set_action(options, env,
-            "http://ws.apache.org/axis2/c/savan/dummy");
-    
-    op_qname = axutil_qname_create(env, "publish", NULL, NULL);
-        
-    /* Create service client */
-    svc_client = axis2_svc_client_create_with_conf_ctx_and_svc(env, repo_path,
-        client->conf_ctx, client->svc); 
-    if (!svc_client)
+    param = axis2_svc_get_param(client->svc, env, SAVAN_SUBSCRIBER_LIST);
+    if (!param)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create a"
-            "service client for publishing"); 
-        return AXIS2_FAILURE;
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][out handler] "
+            "Subscribe store not found");
+        return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
     }
 
-    /* Set service client options */
-    axis2_svc_client_set_options(svc_client, env, options);
+    store = (axutil_hash_t*)axutil_param_get_value(param, env);
+    if (!store)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][out handler] "
+            "Subscribe store is null");
+        return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
+    }
+    for (hi = axutil_hash_first(store, env); hi; hi =
+        axutil_hash_next(env, hi))
+    {
+        void *val = NULL;
+        savan_subscriber_t * sub = NULL;
+        axutil_hash_this(hi, NULL, NULL, &val);
+        sub = (savan_subscriber_t *)val;
+        if (sub)
+        {
+            axis2_char_t *id = savan_subscriber_get_id(sub, env);
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][out handler] "
+                "Publishing to %s", id);
+            savan_subscriber_publish(sub, env, payload);
+        }
 
-    axis2_svc_client_engage_module(svc_client, env, "savan");
-
-    /* Send publishing message */
-    axis2_svc_client_send_robust_with_op_qname(svc_client, env, op_qname, 
-        payload); 
-    if(svc_client)
-        axis2_svc_client_free(svc_client, env);
+        val = NULL;
+    }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] "
         "End:savan_publishing_client_publish");
     
