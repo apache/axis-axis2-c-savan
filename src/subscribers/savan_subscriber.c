@@ -278,6 +278,7 @@ savan_subscriber_publish(
     address = axis2_endpoint_ref_get_address(subscriber->notify_to, env);
     to = axis2_endpoint_ref_create(env, address);
     axis2_options_set_to(options, env, to);
+    axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
 
     /* Set service client options */
     axis2_svc_client_set_options(svc_client, env, options);
