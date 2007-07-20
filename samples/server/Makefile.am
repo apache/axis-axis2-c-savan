@@ -1,2 +1,2 @@
-SUBDIRS = publisher listener 
+SUBDIRS =
 

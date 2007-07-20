@@ -88,8 +88,8 @@ savan_sub_processor_subscribe(
     
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][sub processor] "
-        "subscribe...");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] Start:savan_sub_processor_subscribe");
     
     /* Extract info from incoming msg and create a subscriber */
     subscriber = savan_sub_processor_create_subscriber_from_msg(env, msg_ctx);
@@ -112,6 +112,8 @@ savan_sub_processor_subscribe(
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);
     savan_util_add_subscriber(env, msg_ctx, subscriber);
     
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] End:savan_sub_processor_subscribe");
     return AXIS2_SUCCESS;
 }
 
@@ -129,14 +131,14 @@ savan_sub_processor_unsubscribe(
 
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][sub processor] "
-        "unsubscribe...");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] Start:savan_sub_processor_unsubscribe");
 
     subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
     if (!subscriber)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to find the"
-            "subscriber"); 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[savan] Failed to find the subscriber"); 
         return AXIS2_FAILURE;
     }
 
@@ -148,11 +150,13 @@ savan_sub_processor_unsubscribe(
     status = savan_util_remove_subscriber(env, msg_ctx, subscriber);
     if (status != AXIS2_SUCCESS)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to remove the"
-            "subscriber"); 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[savan] Failed to remove the subscriber"); 
         return AXIS2_FAILURE;
     }
 
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] End:savan_sub_processor_unsubscribe");
     return AXIS2_SUCCESS;
 }
 

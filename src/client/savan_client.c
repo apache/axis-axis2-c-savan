@@ -106,8 +106,8 @@ savan_client_subscribe(
     axis2_char_t *sub_url = NULL;
     axis2_char_t *sub_elem_local_name = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][client] "
-        "subscribe...");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] Start:savan_client_subscribe");
     
     /* set wsa action as Subscribe. remember the old action */
     wsa_options = (axis2_options_t*)axis2_svc_client_get_options(svc_client, env);
@@ -176,10 +176,13 @@ savan_client_subscribe(
     }
 
     sub_id = savan_client_get_sub_id_from_response(body_elem, reply, env);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sub_id3:%s", sub_id); 
     client->sub_id = axutil_strdup(env, sub_id);
     sub_url = savan_client_get_sub_url_from_response(body_elem, reply, env);
     client->sub_url = axutil_strdup(env, sub_url);
 
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] End:savan_client_subscribe");
     return AXIS2_SUCCESS;
 }
 
@@ -260,8 +263,8 @@ savan_client_unsubscribe(
     axiom_element_t *unsub_elem = NULL;
     axis2_status_t status = AXIS2_FAILURE;
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][client] "
-        "unsubscribe...");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] Start:savan_client_unsubscribe");
     
     /* set wsa action as Unsub. remember the old action */
     wsa_options = (axis2_options_t*)axis2_svc_client_get_options(svc_client, env);
@@ -289,6 +292,8 @@ savan_client_unsubscribe(
     }
     else
         status = AXIS2_SUCCESS;
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] End:savan_client_unsubscribe");
     return status;
 }
 
@@ -408,6 +413,7 @@ savan_client_add_sub_id_to_soap_header(
         return AXIS2_FAILURE;
     }
 
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "client->sub_id:%s\n", client->sub_id);
     axiom_element_set_text(id_elem, env, client->sub_id, id_node);
 
     axis2_svc_client_add_header(svc_client, env, id_node);

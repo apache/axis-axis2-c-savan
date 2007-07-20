@@ -49,6 +49,7 @@ typedef struct savan_subs_mgr_info
     axutil_hash_t *list;
     axis2_svc_t *svc;
     axutil_env_t *env;
+    void *svc_client;
 }savan_subs_mgr_info_t;
 
 /* Eventing actions */
@@ -66,6 +67,7 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_NAMESPACE "http://ws.apache.org/savan"
 #define SAVAN_NS_PREFIX "savan"
 #define ELEM_NAME_SUBSCRIBERS "Subscribers"
+#define ELEM_NAME_GET_SUBSCRIBER_LIST "get_subscriber_list"
 #define ELEM_NAME_ADD_SUBSCRIBER "AddSubscriber"
 #define ELEM_NAME_REMOVE_SUBSCRIBER "RemoveSubscriber"
 #define ELEM_NAME_TOPIC "Topic"
@@ -101,6 +103,7 @@ typedef struct savan_subs_mgr_info
 
 #define SAVAN_KEY_SUB_ID            "savan_key_subscriber_id"
 #define SAVAN_SUBSCRIBER_LIST       "savan_subs_list"
+#define SAVAN_TOPIC_LIST       "savan_topic_list"
 
 /** @} */
 #ifdef __cplusplus
