@@ -6,4 +6,9 @@ INCLUDES = -I$(top_builddir)/include \
 		@AXIOMINC@ \
 		@UTILINC@ \
 		@NEETHIINC@ \
-		@AXIS2INC@ 
+		@AXIS2INC@
+
+libsavan_subscribers_la_LIBADD =-lxslt \
+                                -lxml2
+
+

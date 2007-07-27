@@ -64,7 +64,8 @@ typedef struct savan_subs_mgr_info
 
 #define EVENTING_NAMESPACE "http://schemas.xmlsoap.org/ws/2004/08/eventing"
 #define EVENTING_NS_PREFIX "wse"
-#define SAVAN_NAMESPACE "http://ws.apache.org/savan"
+/*#define SAVAN_NAMESPACE "http://ws.apache.org/savan"*/
+#define SAVAN_NAMESPACE "tcp://ws.apache.org/axis2/services/subscription"
 #define SAVAN_NS_PREFIX "savan"
 #define ELEM_NAME_SUBSCRIBERS "Subscribers"
 #define ELEM_NAME_GET_SUBSCRIBER_LIST "get_subscriber_list"

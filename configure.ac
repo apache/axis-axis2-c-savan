@@ -71,6 +71,8 @@ AC_MSG_CHECKING(To Use Xml Schema. This is a compulsory module to build Woden C)
 AXIOMINC="-I$abs_top_builddir/../axis2c/axiom/include"
 UTILINC="-I$abs_top_builddir/../axis2c/util/include"
 NEETHIINC="-I$abs_top_builddir/../axis2c/neethi/include"
+PKG_CHECK_MODULES(LIBXML2, libxml-2.0)
+CFLAGS="$CFLAGS $LIBXML2_CFLAGS"
 AC_SUBST(AXIS2INC)
 AC_SUBST(AXIOMINC)
 AC_SUBST(UTILINC)

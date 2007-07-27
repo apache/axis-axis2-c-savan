@@ -143,7 +143,7 @@ savan_client_subscribe(
     axiom_element_set_text(expires_elem, env, expires, expires_node);
     /* Filter element */
     filter_elem = axiom_element_create(env, sub_node, ELEM_NAME_FILTER, ns,
-        &endto_node);
+        &filter_node);
     axiom_element_set_text(filter_elem, env, filter, filter_node);
     
     /* send the Subscription and wait for the response */

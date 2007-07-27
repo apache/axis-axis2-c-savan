@@ -22,6 +22,8 @@
 
 #include <savan_subscriber.h>
 
+#include <libxslt/xsltutils.h>
+
 struct savan_subscriber_t
 {
     axis2_char_t *id;
@@ -32,6 +34,7 @@ struct savan_subscriber_t
     axis2_char_t *filter;
     axis2_char_t *topic;
     axis2_bool_t renewed;
+    xsltStylesheetPtr xslt_filter;
 };
 
 /*****************************************************************************/
@@ -60,6 +63,7 @@ savan_subscriber_create(
     subscriber->filter = NULL;
     subscriber->topic = NULL;
     subscriber->renewed = AXIS2_FALSE;
+	subscriber->xslt_filter = NULL;
         
     return subscriber;
 }
@@ -79,7 +83,45 @@ savan_subscriber_free(
         AXIS2_FREE(env->allocator, subscriber->filter);
     if(subscriber->topic)
         AXIS2_FREE(env->allocator, subscriber->topic);
+    if(subscriber->xslt_filter)
+        AXIS2_FREE(env->allocator, subscriber->xslt_filter);
     AXIS2_FREE(env->allocator, subscriber);
+}
+
+/******************************************************************************/
+
+void* AXIS2_CALL
+savan_subscriber_get_filter_template(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env)
+{
+    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
+
+    return subscriber->xslt_filter;
+}
+
+/******************************************************************************/
+
+axis2_status_t AXIS2_CALL
+savan_subscriber_set_filter_template(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env,
+    void *xslt_filter_template)
+{
+    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
+
+	if (subscriber->filter == NULL)
+	{
+		return AXIS2_SUCCESS;
+	}
+
+    if (subscriber->xslt_filter != NULL)
+    {
+        AXIS2_FREE(env->allocator, subscriber->filter);
+        subscriber->xslt_filter = NULL;
+    }
+    subscriber->xslt_filter = (xsltStylesheetPtr)xslt_filter_template;
+    return AXIS2_SUCCESS;
 }
 
 /******************************************************************************/
@@ -279,6 +321,9 @@ savan_subscriber_publish(
     to = axis2_endpoint_ref_create(env, address);
     axis2_options_set_to(options, env, to);
     axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
+
+	/* Apply the filter to the payload */
+	payload = (axiom_node_t*)savan_util_apply_filter(subscriber, env, payload);
 
     /* Set service client options */
     axis2_svc_client_set_options(svc_client, env, options);

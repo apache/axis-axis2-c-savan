@@ -39,6 +39,32 @@ extern "C"
 
     typedef struct savan_subscriber_t savan_subscriber_t;
 
+	/*
+ 	* Set the filter template into the subscriber.
+ 	* @param subscriber pointer to the subscriber
+ 	* @param env pointer to env
+ 	* @param xslt template pointer to the stylesheet
+ 	*/
+
+	axis2_status_t AXIS2_CALL
+	savan_subscriber_set_filter_template(
+    	savan_subscriber_t *subscriber,
+    	const axutil_env_t *env,
+    	void* xslt_filter_template);
+
+	/*
+ 	* Get the filter template from the subscriber.
+ 	* needs to cast into a xsltStylesheepPtr
+ 	* @param subscriber pointer to the subscriber
+ 	* @param env pointer to env
+ 	* @param xslt template pointer to the stylesheet
+ 	*/
+
+	void* AXIS2_CALL
+	savan_subscriber_get_filter_template(
+    	savan_subscriber_t *subscriber,
+    	const axutil_env_t *env);
+
     /**
      * Retrive subscriber id.
      * @param subscriber pointer to subscriber

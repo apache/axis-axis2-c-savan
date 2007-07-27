@@ -28,6 +28,7 @@
 
 #include <savan_constants.h>
 #include <savan_subscriber.h>
+#include <savan_sub_processor.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -39,7 +40,37 @@ extern "C"
  * @ingroup Savan Util
  * @{
  */
-    
+
+	/**
+ 	* Apply the filter against the subscriber
+ 	* @param subscriber, pointer to the subscriber
+ 	* @param env, pointer to the environment
+ 	* @param payload, pointer to the payload.
+ 	* returns the payload, after applying the 
+ 	* filter.
+ 	* returns success, upon successful application 
+ 	* of the filter. 
+ 	*/ 
+	axiom_node_t * AXIS2_CALL
+	savan_util_apply_filter(
+    	savan_subscriber_t *subscriber,
+    	const axutil_env_t *env,
+    	axiom_node_t *payload);
+
+	/**
+ 	* Set the filter template for the subscriber
+ 	* for filtering.
+ 	* @param subscriber pointer to the subscriber
+ 	* @param sub_processor, pointer to the sub_processor
+ 	* @param env, pointer to the environment.
+ 	* returns success, if operation is successful.
+ 	*/
+    axis2_status_t AXIS2_CALL
+    savan_util_set_filter_template_for_subscriber(
+        savan_subscriber_t *subscriber,
+        savan_sub_processor_t *sub_processor,
+        const axutil_env_t *env);   
+
     savan_message_types_t AXIS2_CALL
     savan_util_get_message_type(
         axis2_msg_ctx_t *msg_ctx,

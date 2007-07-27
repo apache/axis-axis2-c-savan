@@ -23,8 +23,20 @@
 
 #include <savan_util.h>
 #include <savan_error.h>
+#include <libxslt/xsltutils.h>
 
 /******************************************************************************/
+
+axis2_status_t
+savan_util_update_filter_template(
+    xmlNodeSetPtr nodes,
+    const xmlChar* value);
+
+axiom_node_t*
+savan_util_create_fault_msg(axis2_char_t *code,
+    axis2_char_t* subcode, axis2_char_t *reason,
+    axis2_char_t* details,
+    const axutil_env_t *env);
 
 static axis2_status_t
 add_subscriber_to_remote_subs_mgr(
@@ -57,6 +69,136 @@ static axutil_hash_t *
 process_subscriber_list_node(
     const axutil_env_t *env,
     axiom_node_t *subs_list_node);
+
+axis2_status_t AXIS2_CALL
+savan_util_set_filter_template_for_subscriber(
+    savan_subscriber_t *subscriber,
+    savan_sub_processor_t *sub_processor,
+    const axutil_env_t *env)
+{
+    AXIS2_ENV_CHECK(env, NULL);
+    xsltStylesheetPtr xslt_template_xslt = NULL;
+    xmlDocPtr xslt_template_xml = NULL;
+
+	if(savan_subscriber_get_filter(subscriber, env) == NULL)
+	{
+		return AXIS2_SUCCESS;
+	}
+
+    xslt_template_xml = xmlParseFile("../modules/savan/template.xsl");
+    xmlChar* xpathExpr = (xmlChar*)"//@select";
+    xmlChar* value = (xmlChar*)savan_subscriber_get_filter(subscriber,env);
+    xmlXPathContextPtr xpathCtx = xmlXPathNewContext(xslt_template_xml);
+    xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(xpathExpr, xpathCtx);
+    savan_util_update_filter_template(xpathObj->nodesetval, value);
+
+    xslt_template_xslt = xsltParseStylesheetDoc(xslt_template_xml);
+    savan_subscriber_set_filter_template(subscriber, env, xslt_template_xslt);
+
+	xmlXPathFreeObject(xpathObj);
+	xmlXPathFreeContext(xpathCtx);
+
+    return AXIS2_SUCCESS;
+}
+
+axiom_node_t * AXIS2_CALL
+savan_util_apply_filter(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env,
+    axiom_node_t *payload)
+{
+    xmlChar *buffer = NULL;
+    int size = 0;
+    axis2_char_t *payload_string = NULL;
+    xmlDocPtr payload_doc = NULL;
+    xsltStylesheetPtr xslt_template_filter = NULL;
+
+	if(savan_subscriber_get_filter(subscriber, env) == NULL)
+	{
+		return payload;
+	}
+
+    payload_string = axiom_node_to_string(payload, env);
+
+    payload_doc = (xmlDocPtr)xmlParseDoc((xmlChar*)payload_string);
+
+    xslt_template_filter = 
+		(xsltStylesheetPtr)savan_subscriber_get_filter_template(subscriber,
+        env);
+
+    xmlDocPtr result_doc = (xmlDocPtr)xsltApplyStylesheet(xslt_template_filter,
+        payload_doc, NULL);
+
+    xmlDocDumpMemory(result_doc, &buffer, &size);
+
+    axiom_xml_reader_t *reader = axiom_xml_reader_create_for_memory(env, 
+		(char*)buffer,axutil_strlen((char*)buffer), 
+		NULL, AXIS2_XML_PARSER_TYPE_BUFFER);
+    axiom_stax_builder_t *om_builder = axiom_stax_builder_create(env, reader);
+    axiom_document_t *document = axiom_stax_builder_get_document(om_builder, 
+		env);
+    axiom_node_t *node = axiom_document_build_all(document, env);
+
+	if(node == NULL)
+	{
+		node = savan_util_create_fault_msg("CODE", "FilteringRequestedUnavailabe", 
+			"Requested Filter dialect is not supported", "DETAILS", env);
+	}
+
+    axiom_stax_builder_free_self(om_builder, env);
+	axiom_node_free_tree(payload, env);
+    free(payload_string);
+	xmlFreeDoc(result_doc);
+
+    return node;
+}
+
+axis2_status_t 
+savan_util_update_filter_template(
+    xmlNodeSetPtr nodes,
+    const xmlChar* value)
+{
+    int size;
+    int i;
+    size = (nodes) ? nodes->nodeNr : 0;
+    for(i = size - 1; i >= 0; i--) 
+	{
+    	xmlNodeSetContent(nodes->nodeTab[i], value);
+    	if (nodes->nodeTab[i]->type != XML_NAMESPACE_DECL)
+        	nodes->nodeTab[i] = NULL;
+    }
+    return AXIS2_SUCCESS;
+}
+
+axiom_node_t*
+savan_util_create_fault_msg(axis2_char_t *code,
+    axis2_char_t* subcode, axis2_char_t *reason,
+	axis2_char_t* details,
+	const axutil_env_t *env)
+{
+    axiom_node_t *fault_node = NULL;
+    axiom_element_t *fault_ele = NULL;
+    axiom_node_t *fault_reason_node = NULL;
+    axiom_element_t *fault_reason_ele = NULL;
+    axiom_node_t *fault_code_node = NULL;
+    axiom_element_t *fault_code_ele = NULL;
+
+	/*
+    axiom_node_t *fault_subcode_node = NULL;
+    axiom_element_t *fault_subcode_ele = NULL;
+    axiom_node_t *fault_details_node = NULL;
+    axiom_element_t *fault_details_ele = NULL;
+	*/
+
+    fault_ele = axiom_element_create(env, NULL, "Fault", NULL, &fault_node);
+	fault_code_ele = axiom_element_create(env, fault_node, "faultcode", 
+		NULL, &fault_code_node);
+    axiom_element_set_text(fault_code_ele, env, subcode, fault_code_node);
+	fault_reason_ele = axiom_element_create(env, fault_node, "faultstring", 
+		NULL, &fault_reason_node);
+    axiom_element_set_text(fault_reason_ele, env, reason, fault_reason_node);
+    return fault_node;
+}
 
 savan_message_types_t AXIS2_CALL
 savan_util_get_message_type(

@@ -1,9 +1,16 @@
+datadir=$(prefix)/modules/savan
 noinst_LTLIBRARIES = libsavan_util.la
 
 libsavan_util_la_SOURCES = savan_util.c
 
+data_DATA=template.xsl
 INCLUDES = -I$(top_builddir)/include \
 		@AXIOMINC@ \
 		@AXIS2INC@ \
 		@UTILINC@ \
-		@NEETHIINC@ 
+		@NEETHIINC@
+
+libsavan_util_la_LIBADD =-lxslt \
+                         -lxml2
+
+EXTRA_DIST=template.xml

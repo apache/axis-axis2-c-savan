@@ -107,6 +107,9 @@ savan_sub_processor_subscribe(
     expires = savan_util_get_expiry_time(env);
     savan_subscriber_set_expires(subscriber, env, expires);
 
+    /*Set the filter template file for the subscriber*/
+    savan_util_set_filter_template_for_subscriber(subscriber, sub_processor, env);
+
     /* Store sub id in msg ctx to be used by the msg receiver */
     id = savan_subscriber_get_id(subscriber, env);
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);
@@ -372,7 +375,6 @@ savan_sub_processor_create_subscriber_from_msg(
     axutil_qname_free(qname, env);
     
     filter = axiom_element_get_text(filter_elem, env, filter_node);
-    
     savan_subscriber_set_filter(subscriber, env, filter);
     
     topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
