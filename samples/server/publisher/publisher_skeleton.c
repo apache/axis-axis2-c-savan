@@ -265,7 +265,7 @@ publisher_worker_func(
             savan_publishing_client_publish(pub_client, env, test_node);
             savan_publishing_client_free(pub_client, env);
         }
-        AXIS2_SLEEP(10);
+        AXIS2_SLEEP(1);
     }
 }
 

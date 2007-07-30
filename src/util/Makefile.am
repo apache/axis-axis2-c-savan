@@ -10,7 +10,7 @@ INCLUDES = -I$(top_builddir)/include \
 		@UTILINC@ \
 		@NEETHIINC@
 
-libsavan_util_la_LIBADD =-lxslt \
+libsavan_util_la_LIBADD = \
                          -lxml2
 
 EXTRA_DIST=template.xsl

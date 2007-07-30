@@ -121,7 +121,7 @@ int main(int argc, char** argv)
     }
 
 
-    AXIS2_SLEEP(2);
+    AXIS2_SLEEP(1);
 
     printf("\n***************************************\n");
     printf("Getting status of subscription...\n");
@@ -136,7 +136,7 @@ int main(int argc, char** argv)
         printf("New expire time: %s\n", expire_time);
     }
 
-    AXIS2_SLEEP(2);
+    AXIS2_SLEEP(5);
 
     printf("\n***************************************\n");
     printf("Unsubscribing...\n");

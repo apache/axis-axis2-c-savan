@@ -23,14 +23,14 @@
 
 #include <savan_util.h>
 #include <savan_error.h>
-#include <libxslt/xsltutils.h>
+/*#include <libxslt/xsltutils.h>*/
 
 /******************************************************************************/
 
-axis2_status_t
+/*axis2_status_t
 savan_util_update_filter_template(
     xmlNodeSetPtr nodes,
-    const xmlChar* value);
+    const xmlChar* value);*/
 
 axiom_node_t*
 savan_util_create_fault_msg(axis2_char_t *code,
@@ -70,7 +70,7 @@ process_subscriber_list_node(
     const axutil_env_t *env,
     axiom_node_t *subs_list_node);
 
-axis2_status_t AXIS2_CALL
+/*axis2_status_t AXIS2_CALL
 savan_util_set_filter_template_for_subscriber(
     savan_subscriber_t *subscriber,
     savan_sub_processor_t *sub_processor,
@@ -99,9 +99,9 @@ savan_util_set_filter_template_for_subscriber(
 	xmlXPathFreeContext(xpathCtx);
 
     return AXIS2_SUCCESS;
-}
+}*/
 
-axiom_node_t * AXIS2_CALL
+/*axiom_node_t * AXIS2_CALL
 savan_util_apply_filter(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
@@ -168,7 +168,7 @@ savan_util_update_filter_template(
         	nodes->nodeTab[i] = NULL;
     }
     return AXIS2_SUCCESS;
-}
+}*/
 
 axiom_node_t*
 savan_util_create_fault_msg(axis2_char_t *code,

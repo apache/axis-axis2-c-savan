@@ -7,18 +7,6 @@
         </handler>
     </inflow>
 
-    <outflow>
-        <handler name="SavanOutHandler" class="mod_savan">
-            <order phase="SavanPhase"/>
-        </handler>
-    </outflow>
-
-    <Outfaultflow>
-        <handler name="SavanOutHandler" class="mod_savan">
-            <order phase="SavanPhase"/>
-        </handler>
-    </Outfaultflow>
-
     <operation name="Subscribe">
            <!--messageReceiver class="axis2_receivers" /-->
            <parameter name="wsamapping" >http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe</parameter>
