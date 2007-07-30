@@ -108,7 +108,7 @@ savan_sub_processor_subscribe(
     savan_subscriber_set_expires(subscriber, env, expires);
 
     /*Set the filter template file for the subscriber*/
-    savan_util_set_filter_template_for_subscriber(subscriber, sub_processor, env);
+    /*savan_util_set_filter_template_for_subscriber(subscriber, sub_processor, env);*/
 
     /* Store sub id in msg ctx to be used by the msg receiver */
     id = savan_subscriber_get_id(subscriber, env);
