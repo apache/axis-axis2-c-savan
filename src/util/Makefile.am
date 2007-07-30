@@ -13,4 +13,4 @@ INCLUDES = -I$(top_builddir)/include \
 libsavan_util_la_LIBADD =-lxslt \
                          -lxml2
 
-EXTRA_DIST=template.xml
+EXTRA_DIST=template.xsl
