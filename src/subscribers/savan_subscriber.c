@@ -323,7 +323,7 @@ savan_subscriber_publish(
     axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
 
 	/* Apply the filter to the payload */
-	payload = (axiom_node_t*)savan_util_apply_filter(subscriber, env, payload);
+	/*payload = (axiom_node_t*)savan_util_apply_filter(subscriber, env, payload);*/
 
     /* Set service client options */
     axis2_svc_client_set_options(svc_client, env, options);
