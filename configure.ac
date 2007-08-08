@@ -65,6 +65,23 @@ AC_ARG_WITH(axis2,
   AC_MSG_RESULT(no)
 )
 
+AC_MSG_CHECKING(whether to enable savan filtering)
+AC_ARG_ENABLE(filtering, [  --enable-filtering
+                          enable savan filtering(default=no)],
+[ case "${enableval}" in
+  no)
+    AC_MSG_RESULT(no)
+    ;;
+  *)
+    AC_MSG_RESULT(yes)
+    PKG_CHECK_MODULES(XSLT, libxslt)
+    CFLAGS="$CFLAGS DSAVAN_FILTERING $XSLT_CFLAGS"
+    LDFLAGS="$LDFLAGS $XSLT_LIBS"
+
+    ;;
+  esac ],
+  AC_MSG_RESULT(yes)
+)
 
 
 AC_MSG_CHECKING(To Use Xml Schema. This is a compulsory module to build Woden C)
@@ -78,6 +95,8 @@ AC_SUBST(AXIOMINC)
 AC_SUBST(UTILINC)
 AC_SUBST(NEETHIINC)
 AC_SUBST(XMLSCHEMAINC)
+AC_SUBST(XSLT_LIBS)
+AC_SUBST(XSLT_INCLUDES)
 
 AC_CONFIG_FILES([Makefile \
     src/Makefile \
