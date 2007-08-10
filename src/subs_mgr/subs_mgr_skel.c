@@ -29,6 +29,7 @@
 #include <axis2_util.h>
 #include <axis2_svc_client.h>
 #include <axis2_options.h>
+#include <savan_constants.h>
 
 #include "savan_subs_mgr.h"
 
@@ -115,6 +116,7 @@ savan_subs_mgr_init(
     axutil_array_list_add(svc_skeleton->func_array, env, "get_subscriber_list");
     axutil_array_list_add(svc_skeleton->func_array, env, "add_topic");
     axutil_array_list_add(svc_skeleton->func_array, env, "get_topic_list");
+
     return AXIS2_SUCCESS;
 }
 
@@ -124,7 +126,54 @@ savan_subs_mgr_init_with_conf(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
+    axutil_array_list_t *topic_param_list = NULL;
+    axutil_hash_t *topic_list = NULL;
+    axis2_svc_t *subs_svc = NULL;
+    axis2_op_t *op = NULL;
+    axutil_param_t *param = NULL;
+    int i = 0, size = 0;
+
     savan_subs_mgr_init(svc_skeleton, env);
+    subs_svc = axis2_conf_get_svc(conf, env, "subscription");
+    param = axis2_svc_get_param(subs_svc, env, SAVAN_TOPIC_LIST);
+    if (!param)
+    {
+        /* Store not found. Create and set it as a param */
+        savan_util_set_store(subs_svc, env, SAVAN_TOPIC_LIST);
+        param = axis2_svc_get_param(subs_svc, env, SAVAN_TOPIC_LIST);
+    }
+    topic_list = (axutil_hash_t*)axutil_param_get_value(param, env);
+    if(!topic_list)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[savan] Failed to extract the topic list"); 
+        return AXIS2_FAILURE;
+    }
+    op = axis2_svc_get_op_with_name(subs_svc, env, "get_topic_list");
+    topic_param_list = axis2_op_get_all_params(op, env);
+    if(topic_param_list)
+        size = axutil_array_list_size(topic_param_list, env);
+    for(i = 0; i < size; i++)
+    {
+        axutil_param_t *topic_param = NULL;
+        axis2_char_t *topic_url_str = NULL;
+        axis2_char_t *topic_name = NULL;
+        axutil_hash_t *subs_list = NULL;
+        topic_param = axutil_array_list_get(topic_param_list, env, i);
+        topic_url_str = axutil_param_get_value(topic_param, env);
+        topic_name = axutil_param_get_name(topic_param, env);
+        subs_list = axutil_hash_get(topic_list, topic_name, 
+            AXIS2_HASH_KEY_STRING);
+        if(!subs_list)
+        {
+            subs_list = axutil_hash_make(env);
+            axutil_hash_set(topic_list, topic_name, AXIS2_HASH_KEY_STRING, 
+                subs_list);
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+                "[savan] Topic:%s is added to the topic list", topic_name);
+        }
+
+    }
     return AXIS2_SUCCESS;
 }
 

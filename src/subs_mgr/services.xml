@@ -26,6 +26,11 @@
    <operation name="get_topic_list">
            <!--messageReceiver class="axis2_receivers" /-->
            <parameter name="wsamapping" >http://ws.apache.org/axis2/c/subscription/get_topic_list</parameter>
+           <parameter name="heartbeat" locked="xsd:false">http://localhost:9090/axis2/services/ganglia_heartbeat</parameter>
+           <parameter name="discovery" locked="xsd:false">http://localhost:9090/axis2/services/ganglia_discovery</parameter>
+           <parameter name="power" locked="xsd:false">http://localhost:9090/axis2/services/ganglia_power</parameter>
+           <parameter name="load" locked="xsd:false">http://localhost:9090/axis2/services/ganglia_load</parameter>
+           <parameter name="syslog" locked="xsd:false">http://localhost:9090/axis2/services/syslog</parameter>
    </operation>
 
 </service>
