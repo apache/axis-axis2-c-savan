@@ -72,6 +72,10 @@ typedef struct savan_subs_mgr_info
 #define ELEM_NAME_ADD_SUBSCRIBER "AddSubscriber"
 #define ELEM_NAME_REMOVE_SUBSCRIBER "RemoveSubscriber"
 #define ELEM_NAME_TOPIC "Topic"
+#define ELEM_NAME_TOPICS "Topics"
+#define ELEM_NAME_GET_TOPIC_LIST "get_topic_list"
+#define ELEM_NAME_ADD_TOPIC "AddTopic"
+#define ELEM_NAME_REMOVE_TOPIC "RemoveTopic"
 #define DEFAULT_DELIVERY_MODE "http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push"
 
 /* Eventing element names */

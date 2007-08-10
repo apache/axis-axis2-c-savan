@@ -479,4 +479,80 @@ savan_subs_mgr_get_subscriber_list(
     return subs_list_node;
 }
 
+AXIS2_EXTERN axiom_node_t *AXIS2_CALL
+savan_subs_mgr_get_topic_list(
+    const axutil_env_t *env,
+    axiom_node_t *node,
+    axis2_msg_ctx_t *msg_ctx)
+{
+
+    axis2_svc_t *subs_svc = NULL;
+    axutil_param_t *param = NULL;
+    axutil_hash_t *topic_store = NULL;
+    axutil_hash_index_t *hi = NULL;
+    axiom_namespace_t *ns1 = NULL;
+    axiom_node_t *topic_list_node = NULL;
+    axiom_element_t* topic_list_elem = NULL;
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "Start:savan_subs_mgr_get_topic_list");
+    subs_svc = axis2_msg_ctx_get_svc(msg_ctx, env);
+    param = axis2_svc_get_param(subs_svc, env, SAVAN_TOPIC_LIST);
+    if (!param)
+    {
+        savan_util_set_store(subs_svc, env, SAVAN_TOPIC_LIST);
+        param = axis2_svc_get_param(subs_svc, env, SAVAN_TOPIC_LIST);
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Savan Topic List is empty");
+    }
+    
+    topic_store = (axutil_hash_t*)axutil_param_get_value(param, env);
+    if(!topic_store)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[ML] Failed to extract the "
+            "topic store"); 
+        return NULL;
+    }
+
+    /* Expected request format is :-
+     * <ns1:get_topic_list xmlns:ns1="http://ws.apache.org/savan">
+     * </ns1:get_topic_list>
+     */
+    if (!node) /* 'get_topic_list' node */
+    {
+        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_SVC_SKEL_INPUT_OM_NODE_NULL, 
+            AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "Echo client ERROR: input parameter NULL");
+        return NULL;
+    }
+    /* create the body of the topic_list element */
+    ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
+    topic_list_elem = axiom_element_create(env, NULL, ELEM_NAME_TOPICS, ns1, 
+        &topic_list_node);
+    for (hi = axutil_hash_first(topic_store, env); hi; hi =
+        axutil_hash_next(env, hi))
+    {
+        axis2_char_t *topic = NULL;
+        const void *key = NULL;
+        axutil_hash_this(hi, &key, NULL, NULL);
+        topic = (axis2_char_t *)key;
+
+        if (topic)
+        {
+            axiom_node_t *topic_node = NULL;
+            axiom_element_t* topic_elem = NULL;
+
+            /* create the topic element */
+            topic_elem = axiom_element_create(env, topic_list_node, 
+                ELEM_NAME_TOPIC, ns1, &topic_node);
+            if(topic)
+                axiom_element_set_text(topic_elem, env, topic, topic_node); 
+        }
+        key = NULL;
+    }
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "End:savan_subs_mgr_get_topic_list");
+    return topic_list_node;
+}
+
 
