@@ -48,6 +48,7 @@ typedef struct savan_subs_mgr_info
     axis2_char_t *name;
     axutil_hash_t *list;
     axis2_svc_t *svc;
+    axis2_conf_t *conf;
     axutil_env_t *env;
     void *svc_client;
 }savan_subs_mgr_info_t;

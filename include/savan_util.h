@@ -200,6 +200,22 @@ extern "C"
         const axutil_env_t *env,
         axis2_char_t *topic_url);
 
+    /**
+    * Get the topics registered in a subscription manager
+    * @param env pointer to environment struct
+    * @param subs_mgr_url url of the subscription manager
+    * @return subscribers in a array list
+    */
+    axutil_array_list_t *AXIS2_CALL
+    savan_util_get_topic_list_from_remote_subs_mgr(
+        const axutil_env_t *env,
+        axis2_char_t *subs_mgr_url,
+        void *s_client);
+
+    void *AXIS2_CALL
+    savan_util_get_svc_client(
+        const axutil_env_t *env);
+
 /** @} */
 #ifdef __cplusplus
 }

@@ -65,8 +65,17 @@ build_subscribers_request_om_payload(
     const axutil_env_t *env,
     axis2_char_t *topic);
 
+static axiom_node_t *
+build_topics_request_om_payload(
+    const axutil_env_t *env);
+
 static axutil_hash_t *
 process_subscriber_list_node(
+    const axutil_env_t *env,
+    axiom_node_t *subs_list_node);
+
+static axutil_array_list_t *
+process_topic_list_node(
     const axutil_env_t *env,
     axiom_node_t *subs_list_node);
 
@@ -403,12 +412,24 @@ savan_util_get_subscriber_store(
             param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
             if(param)
             {
+                axis2_svc_client_t* svc_client = NULL;
+                axutil_param_t *svc_client_param = NULL;
+
                 subs_mgr_url = axutil_param_get_value(param, env);
                 topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
                 topic_url = (axis2_char_t *) axis2_endpoint_ref_get_address(topic_epr, 
                     env);
+                svc_client_param = axis2_svc_get_param(pubs_svc, env, "svc_client");
+                if(svc_client_param)
+                    svc_client = axutil_param_get_value(svc_client_param, env);
+                if(!svc_client)
+                {
+                    svc_client = (axis2_svc_client_t *) savan_util_get_svc_client(env);
+                    svc_client_param = axutil_param_create(env, "svc_client", svc_client);
+                    axis2_svc_add_param(pubs_svc, env, svc_client_param);
+                }
                 store = savan_util_get_subscriber_list_from_remote_subs_mgr(env, 
-                    topic_url, subs_mgr_url, NULL);
+                    topic_url, subs_mgr_url, svc_client);
             }
         }
     }
@@ -673,49 +694,17 @@ add_subscriber_to_remote_subs_mgr(
     const axis2_char_t *address = NULL;
     axis2_endpoint_ref_t* endpoint_ref = NULL;
     axis2_options_t *options = NULL;
-    const axis2_char_t *client_home = NULL;
     axis2_svc_client_t* svc_client = NULL;
     axiom_node_t *payload = NULL;
 
-    /* Set end point reference of echo service */
+    svc_client = (axis2_svc_client_t *) savan_util_get_svc_client(env);
+    options = (axis2_options_t *) axis2_svc_client_get_options(svc_client, env);
     address = subs_mgr_url;
-
-    /* Create EPR with given address */
     endpoint_ref = axis2_endpoint_ref_create(env, address);
-
-    /* Setup options */
-    options = axis2_options_create(env);
-    axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
     axis2_options_set_to(options, env, endpoint_ref);
     axis2_options_set_action(options, env,
         "http://ws.apache.org/axis2/c/subscription/add_subscriber");
 
-    /* Set up deploy folder. It is from the deploy folder, the configuration is 
-     * picked up using the axis2.xml file.
-     * In this sample client_home points to the Axis2/C default deploy folder. 
-     * The client_home can be different from this folder on your system. For 
-     * example, you may have a different folder (say, my_client_folder) with its 
-     * own axis2.xml file. my_client_folder/modules will have the modules that 
-     * the client uses
-     */
-    client_home = (const axis2_char_t *) AXIS2_GETENV("AXIS2C_HOME");
-    if (!client_home)
-        client_home = "../../deploy";
-
-    /* Create service client */
-    svc_client = axis2_svc_client_create(env, client_home);
-    if (!svc_client)
-    {
-        printf("Error creating service client\n");
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Stub invoke FAILED: Error code:"
-            " %d :: %s", env->error->error_number,
-            AXIS2_ERROR_GET_MESSAGE(env->error));
-        return AXIS2_FAILURE;
-    }
-    /* Set service client options */
-    axis2_svc_client_set_options(svc_client, env, options);    
-    
-    axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
     payload = build_add_subscriber_om_payload(env, subscriber);
     /* Send request */
     axis2_svc_client_send_robust(svc_client, env, payload);
@@ -734,49 +723,17 @@ remove_subscriber_from_remote_subs_mgr(
     const axis2_char_t *address = NULL;
     axis2_endpoint_ref_t* endpoint_ref = NULL;
     axis2_options_t *options = NULL;
-    const axis2_char_t *client_home = NULL;
     axis2_svc_client_t* svc_client = NULL;
     axiom_node_t *payload = NULL;
 
-    /* Set end point reference of echo service */
+    svc_client = (axis2_svc_client_t *) savan_util_get_svc_client(env);
+    options = (axis2_options_t *) axis2_svc_client_get_options(svc_client, env);
     address = subs_mgr_url;
-
-    /* Create EPR with given address */
     endpoint_ref = axis2_endpoint_ref_create(env, address);
-
-    /* Setup options */
-    options = axis2_options_create(env);
-    axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
     axis2_options_set_to(options, env, endpoint_ref);
     axis2_options_set_action(options, env,
         "http://ws.apache.org/axis2/c/subscription/remove_subscriber");
 
-    /* Set up deploy folder. It is from the deploy folder, the configuration is 
-     * picked up using the axis2.xml file.
-     * In this sample client_home points to the Axis2/C default deploy folder. 
-     * The client_home can be different from this folder on your system. For 
-     * example, you may have a different folder (say, my_client_folder) with its 
-     * own axis2.xml file. my_client_folder/modules will have the modules that 
-     * the client uses
-     */
-    client_home = (const axis2_char_t *) AXIS2_GETENV("AXIS2C_HOME");
-    if (!client_home)
-        client_home = "../../deploy";
-
-    /* Create service client */
-    svc_client = axis2_svc_client_create(env, client_home);
-    if (!svc_client)
-    {
-        printf("Error creating service client\n");
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Stub invoke FAILED: Error code:"
-            " %d :: %s", env->error->error_number,
-            AXIS2_ERROR_GET_MESSAGE(env->error));
-        return AXIS2_FAILURE;
-    }
-    /* Set service client options */
-    axis2_svc_client_set_options(svc_client, env, options);    
-    
-    axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
     payload = build_remove_subscriber_om_payload(env, subscriber);
     /* Send request */
     axis2_svc_client_send_robust(svc_client, env, payload);
@@ -795,7 +752,6 @@ savan_util_get_subscriber_list_from_remote_subs_mgr(
 {
     axis2_endpoint_ref_t* endpoint_ref = NULL;
     axis2_options_t *options = NULL;
-    const axis2_char_t *client_home = NULL;
     axis2_svc_client_t* svc_client = NULL;
     axiom_node_t *payload = NULL;
     axiom_node_t *ret_node = NULL;
@@ -803,43 +759,11 @@ savan_util_get_subscriber_list_from_remote_subs_mgr(
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] Start:savan_util_get_subscriber_list_from_remote_subs_mgr");
-    if(!s_client)
-    {
-        client_home = AXIS2_GETENV("AXIS2C_HOME");
-        if (!client_home)
-            client_home = "../../deploy";
-        options = axis2_options_create(env);
-        svc_client = axis2_svc_client_create(env, client_home);
-        if (!svc_client)
-        {
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "[savan] Stub invoke FAILED: Error code:"
-                " %d :: %s", env->error->error_number,
-                AXIS2_ERROR_GET_MESSAGE(env->error));
-            return NULL;
-        }
-        endpoint_ref = axis2_endpoint_ref_create(env, subs_mgr_url);
-        axis2_options_set_to(options, env, endpoint_ref);
-        axis2_svc_client_set_options(svc_client, env, options);    
-        axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
-    }
-    else
-    {
-        svc_client = (axis2_svc_client_t *) s_client;
-        options = (axis2_options_t *)axis2_svc_client_get_options(svc_client, 
-            env);
-        endpoint_ref = axis2_options_get_to(options, env);
-        if(endpoint_ref)
-        {
-            axis2_endpoint_ref_set_address(endpoint_ref, env, subs_mgr_url);
-        }
-        else
-        {
-            endpoint_ref = axis2_endpoint_ref_create(env, subs_mgr_url);
-            axis2_options_set_to(options, env, endpoint_ref);
-        }
-
-    }
+    svc_client = (axis2_svc_client_t *) s_client;
+    options = (axis2_options_t *)axis2_svc_client_get_options(svc_client, 
+        env);
+    endpoint_ref = axis2_endpoint_ref_create(env, subs_mgr_url);
+    axis2_options_set_to(options, env, endpoint_ref);
     
     payload = build_subscribers_request_om_payload(env, topic);
     ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
@@ -853,10 +777,6 @@ savan_util_get_subscriber_list_from_remote_subs_mgr(
             "[savan] Stub invoke FAILED: Error code:"
             " %d :: %s", env->error->error_number,
             AXIS2_ERROR_GET_MESSAGE(env->error));
-    }
-    if(!s_client && svc_client)
-    {
-        axis2_svc_client_free(svc_client, env);
     }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] End:savan_util_get_subscriber_list_from_remote_subs_mgr");
@@ -1191,5 +1111,156 @@ savan_util_get_topic_name_from_topic_url(
     axis2_char_t *topic = NULL;
     topic  = axutil_strdup(env, axutil_rindex(topic_url, '/') + 1);
     return topic;
+}
+
+axutil_array_list_t *AXIS2_CALL
+savan_util_get_topic_list_from_remote_subs_mgr(
+    const axutil_env_t *env,
+    axis2_char_t *subs_mgr_url,
+    void *s_client)
+{
+    axis2_endpoint_ref_t* endpoint_ref = NULL;
+    axis2_options_t *options = NULL;
+    axis2_svc_client_t* svc_client = NULL;
+    axiom_node_t *payload = NULL;
+    axiom_node_t *ret_node = NULL;
+    axutil_array_list_t *topic_list = NULL;
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] Start:savan_util_get_topic_list_from_remote_subs_mgr");
+    if(!s_client)
+    {
+        svc_client = (axis2_svc_client_t *) savan_util_get_svc_client(env);
+    }
+    else
+    {
+        svc_client = (axis2_svc_client_t *) s_client;
+    }
+    options = (axis2_options_t *) axis2_svc_client_get_options(svc_client, env);
+    endpoint_ref = axis2_endpoint_ref_create(env, subs_mgr_url);
+    axis2_options_set_to(options, env, endpoint_ref);
+    
+    payload = build_topics_request_om_payload(env);
+    ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
+    if (ret_node)
+    {
+        topic_list = process_topic_list_node(env, ret_node);
+    }
+    else
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[savan] Stub invoke FAILED: Error code:"
+            " %d :: %s", env->error->error_number,
+            AXIS2_ERROR_GET_MESSAGE(env->error));
+    }
+    if(!s_client && svc_client)
+    {
+        /*axis2_svc_client_free(svc_client, env);*/
+    }
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] End:savan_util_get_topic_list_from_remote_subs_mgr");
+    return topic_list;
+}
+
+static axiom_node_t *
+build_topics_request_om_payload(
+    const axutil_env_t *env)
+{
+    axiom_node_t *om_node = NULL;
+    axiom_element_t* om_ele = NULL;
+    axiom_namespace_t *ns1 = NULL;
+    axis2_char_t *om_str = NULL;
+
+    ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
+    om_ele = axiom_element_create(env, NULL, ELEM_NAME_GET_TOPIC_LIST, ns1, &om_node);
+    om_str = axiom_node_to_string(om_node, env);
+    if (om_str)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "Sending topics_request_om_payload: %s", om_str);
+        AXIS2_FREE(env->allocator, om_str);
+        om_str =  NULL;
+    }
+    return om_node;
+}
+
+static axutil_array_list_t *
+process_topic_list_node(
+    const axutil_env_t *env,
+    axiom_node_t *topic_list_node)
+{
+    axiom_element_t *topic_list_element = NULL;
+    axiom_children_qname_iterator_t *topic_iter = NULL;
+    axutil_qname_t *qname = NULL;
+    axutil_array_list_t *topic_list = NULL;
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] Start:process_topic_list_node");
+    topic_list_element = axiom_node_get_data_element(topic_list_node, env); 
+         
+    /* Get topic elements from topic list */
+    qname = axutil_qname_create(env, ELEM_NAME_TOPIC, SAVAN_NAMESPACE, 
+        NULL);
+    topic_iter = axiom_element_get_children_with_qname(topic_list_element, env,
+        qname, topic_list_node);
+    axutil_qname_free(qname, env);
+    if(!topic_iter)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[savan] Topic list is empty");
+        return NULL;
+    }
+    if(axiom_children_qname_iterator_has_next(topic_iter, env))
+    {
+        topic_list = axutil_array_list_create(env, 0);
+    }
+
+    while(axiom_children_qname_iterator_has_next(topic_iter, env))
+    {
+        axiom_node_t *topic_node = NULL;
+        axiom_element_t *topic_elem = NULL;
+        axis2_char_t *topic_url_str = NULL;
+
+        topic_node = axiom_children_qname_iterator_next(topic_iter, env);
+        if(topic_node)
+        {
+            topic_elem = axiom_node_get_data_element(topic_node, env);
+            topic_url_str = axiom_element_get_text(topic_elem, env, topic_node);
+            axutil_array_list_add(topic_list, env, axutil_strdup(env, 
+                topic_url_str));
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "topic_url_str:%s", 
+                topic_url_str);
+        }
+    }
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] End:process_topic_list_node");
+    return topic_list;
+}
+
+void *AXIS2_CALL
+savan_util_get_svc_client(
+    const axutil_env_t *env)
+{
+    const axis2_char_t *client_home = NULL;
+    axis2_options_t *options = NULL;
+    axis2_svc_client_t *svc_client = NULL;
+
+    client_home = AXIS2_GETENV("AXIS2C_HOME");
+    if (!client_home)
+        client_home = "../../deploy";
+    options = axis2_options_create(env);
+    axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
+    svc_client = axis2_svc_client_create(env, client_home);
+    if (!svc_client)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[savan] Stub invoke FAILED: Error code:"
+            " %d :: %s", env->error->error_number,
+            AXIS2_ERROR_GET_MESSAGE(env->error));
+        return NULL;
+    }
+    axis2_svc_client_set_options(svc_client, env, options);    
+    axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
+    return svc_client;
 }
 

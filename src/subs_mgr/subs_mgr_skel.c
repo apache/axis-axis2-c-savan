@@ -29,9 +29,9 @@
 #include <axis2_util.h>
 #include <axis2_svc_client.h>
 #include <axis2_options.h>
-#include <savan_constants.h>
 
 #include "savan_subs_mgr.h"
+#include <savan_constants.h>
 
 int AXIS2_CALL
 savan_subs_mgr_free(
@@ -116,7 +116,6 @@ savan_subs_mgr_init(
     axutil_array_list_add(svc_skeleton->func_array, env, "get_subscriber_list");
     axutil_array_list_add(svc_skeleton->func_array, env, "add_topic");
     axutil_array_list_add(svc_skeleton->func_array, env, "get_topic_list");
-
     return AXIS2_SUCCESS;
 }
 
@@ -133,6 +132,8 @@ savan_subs_mgr_init_with_conf(
     axutil_param_t *param = NULL;
     int i = 0, size = 0;
 
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] Start:savan_subs_mgr_init_with_conf");
     savan_subs_mgr_init(svc_skeleton, env);
     subs_svc = axis2_conf_get_svc(conf, env, "subscription");
     param = axis2_svc_get_param(subs_svc, env, SAVAN_TOPIC_LIST);
@@ -153,6 +154,7 @@ savan_subs_mgr_init_with_conf(
     topic_param_list = axis2_op_get_all_params(op, env);
     if(topic_param_list)
         size = axutil_array_list_size(topic_param_list, env);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "dam_size:%d", size);
     for(i = 0; i < size; i++)
     {
         axutil_param_t *topic_param = NULL;
@@ -162,6 +164,8 @@ savan_subs_mgr_init_with_conf(
         topic_param = axutil_array_list_get(topic_param_list, env, i);
         topic_url_str = axutil_param_get_value(topic_param, env);
         topic_name = axutil_param_get_name(topic_param, env);
+        if(0 == axutil_strcmp(topic_name, "wsamapping"))
+            continue;
         subs_list = axutil_hash_get(topic_list, topic_name, 
             AXIS2_HASH_KEY_STRING);
         if(!subs_list)
@@ -174,6 +178,8 @@ savan_subs_mgr_init_with_conf(
         }
 
     }
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] End:savan_subs_mgr_init_with_conf");
     return AXIS2_SUCCESS;
 }
 
@@ -200,6 +206,7 @@ savan_subs_mgr_invoke(
         op_qname = (axutil_qname_t *)axis2_op_get_qname(op, env);
         if(op_qname)
             op_name = axutil_qname_get_localpart(op_qname, env);
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "dam_op_name:%s", op_name);
         if(op_name)
         {
             if (axutil_strcmp(op_name, "add_subscriber") == 0)
@@ -208,10 +215,10 @@ savan_subs_mgr_invoke(
                 return savan_subs_mgr_remove_subscriber(env, node, msg_ctx);
             if (axutil_strcmp(op_name, "get_subscriber_list") == 0)
                 return savan_subs_mgr_get_subscriber_list(env, node, msg_ctx);
-            /*if (axutil_strcmp(op_name, "add_topic") == 0)
-                return savan_subs_mgr_add_topic(env, node, msg_ctx);
             if (axutil_strcmp(op_name, "get_topic_list") == 0)
-                return savan_subs_mgr_get_topic_list(env, node, msg_ctx);*/
+                return savan_subs_mgr_get_topic_list(env, node, msg_ctx);
+            /*if (axutil_strcmp(op_name, "add_topic") == 0)
+                return savan_subs_mgr_add_topic(env, node, msg_ctx);*/
         }
     }
     return NULL;
