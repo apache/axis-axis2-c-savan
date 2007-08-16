@@ -12,4 +12,4 @@ INCLUDES = -I$(top_builddir)/include \
 		@NEETHIINC@ \
 		@AXIS2INC@ 
 
-EXTRA_DIST=services.xml
+EXTRA_DIST=services.xml savan_subs_mgr.h
