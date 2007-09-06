@@ -41,7 +41,7 @@ int main(int argc, char** argv)
     axutil_hash_t *savan_options = NULL;
     axis2_status_t status = AXIS2_FAILURE;
     savan_client_t *savan_client = NULL;
-    axis2_char_t *expire_time = NULL;
+    axis2_char_t *subs_status = NULL;
 
     /* Set up the environment */
     env = axutil_env_create_all("subscriber.log", AXIS2_LOG_LEVEL_TRACE);
@@ -112,14 +112,10 @@ int main(int argc, char** argv)
     endpoint_ref = axis2_options_get_to(options, env);
     axis2_endpoint_ref_set_address(endpoint_ref, env, address);
     status = savan_client_renew(savan_client, env, svc_client, savan_options);
-    expire_time = savan_client_get_status(savan_client, env, svc_client);
     if (status == AXIS2_SUCCESS)
     {
         printf("Renew successful\n");
-        if (expire_time)
-            printf("New expire time: %s\n", expire_time);
     }
-
 
     AXIS2_SLEEP(1);
 
@@ -129,11 +125,11 @@ int main(int argc, char** argv)
     address = savan_client_get_sub_url(savan_client);
     endpoint_ref = axis2_options_get_to(options, env);
     axis2_endpoint_ref_set_address(endpoint_ref, env, address);
-    expire_time = savan_client_get_status(savan_client, env, svc_client);
-    if (expire_time)
+    axis2_svc_client_remove_all_headers(svc_client, env);
+    subs_status = savan_client_get_status(savan_client, env, svc_client);
+    if (subs_status)
     {
         printf("GetStatus successful\n");
-        printf("New expire time: %s\n", expire_time);
     }
 
     AXIS2_SLEEP(5);
@@ -144,6 +140,7 @@ int main(int argc, char** argv)
     address = savan_client_get_sub_url(savan_client);
     endpoint_ref = axis2_options_get_to(options, env);
     axis2_endpoint_ref_set_address(endpoint_ref, env, address);
+    axis2_svc_client_remove_all_headers(svc_client, env);
     status = savan_client_unsubscribe(savan_client, env, svc_client);
     if (status == AXIS2_SUCCESS)
     {
