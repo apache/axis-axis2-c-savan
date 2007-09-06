@@ -272,11 +272,15 @@ savan_subs_mgr_get_subscriber_list(
 
     axis2_svc_t *subs_svc = NULL;
     axutil_param_t *param = NULL;
+    axis2_char_t *topic_url = NULL;
+    axis2_char_t *topic = NULL;
     axutil_hash_t *subs_store = NULL;
     axutil_hash_index_t *hi = NULL;
     axiom_namespace_t *ns = NULL;
     axiom_namespace_t *ns1 = NULL;
     axiom_node_t *subs_list_node = NULL;
+    axiom_node_t *topic_parent_node = NULL;
+    axiom_node_t *topic_node = NULL;
     axiom_element_t* subs_list_elem = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
@@ -288,19 +292,20 @@ savan_subs_mgr_get_subscriber_list(
         savan_util_set_store(subs_svc, env, SAVAN_SUBSCRIBER_LIST);
         param = axis2_svc_get_param(subs_svc, env, SAVAN_SUBSCRIBER_LIST);
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Savan Topic List is empty");
+            "[SAVAN] Savan Subscriber List is empty");
     }
     
     subs_store = (axutil_hash_t*)axutil_param_get_value(param, env);
     if(!subs_store)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Failed to extract the subscriber store"); 
+            "[ML] Failed to extract the subscriber store"); 
         return NULL;
     }
 
     /* Expected request format is :-
      * <ns1:get_subscriber_list xmlns:ns1="http://ws.apache.org/savan">
+     *      <Topic>topic_url</Topic>
      *      <ns:Susbscriber xmlns:ns="http://schemas.xmlsoap.org/ws/2004/08/eventing">
      *      ...
      *      </ns:Subscriber>
@@ -318,6 +323,44 @@ savan_subs_mgr_get_subscriber_list(
         return NULL;
     }
 
+    topic_parent_node = axiom_node_get_first_element(node, env);
+    if (!topic_parent_node) 
+    {
+        AXIS2_ERROR_SET(env->error, 
+            AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST, AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "Echo client ERROR 1: invalid XML in request");
+        return NULL;
+    }
+
+    topic_node = axiom_node_get_first_child(topic_parent_node, env);
+    if (!topic_node) /* actual topic text */
+    {
+        AXIS2_ERROR_SET(env->error, 
+            AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST, AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "invalid XML in request");
+        return NULL;
+    }
+
+    if (axiom_node_get_node_type(topic_node, env) == AXIOM_TEXT)
+    {
+        axiom_text_t *topic_text = (axiom_text_t *)axiom_node_get_data_element(
+            topic_node, env);
+        if (topic_text && axiom_text_get_value(topic_text , env))
+        {
+            topic_url = (axis2_char_t *)axiom_text_get_value(topic_text, env);
+            topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "Requested Topic:%s", topic);
+        }
+    }
+    else
+    {
+        AXIS2_ERROR_SET(env->error, 
+            AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST, AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Invalid XML in request");
+        return NULL;
+    }
+
     /* create the body of the subscribers element */
     ns = axiom_namespace_create (env, EVENTING_NAMESPACE, EVENTING_NS_PREFIX);
     ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
@@ -326,8 +369,6 @@ savan_subs_mgr_get_subscriber_list(
     for (hi = axutil_hash_first(subs_store, env); hi; hi =
         axutil_hash_next(env, hi))
     {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "subscribers not empty");
         void *val = NULL;
         savan_subscriber_t * subscriber = NULL;
         axutil_hash_this(hi, NULL, NULL, &val);
@@ -356,8 +397,27 @@ savan_subs_mgr_get_subscriber_list(
             const axis2_char_t *filter = NULL;
             const axis2_char_t *expires = NULL;
             axis2_char_t *id = NULL;
-            axis2_char_t *topic = NULL;
+            axis2_char_t *topic_url_l = NULL;
+            axis2_char_t *topic_l = NULL;
 
+            /* Check whether the subscriber has subscribed for the topic. 
+             * If so create the topic element */
+            topic_elem = axiom_element_create(env, subs_list_node, 
+                ELEM_NAME_TOPIC, ns1, &topic_node);
+            topic_url_l = savan_subscriber_get_topic(subscriber, env);
+            if(topic_url_l)
+            {
+                topic_l = savan_util_get_topic_name_from_topic_url(env, 
+                    topic_url_l);
+            }
+            if(0 == axutil_strcmp(topic, topic_l))
+            {
+                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Subscribers not empty for topic :%s", topic_url);
+                axiom_element_set_text(topic_elem, env, topic_url_l, topic_node); 
+            }
+            else
+                continue;
             axis2_endpoint_ref_t *endto_ref = savan_subscriber_get_end_to(subscriber, env);
             endto = axis2_endpoint_ref_get_address(endto_ref, env);
             axis2_endpoint_ref_t *notify_ref = savan_subscriber_get_notify_to(subscriber, env);
@@ -366,12 +426,7 @@ savan_subs_mgr_get_subscriber_list(
             expires = savan_subscriber_get_expires(subscriber, env);
             id = savan_subscriber_get_id(subscriber, env);
           
-            /* create the topic element */
-            topic_elem = axiom_element_create(env, subs_list_node, 
-                ELEM_NAME_TOPIC, ns1, &topic_node);
-            topic = savan_subscriber_get_topic(subscriber, env);
-            if(topic)
-                axiom_element_set_text(topic_elem, env, topic, topic_node); 
+
             /* create the subscriber element */
 
             sub_elem = axiom_element_create(env, subs_list_node, 
