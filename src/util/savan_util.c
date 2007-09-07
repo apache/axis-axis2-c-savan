@@ -883,13 +883,15 @@ build_subscriber_request_om_payload(
 static savan_subscriber_t *
 process_subscriber_node(
     const axutil_env_t *env,
-    axiom_node_t *sub_node)
+    axiom_node_t *node)
 {
+    axiom_node_t *sub_node = NULL;
     axiom_element_t *sub_elem = NULL;
     axutil_qname_t *qname = NULL;
     axis2_char_t *topic_url = NULL;
     savan_subscriber_t *subscriber = NULL;
 
+    sub_node = axiom_node_get_first_child(node, env);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] Start:process_subscriber_node");
     sub_elem = axiom_node_get_data_element(sub_node, env); 
@@ -922,8 +924,8 @@ process_subscriber_node(
         subscriber = savan_subscriber_create(env);
         if (!subscriber)
         {
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[SAVAN] Failed to create a"
-                "subscriber instance");
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Failed to create a subscriber instance");
             return NULL;
         }
         /* Now read each sub element of Subscribe element */
@@ -938,6 +940,8 @@ process_subscriber_node(
         axutil_qname_free(qname, env);
         id = axiom_element_get_text(id_elem, env, id_node);
         savan_subscriber_set_id(subscriber, env, id);
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Received subscriber id:%s", id);
 
         /* EndTo */
         qname = axutil_qname_create(env, ELEM_NAME_ENDTO, EVENTING_NAMESPACE, NULL);
@@ -962,6 +966,8 @@ process_subscriber_node(
             delivery_node, &notify_node);
         axutil_qname_free(qname, env);
         notify = axiom_element_get_text(notify_elem, env, notify_node);
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Received notify address:%s", notify);
 
         notify_epr = axis2_endpoint_ref_create(env, notify);
 

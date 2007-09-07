@@ -272,7 +272,6 @@ savan_subs_mgr_get_subscriber(
 
     axis2_svc_t *subs_svc = NULL;
     axutil_param_t *param = NULL;
-    axis2_char_t *topic_url = NULL;
     axutil_hash_t *subs_store = NULL;
     axiom_namespace_t *ns = NULL;
     axiom_namespace_t *ns1 = NULL;
@@ -363,7 +362,6 @@ savan_subs_mgr_get_subscriber(
     subscriber = axutil_hash_get(subs_store, subs_id, AXIS2_HASH_KEY_STRING);
     if (subscriber)
     {
-        axiom_node_t *topic_node = NULL;
         axiom_node_t *sub_node = NULL;
         axiom_node_t *endto_node = NULL;
         axiom_node_t *id_node = NULL;
@@ -373,7 +371,6 @@ savan_subs_mgr_get_subscriber(
         axiom_node_t *expires_node = NULL;
         axiom_element_t* sub_elem = NULL;
         axiom_element_t* id_elem = NULL;
-        axiom_element_t* topic_elem = NULL;
         axiom_element_t* endto_elem = NULL;
         axiom_element_t* delivery_elem = NULL;
         axiom_element_t* notify_elem = NULL;
@@ -385,13 +382,6 @@ savan_subs_mgr_get_subscriber(
         const axis2_char_t *expires = NULL;
         axis2_char_t *id = NULL;
 
-        topic_elem = axiom_element_create(env, subs_node, 
-            ELEM_NAME_TOPIC, ns1, &topic_node);
-        topic_url = savan_subscriber_get_topic(subscriber, env);
-        if(topic_url)
-        {
-            axiom_element_set_text(topic_elem, env, topic_url, topic_node); 
-        }
         axis2_endpoint_ref_t *endto_ref = savan_subscriber_get_end_to(subscriber, env);
         endto = axis2_endpoint_ref_get_address(endto_ref, env);
         axis2_endpoint_ref_t *notify_ref = savan_subscriber_get_notify_to(subscriber, env);
