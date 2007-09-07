@@ -113,6 +113,7 @@ savan_subs_mgr_init(
      */
     axutil_array_list_add(svc_skeleton->func_array, env, "add_subscriber");
     axutil_array_list_add(svc_skeleton->func_array, env, "remove_subscriber");
+    axutil_array_list_add(svc_skeleton->func_array, env, "get_subscriber");
     axutil_array_list_add(svc_skeleton->func_array, env, "get_subscriber_list");
     axutil_array_list_add(svc_skeleton->func_array, env, "add_topic");
     axutil_array_list_add(svc_skeleton->func_array, env, "get_topic_list");
@@ -213,6 +214,8 @@ savan_subs_mgr_invoke(
                 return savan_subs_mgr_add_subscriber(env, node, msg_ctx);
             if (axutil_strcmp(op_name, "remove_subscriber") == 0)
                 return savan_subs_mgr_remove_subscriber(env, node, msg_ctx);
+            if (axutil_strcmp(op_name, "get_subscriber") == 0)
+                return savan_subs_mgr_get_subscriber(env, node, msg_ctx);
             if (axutil_strcmp(op_name, "get_subscriber_list") == 0)
                 return savan_subs_mgr_get_subscriber_list(env, node, msg_ctx);
             if (axutil_strcmp(op_name, "get_topic_list") == 0)

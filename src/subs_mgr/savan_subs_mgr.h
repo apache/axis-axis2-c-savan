@@ -37,6 +37,12 @@ savan_subs_mgr_remove_subscriber(
     axis2_msg_ctx_t *msg_ctx);
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
+savan_subs_mgr_get_subscriber(
+    const axutil_env_t *env,
+    axiom_node_t *node,
+    axis2_msg_ctx_t *msg_ctx);
+
+AXIS2_EXTERN axiom_node_t *AXIS2_CALL
 savan_subs_mgr_get_subscriber_list(
     const axutil_env_t *env,
     axiom_node_t *node,

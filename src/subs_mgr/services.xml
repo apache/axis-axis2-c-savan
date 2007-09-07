@@ -14,6 +14,9 @@
            <!--messageReceiver class="axis2_receivers" /-->
            <parameter name="wsamapping" >http://ws.apache.org/axis2/c/subscription/remove_subscriber</parameter>
    </operation>
+   <operation name="get_subscriber">
+           <parameter name="wsamapping" >http://ws.apache.org/axis2/c/subscription/get_subscriber</parameter>
+   </operation>
    <operation name="get_subscriber_list">
            <!--messageReceiver class="axis2_receivers" /-->
            <parameter name="wsamapping" >http://ws.apache.org/axis2/c/subscription/get_subscriber_list</parameter>

@@ -372,7 +372,7 @@ savan_util_get_subscriber_from_msg(
             if(!subs_store_param)
             {
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                    "[SAVAN] No Topic found");
+                    "[SAVAN] No Subscriber found");
                 return NULL;
             }
             subs_store = axutil_param_get_value(subs_store_param, env);
