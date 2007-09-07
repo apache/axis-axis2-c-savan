@@ -61,6 +61,11 @@ build_remove_subscriber_om_payload(
     savan_subscriber_t *subscriber);
 
 static axiom_node_t *
+build_subscriber_request_om_payload(
+    const axutil_env_t *env,
+    axis2_char_t *subs_id);
+
+static axiom_node_t *
 build_subscribers_request_om_payload(
     const axutil_env_t *env,
     axis2_char_t *topic);
@@ -68,6 +73,11 @@ build_subscribers_request_om_payload(
 static axiom_node_t *
 build_topics_request_om_payload(
     const axutil_env_t *env);
+
+static savan_subscriber_t *
+process_subscriber_node(
+    const axutil_env_t *env,
+    axiom_node_t *sub_node);
 
 static axutil_hash_t *
 process_subscriber_list_node(
@@ -319,8 +329,10 @@ savan_util_get_subscriber_from_msg(
         axis2_msg_ctx_t *msg_ctx,
         axis2_char_t *sub_id)
 {
-    axutil_hash_t *store = NULL;
+    axutil_hash_t *subs_store = NULL;
     savan_subscriber_t *subscriber = NULL;
+    axutil_param_t *param = NULL;
+    axis2_svc_t *pubs_svc = NULL;
 
     AXIS2_ENV_CHECK(env, NULL);
 
@@ -332,15 +344,88 @@ savan_util_get_subscriber_from_msg(
     {
         sub_id = savan_util_get_subscription_id_from_msg(env, msg_ctx);
     }
-
-    store = savan_util_get_subscriber_store(env, msg_ctx);
-    if (!store)
+    pubs_svc = axis2_msg_ctx_get_svc(msg_ctx, env);
+    if (!pubs_svc)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Subscriber store is null"); 
+            "[SAVAN] Failed to extract the service"); 
         return NULL;
     }
-    subscriber = axutil_hash_get(store, sub_id, AXIS2_HASH_KEY_STRING);
+    param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrName");
+    if(param)
+    {
+        axis2_svc_t *subs_svc = NULL;
+        axis2_conf_ctx_t *conf_ctx = NULL;
+        axis2_conf_t *conf = NULL;
+        axutil_param_t *subs_store_param = NULL;
+        axis2_char_t *subs_svc_name = NULL;
+
+        subs_svc_name = axutil_param_get_value(param, env);
+        conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+        conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+        if(conf)
+            subs_svc = axis2_conf_get_svc(conf, env, subs_svc_name);
+        if(subs_svc)
+        {
+            subs_store_param = axis2_svc_get_param(subs_svc, env,
+                SAVAN_SUBSCRIBER_LIST);
+            if(!subs_store_param)
+            {
+                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+                    "[SAVAN] No Topic found");
+                return NULL;
+            }
+            subs_store = axutil_param_get_value(subs_store_param, env);
+            subscriber = axutil_hash_get(subs_store, sub_id, 
+                AXIS2_HASH_KEY_STRING);
+        }
+        else
+        {
+            axis2_char_t *subs_mgr_url = NULL;
+
+            param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
+            if(param)
+            {
+                axis2_svc_client_t* svc_client = NULL;
+                axutil_param_t *svc_client_param = NULL;
+                axis2_endpoint_ref_t *topic_epr = NULL;
+                axis2_char_t *topic_url = NULL;
+
+                subs_mgr_url = axutil_param_get_value(param, env);
+                topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
+                topic_url = (axis2_char_t *) axis2_endpoint_ref_get_address(
+                    topic_epr, env);
+                svc_client_param = axis2_svc_get_param(pubs_svc, env, "svc_client");
+                if(svc_client_param)
+                    svc_client = axutil_param_get_value(svc_client_param, env);
+                if(!svc_client)
+                {
+                    svc_client = 
+                        (axis2_svc_client_t *) savan_util_get_svc_client(env);
+                    svc_client_param = axutil_param_create(env, "svc_client", 
+                        svc_client);
+                    axis2_svc_add_param(pubs_svc, env, svc_client_param);
+                }
+                subscriber = savan_util_get_subscriber_from_remote_subs_mgr(env, 
+                    sub_id, subs_mgr_url, svc_client);
+            }
+        }
+    }
+    else
+    { 
+        param = axis2_svc_get_param(pubs_svc, env, SAVAN_SUBSCRIBER_LIST);
+        if (param)
+        {
+            subs_store = (axutil_hash_t*)axutil_param_get_value(param, env);
+        }
+        if (!subs_store)
+        {
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Subscriber store is null"); 
+            return NULL;
+        }
+        subscriber = axutil_hash_get(subs_store, sub_id, AXIS2_HASH_KEY_STRING);
+    }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] End:savan_util_get_subscriber_from_msg");
     
@@ -727,6 +812,186 @@ remove_subscriber_from_remote_subs_mgr(
     return AXIS2_SUCCESS;
 }
 
+savan_subscriber_t *AXIS2_CALL
+savan_util_get_subscriber_from_remote_subs_mgr(
+    const axutil_env_t *env,
+    axis2_char_t *subs_id,
+    axis2_char_t *subs_mgr_url,
+    void *s_client)
+{
+    axis2_endpoint_ref_t* endpoint_ref = NULL;
+    axis2_options_t *options = NULL;
+    axis2_svc_client_t* svc_client = NULL;
+    axiom_node_t *payload = NULL;
+    axiom_node_t *ret_node = NULL;
+    savan_subscriber_t *subscriber = NULL;
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[SAVAN] Start:savan_util_get_subscriber_from_remote_subs_mgr");
+    svc_client = (axis2_svc_client_t *) s_client;
+    options = (axis2_options_t *)axis2_svc_client_get_options(svc_client, 
+        env);
+    endpoint_ref = axis2_endpoint_ref_create(env, subs_mgr_url);
+    axis2_options_set_to(options, env, endpoint_ref);
+    
+    payload = build_subscriber_request_om_payload(env, subs_id);
+    ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
+    if (ret_node)
+    {
+        subscriber = process_subscriber_node(env, ret_node);
+    }
+    else
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Stub invoke FAILED: Error code:"
+            " %d :: %s", env->error->error_number,
+            AXIS2_ERROR_GET_MESSAGE(env->error));
+    }
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[SAVAN] End:savan_util_get_subscriber_from_remote_subs_mgr");
+    return subscriber;
+}
+
+static axiom_node_t *
+build_subscriber_request_om_payload(
+    const axutil_env_t *env,
+    axis2_char_t *subs_id)
+{
+    axiom_node_t *om_node = NULL;
+    axiom_element_t* om_ele = NULL;
+    axiom_node_t* subs_id_om_node = NULL;
+    axiom_element_t * subs_id_om_ele = NULL;
+    axiom_namespace_t *ns1 = NULL;
+    axis2_char_t *om_str = NULL;
+
+    ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
+    om_ele = axiom_element_create(env, NULL, ELEM_NAME_GET_SUBSCRIBER, ns1, &om_node);
+    subs_id_om_ele = axiom_element_create(env, om_node, ELEM_NAME_SUBSCRIBER_ID, ns1, 
+        &subs_id_om_node);
+    axiom_element_set_text(subs_id_om_ele, env, subs_id, subs_id_om_node);
+
+    om_str = axiom_node_to_string(om_node, env);
+    if (om_str)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "Sending OM : %s", om_str);
+        AXIS2_FREE(env->allocator, om_str);
+        om_str =  NULL;
+    }
+    return om_node;
+}
+
+static savan_subscriber_t *
+process_subscriber_node(
+    const axutil_env_t *env,
+    axiom_node_t *sub_node)
+{
+    axiom_element_t *sub_elem = NULL;
+    axutil_qname_t *qname = NULL;
+    axis2_char_t *topic_url = NULL;
+    savan_subscriber_t *subscriber = NULL;
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[SAVAN] Start:process_subscriber_node");
+    sub_elem = axiom_node_get_data_element(sub_node, env); 
+         
+    if(sub_node)
+    {
+        axiom_node_t *id_node = NULL;
+        axiom_node_t *endto_node = NULL;
+        axiom_node_t *delivery_node = NULL;
+        axiom_node_t *notify_node = NULL;
+        axiom_node_t *filter_node = NULL;
+        axiom_node_t *expires_node = NULL;
+
+        axiom_element_t *id_elem = NULL;
+        axiom_element_t *endto_elem = NULL;
+        axiom_element_t *delivery_elem = NULL;
+        axiom_element_t *notify_elem = NULL;
+        axiom_element_t *expires_elem = NULL;
+        axiom_element_t *filter_elem = NULL;
+
+        axis2_char_t *id = NULL;
+        axis2_char_t *endto = NULL;
+        axis2_char_t *notify = NULL;
+        axis2_char_t *expires = NULL;
+        axis2_char_t *filter = NULL;
+
+        axis2_endpoint_ref_t *endto_epr = NULL;
+        axis2_endpoint_ref_t *notify_epr = NULL;
+     
+        subscriber = savan_subscriber_create(env);
+        if (!subscriber)
+        {
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[SAVAN] Failed to create a"
+                "subscriber instance");
+            return NULL;
+        }
+        /* Now read each sub element of Subscribe element */
+
+        /* Topic */
+        savan_subscriber_set_topic(subscriber, env, topic_url);
+
+        /* Id */
+        qname = axutil_qname_create(env, ELEM_NAME_ID, SAVAN_NAMESPACE, NULL);
+        id_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &id_node);
+        axutil_qname_free(qname, env);
+        id = axiom_element_get_text(id_elem, env, id_node);
+        savan_subscriber_set_id(subscriber, env, id);
+
+        /* EndTo */
+        qname = axutil_qname_create(env, ELEM_NAME_ENDTO, EVENTING_NAMESPACE, NULL);
+        endto_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &endto_node);
+        axutil_qname_free(qname, env);
+
+        endto = axiom_element_get_text(endto_elem, env, endto_node);
+
+        endto_epr = axis2_endpoint_ref_create(env, endto);
+
+        savan_subscriber_set_end_to(subscriber, env, endto_epr);
+
+        /* Get Delivery element and read NotifyTo */
+        qname = axutil_qname_create(env, ELEM_NAME_DELIVERY, EVENTING_NAMESPACE, NULL);
+        delivery_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &delivery_node);
+        axutil_qname_free(qname, env);
+
+        qname = axutil_qname_create(env, ELEM_NAME_NOTIFYTO, EVENTING_NAMESPACE, NULL);
+        notify_elem = axiom_element_get_first_child_with_qname(delivery_elem, env, qname,
+            delivery_node, &notify_node);
+        axutil_qname_free(qname, env);
+        notify = axiom_element_get_text(notify_elem, env, notify_node);
+
+        notify_epr = axis2_endpoint_ref_create(env, notify);
+
+        savan_subscriber_set_notify_to(subscriber, env, notify_epr);
+
+        /* Expires */
+        qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, NULL);
+        expires_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &expires_node);
+        axutil_qname_free(qname, env);
+
+        expires = axiom_element_get_text(expires_elem, env, expires_node);
+
+        savan_subscriber_set_expires(subscriber, env, expires);
+
+        /* Filter */
+        qname = axutil_qname_create(env, ELEM_NAME_FILTER, EVENTING_NAMESPACE, NULL);
+        filter_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &filter_node);
+        axutil_qname_free(qname, env);
+
+        filter = axiom_element_get_text(filter_elem, env, filter_node);
+
+        savan_subscriber_set_filter(subscriber, env, filter);
+    }
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[SAVAN] End:process_subscriber_node");
+    return subscriber;
+}
+
 axutil_hash_t *AXIS2_CALL
 savan_util_get_subscriber_list_from_remote_subs_mgr(
     const axutil_env_t *env,
@@ -774,11 +1039,17 @@ build_subscribers_request_om_payload(
 {
     axiom_node_t *om_node = NULL;
     axiom_element_t* om_ele = NULL;
+    axiom_node_t* topic_om_node = NULL;
+    axiom_element_t * topic_om_ele = NULL;
     axiom_namespace_t *ns1 = NULL;
     axis2_char_t *om_str = NULL;
 
     ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
     om_ele = axiom_element_create(env, NULL, ELEM_NAME_GET_SUBSCRIBER_LIST, ns1, &om_node);
+    topic_om_ele = axiom_element_create(env, om_node, ELEM_NAME_TOPIC, ns1, 
+        &topic_om_node);
+    axiom_element_set_text(topic_om_ele, env, topic, topic_om_node);
+
     om_str = axiom_node_to_string(om_node, env);
     if (om_str)
     {

@@ -212,6 +212,13 @@ extern "C"
         axis2_char_t *subs_mgr_url,
         void *s_client);
 
+    savan_subscriber_t *AXIS2_CALL
+    savan_util_get_subscriber_from_remote_subs_mgr(
+        const axutil_env_t *env,
+        axis2_char_t *subs_id,
+        axis2_char_t *subs_mgr_url,
+        void *s_client);
+
     void *AXIS2_CALL
     savan_util_get_svc_client(
         const axutil_env_t *env);

@@ -2,6 +2,7 @@
    <description>
         This is a subscription manager service
    </description>
+    <module ref="savan"/>
     <parameter name="ServiceClass" locked="xsd:false">subscription</parameter>
     <parameter name="loadServiceAtStartup" locked="xsd:false">true</parameter>
 
