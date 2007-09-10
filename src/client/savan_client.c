@@ -100,11 +100,13 @@ savan_client_subscribe(
     axis2_char_t *endto = NULL;
     axis2_char_t *notify = NULL;
     axis2_char_t *filter = NULL;
+    axis2_char_t *filter_dialect = NULL;
     axis2_char_t *expires = NULL;
     axiom_element_t *body_elem = NULL;
     axis2_char_t *sub_id = NULL;
     axis2_char_t *sub_url = NULL;
     axis2_char_t *sub_elem_local_name = NULL;
+	axiom_attribute_t *dialect = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] Start:savan_client_subscribe");
@@ -118,6 +120,7 @@ savan_client_subscribe(
     endto = axutil_hash_get(options, SAVAN_OP_KEY_ENDTO_EPR, AXIS2_HASH_KEY_STRING);
     notify = axutil_hash_get(options, SAVAN_OP_KEY_NOTIFY_EPR, AXIS2_HASH_KEY_STRING);
     filter = axutil_hash_get(options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING);
+    filter_dialect = axutil_hash_get(options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING);
     expires = axutil_hash_get(options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING);
     
     /* create the body of the Subscribe request */
@@ -145,6 +148,19 @@ savan_client_subscribe(
     filter_elem = axiom_element_create(env, sub_node, ELEM_NAME_FILTER, ns,
         &filter_node);
     axiom_element_set_text(filter_elem, env, filter, filter_node);
+
+	if(filter_dialect == NULL) 
+	{
+		dialect = axiom_attribute_create(env, 
+			"Dialect", DEFAULT_FILTER_DIALECT, NULL);
+	}
+	else
+	{
+		dialect = axiom_attribute_create(env,
+			"Dialect", filter_dialect, NULL);
+	}
+
+	axiom_element_add_attribute(filter_elem, env, dialect ,filter_node);
     
     /* send the Subscription and wait for the response */
     reply = axis2_svc_client_send_receive(svc_client, env, sub_node);

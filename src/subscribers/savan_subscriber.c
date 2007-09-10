@@ -21,8 +21,11 @@
 #include <axis2_svc_client.h>
 
 #include <savan_subscriber.h>
+#include <savan_util.h>
 
-/*#include <libxslt/xsltutils.h>*/
+#ifdef SAVAN_FILTERING
+#include <libxslt/xsltutils.h>
+#endif
 
 struct savan_subscriber_t
 {
@@ -34,7 +37,11 @@ struct savan_subscriber_t
     axis2_char_t *filter;
     axis2_char_t *topic;
     axis2_bool_t renewed;
-    /*xsltStylesheetPtr xslt_filter;*/
+	axis2_char_t *filter_dialect;
+
+	#ifdef SAVAN_FILTERING
+    xsltStylesheetPtr xslt_filter;
+	#endif
 };
 
 /*****************************************************************************/
@@ -61,9 +68,12 @@ savan_subscriber_create(
     subscriber->delivery_mode = NULL;
     subscriber->expires = NULL;
     subscriber->filter = NULL;
+    subscriber->filter_dialect = NULL;
     subscriber->topic = NULL;
     subscriber->renewed = AXIS2_FALSE;
-	/*subscriber->xslt_filter = NULL;*/
+	#ifdef SAVAN_FILTERING
+	subscriber->xslt_filter = NULL;
+	#endif
         
     return subscriber;
 }
@@ -83,26 +93,34 @@ savan_subscriber_free(
         AXIS2_FREE(env->allocator, subscriber->filter);
     if(subscriber->topic)
         AXIS2_FREE(env->allocator, subscriber->topic);
-    /*if(subscriber->xslt_filter)
-        AXIS2_FREE(env->allocator, subscriber->xslt_filter);*/
+	#ifdef SAVAN_FILTERING
+    if(subscriber->xslt_filter)
+        AXIS2_FREE(env->allocator, subscriber->xslt_filter);
+	#endif
+    if(subscriber->filter_dialect)
+        AXIS2_FREE(env->allocator, subscriber->filter_dialect);
     AXIS2_FREE(env->allocator, subscriber);
 }
 
 /******************************************************************************/
 
-/*void* AXIS2_CALL
+void* AXIS2_CALL
 savan_subscriber_get_filter_template(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env)
 {
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
+	#ifdef SAVAN_FILTERING
     return subscriber->xslt_filter;
-}*/
+	#else
+	return NULL;
+	#endif
+}
 
 /******************************************************************************/
 
-/*axis2_status_t AXIS2_CALL
+axis2_status_t AXIS2_CALL
 savan_subscriber_set_filter_template(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
@@ -115,14 +133,16 @@ savan_subscriber_set_filter_template(
 		return AXIS2_SUCCESS;
 	}
 
+	#ifdef SAVAN_FILTERING
     if (subscriber->xslt_filter != NULL)
     {
         AXIS2_FREE(env->allocator, subscriber->filter);
         subscriber->xslt_filter = NULL;
     }
     subscriber->xslt_filter = (xsltStylesheetPtr)xslt_filter_template;
+	#endif
     return AXIS2_SUCCESS;
-}*/
+}
 
 /******************************************************************************/
 
@@ -162,6 +182,36 @@ savan_subscriber_set_id(
 /******************************************************************************/
 
 axis2_status_t AXIS2_CALL
+savan_subscriber_set_filter_dialect
+	(savan_subscriber_t *subscriber,
+	const axutil_env_t *env,
+	const axis2_char_t *filter_dialect)
+{
+    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
+	
+	if(subscriber->filter_dialect != NULL)
+	{
+		AXIS2_FREE(env->allocator, subscriber->filter_dialect);
+		subscriber->filter_dialect = NULL;
+	}
+
+	subscriber->filter_dialect = axutil_strdup(env, filter_dialect);
+	return AXIS2_SUCCESS;
+}
+
+/******************************************************************************/
+
+axis2_char_t * AXIS2_CALL
+savan_subscriber_get_filter_dialect(
+	savan_subscriber_t *subscriber,
+	const axutil_env_t *env)
+{
+	return subscriber->filter_dialect;
+}
+
+/******************************************************************************/
+
+axis2_status_t AXIS2_CALL
 savan_subscriber_set_end_to(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
@@ -173,6 +223,8 @@ savan_subscriber_set_end_to(
 
     return AXIS2_SUCCESS;
 }
+
+/******************************************************************************/
 
 axis2_endpoint_ref_t *AXIS2_CALL
 savan_subscriber_get_end_to(
@@ -197,6 +249,8 @@ savan_subscriber_set_notify_to(
     return AXIS2_SUCCESS;
 }    
             
+/******************************************************************************/
+
 axis2_endpoint_ref_t *AXIS2_CALL
 savan_subscriber_get_notify_to(
     savan_subscriber_t *subscriber,
@@ -228,6 +282,18 @@ savan_subscriber_set_delivery_mode(
     return AXIS2_SUCCESS;
 }    
             
+/******************************************************************************/
+
+axis2_char_t * AXIS2_CALL
+savan_subscriber_get_delivery_mode(
+	savan_subscriber_t *subscriber,
+	const axutil_env_t *env)
+{
+    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
+
+	return subscriber->delivery_mode;
+}
+
 /******************************************************************************/
 
 axis2_status_t AXIS2_CALL
@@ -322,15 +388,22 @@ savan_subscriber_publish(
     axis2_options_set_to(options, env, to);
     axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
 
-	/* Apply the filter to the payload */
-	/*payload = (axiom_node_t*)savan_util_apply_filter(subscriber, env, payload);*/
+	/* Apply the filter, and check whether it evaluates to success */
 
+	#ifdef SAVAN_FILTERING
+	if (savan_util_apply_filter(subscriber, env, payload) == AXIS2_FAILURE)
+	{
+		return AXIS2_SUCCESS;
+	}
+	#endif
+	
     /* Set service client options */
     axis2_svc_client_set_options(svc_client, env, options);
     axis2_svc_client_send_robust(svc_client, env, payload);
 
     if(svc_client)
         axis2_svc_client_free(svc_client, env);
+
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] End:savan_subscriber_publish");
     return status;

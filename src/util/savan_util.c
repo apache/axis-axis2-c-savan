@@ -17,26 +17,29 @@
 #include <axis2_msg_info_headers.h>
 #include <axis2_options.h>
 #include <axis2_svc_client.h>
+#include <axis2_engine.h>
+#include <axis2_core_utils.h>
 #include <axis2_endpoint_ref.h>
 #include <platforms/axutil_platform_auto_sense.h>
 #include <axiom_soap.h>
+#include <axiom_soap_const.h>
+#include <axiom_soap_envelope.h>
 
 #include <savan_util.h>
+#include <savan_msg_recv.h>
 #include <savan_error.h>
-/*#include <libxslt/xsltutils.h>*/
+#ifdef SAVAN_FILTERING
+#include <libxslt/xsltutils.h>
+#endif
 
 /******************************************************************************/
 
-/*axis2_status_t
+#ifdef SAVAN_FILTERING
+axis2_status_t
 savan_util_update_filter_template(
     xmlNodeSetPtr nodes,
-    const xmlChar* value);*/
-
-axiom_node_t*
-savan_util_create_fault_msg(axis2_char_t *code,
-    axis2_char_t* subcode, axis2_char_t *reason,
-    axis2_char_t* details,
-    const axutil_env_t *env);
+    const xmlChar* value);
+#endif
 
 static axis2_status_t
 add_subscriber_to_remote_subs_mgr(
@@ -89,7 +92,59 @@ process_topic_list_node(
     const axutil_env_t *env,
     axiom_node_t *subs_list_node);
 
-/*axis2_status_t AXIS2_CALL
+/*
+axis2_status_t AXIS2_CALL
+savan_util_send_invalid_subscription_info_failure(
+	const axutil_env_t *env,
+	axis2_msg_ctx_t *msg_ctx)
+    */
+
+axis2_status_t AXIS2_CALL
+savan_util_create_fault_envelope(
+    axis2_msg_ctx_t *msg_ctx,
+    const axutil_env_t *env,
+    axis2_char_t *code,
+    axis2_char_t *subcode,
+    axis2_char_t *reason,
+    axis2_char_t *detail)
+{
+
+    axiom_soap_envelope_t *envelope = NULL;
+    /*axiom_node_t* detail_om_node = NULL;
+    axiom_element_t * detail_om_ele = NULL;
+    axis2_msg_info_headers_t* info_header = NULL;
+    int soap_version = AXIOM_SOAP12;
+    axutil_array_list_t *sub_codes = NULL;
+    axiom_namespace_t *soap_ns = NULL;
+    axiom_namespace_t *ns1 = NULL;*/
+    axiom_soap_body_t *body = NULL;
+    axiom_node_t *body_node = NULL;
+    axiom_node_t *fault_node = NULL;
+
+
+    fault_node = savan_util_build_fault_msg(env, code, subcode, reason, detail);
+    envelope = axiom_soap_envelope_create_default_soap_envelope(env,
+        AXIOM_SOAP12);
+
+    /*info_header =  axis2_msg_ctx_get_msg_info_headers(msg_ctx, env);
+    axis2_msg_info_headers_set_action(info_header, env, SAVAN_ACTIONS_FAULT);
+
+    axis2_msg_ctx_set_msg_info_headers(msg_ctx, env, info_header);*/
+
+    body = axiom_soap_envelope_get_body(envelope, env);
+    body_node = axiom_soap_body_get_base_node(body, env);
+
+    fault_node = savan_util_build_fault_msg(env, code,
+        subcode, reason, detail);
+
+    axiom_node_add_child(body_node , env, fault_node);
+    axis2_msg_ctx_set_fault_soap_envelope(msg_ctx, env, envelope);
+
+    return AXIS2_SUCCESS;
+}
+
+#ifdef SAVAN_FILTERING
+axis2_status_t AXIS2_CALL
 savan_util_set_filter_template_for_subscriber(
     savan_subscriber_t *subscriber,
     savan_sub_processor_t *sub_processor,
@@ -118,9 +173,11 @@ savan_util_set_filter_template_for_subscriber(
 	xmlXPathFreeContext(xpathCtx);
 
     return AXIS2_SUCCESS;
-}*/
+}
+#endif
 
-/*axiom_node_t * AXIS2_CALL
+#ifdef SAVAN_FILTERING
+axis2_status_t AXIS2_CALL
 savan_util_apply_filter(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
@@ -134,7 +191,7 @@ savan_util_apply_filter(
 
 	if(savan_subscriber_get_filter(subscriber, env) == NULL)
 	{
-		return payload;
+		return AXIS2_SUCCESS;
 	}
 
     payload_string = axiom_node_to_string(payload, env);
@@ -158,20 +215,22 @@ savan_util_apply_filter(
 		env);
     axiom_node_t *node = axiom_document_build_all(document, env);
 
-	if(node == NULL)
-	{
-		node = savan_util_create_fault_msg("CODE", "FilteringRequestedUnavailabe", 
-			"Requested Filter dialect is not supported", "DETAILS", env);
-	}
-
     axiom_stax_builder_free_self(om_builder, env);
-	axiom_node_free_tree(payload, env);
     free(payload_string);
 	xmlFreeDoc(result_doc);
 
-    return node;
+	if(node == NULL)
+	{
+		return AXIS2_FAILURE;
+	}
+	else
+	{
+		return AXIS2_SUCCESS;
+	}
 }
+#endif
 
+#ifdef SAVAN_FILTERING
 axis2_status_t 
 savan_util_update_filter_template(
     xmlNodeSetPtr nodes,
@@ -187,35 +246,52 @@ savan_util_update_filter_template(
         	nodes->nodeTab[i] = NULL;
     }
     return AXIS2_SUCCESS;
-}*/
+}
+#endif
 
-axiom_node_t*
-savan_util_create_fault_msg(axis2_char_t *code,
-    axis2_char_t* subcode, axis2_char_t *reason,
-	axis2_char_t* details,
-	const axutil_env_t *env)
+axiom_node_t * AXIS2_CALL
+savan_util_build_fault_msg(
+    const axutil_env_t *env,
+    axis2_char_t * code,
+    axis2_char_t * subcode,
+    axis2_char_t * reason,
+    axis2_char_t * detail)
 {
     axiom_node_t *fault_node = NULL;
     axiom_element_t *fault_ele = NULL;
-    axiom_node_t *fault_reason_node = NULL;
-    axiom_element_t *fault_reason_ele = NULL;
-    axiom_node_t *fault_code_node = NULL;
-    axiom_element_t *fault_code_ele = NULL;
-
-	/*
-    axiom_node_t *fault_subcode_node = NULL;
-    axiom_element_t *fault_subcode_ele = NULL;
-    axiom_node_t *fault_details_node = NULL;
-    axiom_element_t *fault_details_ele = NULL;
-	*/
+    axiom_node_t *code_node = NULL;
+    axiom_element_t *code_ele = NULL;
+    axiom_node_t *code_value_node = NULL;
+    axiom_element_t *code_value_ele = NULL;
+    axiom_node_t *sub_code_node = NULL;
+    axiom_element_t *sub_code_ele = NULL;
+    axiom_node_t *sub_code_value_node = NULL;
+    axiom_element_t *sub_code_value_ele = NULL;
+    axiom_node_t *reason_node = NULL;
+    axiom_element_t *reason_ele = NULL;
+    axiom_node_t *reason_text_node = NULL;
+    axiom_element_t *reason_text_ele = NULL;
+    axiom_node_t *detail_node = NULL;
+    axiom_element_t *detail_ele = NULL;
 
     fault_ele = axiom_element_create(env, NULL, "Fault", NULL, &fault_node);
-	fault_code_ele = axiom_element_create(env, fault_node, "faultcode", 
-		NULL, &fault_code_node);
-    axiom_element_set_text(fault_code_ele, env, subcode, fault_code_node);
-	fault_reason_ele = axiom_element_create(env, fault_node, "faultstring", 
-		NULL, &fault_reason_node);
-    axiom_element_set_text(fault_reason_ele, env, reason, fault_reason_node);
+
+   	code_ele = axiom_element_create(env, fault_node, "Code",
+        NULL, &code_node);
+	code_value_ele = axiom_element_create(env, 
+		code_node, "Value", NULL, &code_value_node);
+   	axiom_element_set_text(code_value_ele, env, code, code_value_node);
+	sub_code_ele = axiom_element_create(env, 
+		code_node, "Subcode", NULL, &sub_code_node);
+	sub_code_value_ele = axiom_element_create(env, 
+		sub_code_node, "Value", NULL, &sub_code_value_node);
+   	axiom_element_set_text(sub_code_value_ele, env, subcode, sub_code_value_node);
+	reason_ele = axiom_element_create(env, fault_node, "Reason", NULL, &reason_node);
+	reason_text_ele = axiom_element_create(env, 
+		reason_node, "Text", NULL, &reason_text_node);
+	axiom_element_set_text(reason_text_ele, env, reason, reason_text_node);
+	detail_ele = axiom_element_create(env, fault_node, "Detail", NULL, &detail_node);	
+	axiom_element_set_text(detail_ele, env, detail, detail_node);
     return fault_node;
 }
 

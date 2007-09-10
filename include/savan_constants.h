@@ -62,6 +62,7 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_ACTIONS_RENEW_RESPONSE "http://schemas.xmlsoap.org/ws/2004/08/eventing/RenewResponse"
 #define SAVAN_ACTIONS_GET_STATUS "http://schemas.xmlsoap.org/ws/2004/08/eventing/GetStatus"
 #define SAVAN_ACTIONS_GET_STATUS_RESPONSE "http://schemas.xmlsoap.org/ws/2004/08/eventing/GetStatusResponse"
+#define SAVAN_ACTIONS_FAULT "http://schemas.xmlsoap.org/ws/2004/08/addressing/fault"
 
 #define EVENTING_NAMESPACE "http://schemas.xmlsoap.org/ws/2004/08/eventing"
 #define EVENTING_NS_PREFIX "wse"
@@ -81,6 +82,7 @@ typedef struct savan_subs_mgr_info
 #define ELEM_NAME_ADD_TOPIC "AddTopic"
 #define ELEM_NAME_REMOVE_TOPIC "RemoveTopic"
 #define DEFAULT_DELIVERY_MODE "http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push"
+#define DEFAULT_FILTER_DIALECT "http://www.w3.org/TR/1999/REC-xpath-19991116"
 
 /* Eventing element names */
 #define ELEM_NAME_SUBSCRIBE             "Subscribe"
@@ -109,6 +111,8 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_OP_KEY_SUB_ID         "savan_op_key_sub_id"
 #define SAVAN_OP_KEY_EXPIRES        "savan_op_key_expires"
 #define SAVAN_OP_KEY_FILTER         "savan_op_key_filter"
+#define SAVAN_OP_KEY_FILTER_DIALECT "savan_op_key_filter_dialect"
+
 
 #define SAVAN_KEY_SUB_ID            "savan_key_subscriber_id"
 #define SAVAN_SUBSCRIBER_LIST       "savan_subs_list"

@@ -7,7 +7,8 @@ libmod_savan_la_SOURCES = mod_savan.c savan_sub_processor.c
 INCLUDES = -I$(top_builddir)/include \
 		@AXIOMINC@ \
 		@UTILINC@ \
-		@AXIS2INC@ 
+		@AXIS2INC@ \
+		@NEETHIINC@
 
 libmod_savan_la_LIBADD = ../client/libsavan_client.la\
                         ../handlers/libsavan_handlers.la\

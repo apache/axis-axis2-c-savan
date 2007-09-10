@@ -81,7 +81,7 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     
     AXIS2_ENV_CHECK( env, AXIS2_FAILURE);
     AXIS2_PARAM_CHECK(env->error, msg_ctx, AXIS2_FAILURE);
-    
+
     svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
     if (svc)
         svc_name = axis2_svc_get_name(svc, env);
@@ -113,8 +113,16 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     /* now call the appropriate method of the subscription processor */
     if (msg_type == SAVAN_MSG_TYPE_SUB)
     {
-        from_client = AXIS2_TRUE;
-        savan_sub_processor_subscribe(processor, env, msg_ctx);
+        if(savan_sub_processor_subscribe(processor, env, msg_ctx) 
+			== AXIS2_FAILURE)
+		{
+        	from_client = AXIS2_FAILURE;
+            return AXIS2_FAILURE;
+		}
+		else
+		{
+        	from_client = AXIS2_TRUE;
+		}
     }
     else if (msg_type == SAVAN_MSG_TYPE_UNSUB)
     {
@@ -123,8 +131,16 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     }
     else if (msg_type == SAVAN_MSG_TYPE_RENEW)
     {
-        from_client = AXIS2_TRUE;
-        savan_sub_processor_renew_subscription(processor, env, msg_ctx);
+        if(savan_sub_processor_renew_subscription(processor, 
+			env, msg_ctx) == AXIS2_FAILURE)
+		{
+        	from_client = AXIS2_FAILURE;
+            return AXIS2_FAILURE;
+		}
+		else
+		{
+        	from_client = AXIS2_TRUE;
+		}
     }
     else if (msg_type == SAVAN_MSG_TYPE_GET_STATUS)
     {

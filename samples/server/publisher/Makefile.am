@@ -7,13 +7,11 @@ SUBDIRS =
 
 libpublisher_la_SOURCES = publisher.c publisher_skeleton.c
 
-libpublisher_la_LIBADD  = $(top_builddir)/src/client/libsavan_client.la
+libpublisher_la_LIBADD  = -L$(AXIS2C_HOME)/lib -lsavan_client
 
-INCLUDES =  -I$(AXIS2C_HOME)/include \
+INCLUDES =  -I$(AXIS2C_HOME)/include/axis2-1.1 \
 		    -I$(top_builddir)/include \
-		    	@AXIOMINC@ \
 		    	@AXIS2INC@ \
-		    	@UTILINC@ \
-		    	@NEETHIINC@ 
+				@SAVANINC@
 
 EXTRA_DIST=services.xml

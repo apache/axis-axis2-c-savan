@@ -90,6 +90,12 @@ int main(int argc, char** argv)
     axutil_hash_set(savan_options, SAVAN_OP_KEY_NOTIFY_EPR, AXIS2_HASH_KEY_STRING,
         "http://localhost:9090/axis2/services/listener");
 
+    /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
+        "//test3[@data='5']");
+
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
+        DEFAULT_FILTER_DIALECT);*/
+
     /* Create a savan client */
     savan_client = savan_client_create(env);
 
@@ -101,12 +107,17 @@ int main(int argc, char** argv)
         printf("Subscribe successful\n");
         printf("Subscription ID: %s\n", savan_client_get_sub_id(savan_client));
     }
+    else
+    {
+        printf("Subscription failed\n");
+        exit(0);
+    }
 
-    AXIS2_SLEEP(2);
+    AXIS2_SLEEP(5);
+
 
     printf("\n***************************************\n");
     printf("Renewing subscription...\n");
-    /* Set end point reference for assigned subscription manager */
     address = savan_client_get_sub_url(savan_client);
     printf("address:%s\n", address); 
     endpoint_ref = axis2_options_get_to(options, env);
@@ -121,7 +132,6 @@ int main(int argc, char** argv)
 
     printf("\n***************************************\n");
     printf("Getting status of subscription...\n");
-    /* Set end point reference for assigned subscription manager */
     address = savan_client_get_sub_url(savan_client);
     endpoint_ref = axis2_options_get_to(options, env);
     axis2_endpoint_ref_set_address(endpoint_ref, env, address);
@@ -132,11 +142,8 @@ int main(int argc, char** argv)
         printf("GetStatus successful\n");
     }
 
-    AXIS2_SLEEP(5);
-
     printf("\n***************************************\n");
     printf("Unsubscribing...\n");
-    /* Set end point reference for assigned subscription manager */
     address = savan_client_get_sub_url(savan_client);
     endpoint_ref = axis2_options_get_to(options, env);
     axis2_endpoint_ref_set_address(endpoint_ref, env, address);
@@ -146,6 +153,7 @@ int main(int argc, char** argv)
     {
         printf("Unsubscribe successful\n");
     }
+
 
     if (svc_client)
     {

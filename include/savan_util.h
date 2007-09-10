@@ -42,20 +42,79 @@ extern "C"
  */
 
 	/**
+     * Create the fault envelope, to be sent
+     * to the client.
+     * @param msg_ctx msg context
+     * @param env environment
+     * @param code, fault code
+     * @param subcode, fault sub code
+     * @param reason, fault reason
+     * @param detail, fault deails.
+	*/
+
+	axis2_status_t AXIS2_CALL
+	savan_create_fault_envelope(
+    	axis2_msg_ctx_t *msg_ctx,
+    	const axutil_env_t *env,
+        axis2_char_t *code,
+        axis2_char_t *subcode,
+        axis2_char_t *reason,
+        axis2_char_t *detail);
+
+	/**
+ 	* Build a savan fault message and send.
+ 	* @param env, pointer to the environment
+ 	* @param code, SOAP12:Sender
+ 	* @param subcode, fault subcode
+ 	* @param reason, fault reason
+ 	* @param detail, details about fault,
+ 	* and solution to avoid.
+ 	*/ 
+
+    /*
+	int AXIS2_CALL
+	savan_util_send_fault_notification(
+    	savan_subscriber_t *subscriber,
+    	const axutil_env_t *env,
+    	axis2_char_t * code,
+    	axis2_char_t * subcode,
+    	axis2_char_t * reason,
+    	axis2_char_t * detail);
+    */
+
+	/**
+ 	* Build a savan fault message
+ 	* @param env, pointer to the environment
+ 	* @param code, SOAP12:Sender
+ 	* @param subcode, fault subcode
+ 	* @param reason, fault reason
+ 	* @param detail, details about fault,
+ 	* and solution to avoid.
+ 	*/ 
+
+	axiom_node_t * AXIS2_CALL
+	savan_util_build_fault_msg(
+		const axutil_env_t *env,
+		axis2_char_t * code,
+		axis2_char_t * subcode,
+		axis2_char_t * reason,
+		axis2_char_t * detail);
+
+	/**
  	* Apply the filter against the subscriber
  	* @param subscriber, pointer to the subscriber
  	* @param env, pointer to the environment
  	* @param payload, pointer to the payload.
- 	* returns the payload, after applying the 
- 	* filter.
- 	* returns success, upon successful application 
- 	* of the filter. 
+ 	* returns true, if it evaluates to success. 
+ 	* If so, send the entire msg into the sink.
+ 	* Else nothing is sent.
  	*/ 
-	/*axiom_node_t * AXIS2_CALL
+
+	axis2_status_t AXIS2_CALL
 	savan_util_apply_filter(
     	savan_subscriber_t *subscriber,
     	const axutil_env_t *env,
-    	axiom_node_t *payload);*/
+    	axiom_node_t *payload);
 
 	/**
  	* Set the filter template for the subscriber
@@ -65,11 +124,14 @@ extern "C"
  	* @param env, pointer to the environment.
  	* returns success, if operation is successful.
  	*/
-    /*axis2_status_t AXIS2_CALL
+
+    #ifdef SAVAN_FILTERING
+    axis2_status_t AXIS2_CALL
     savan_util_set_filter_template_for_subscriber(
         savan_subscriber_t *subscriber,
         savan_sub_processor_t *sub_processor,
-        const axutil_env_t *env);*/
+        const axutil_env_t *env);
+    #endif
 
     savan_message_types_t AXIS2_CALL
     savan_util_get_message_type(
@@ -83,6 +145,7 @@ extern "C"
     * @param msg_ctx pointer to message context
     * @return the ID on success, else NULL
     */
+
     axis2_char_t * AXIS2_CALL
     savan_util_get_subscription_id_from_msg(
         const axutil_env_t *env,
@@ -96,6 +159,7 @@ extern "C"
     * @param sub_id pointer to subscription id 
     * @return a pointer to subscriber on success, else NULL
     */
+
     savan_subscriber_t * AXIS2_CALL
     savan_util_get_subscriber_from_msg(
         const axutil_env_t *env,
@@ -111,6 +175,7 @@ extern "C"
     * @param msg_ctx pointer to message context
     * @return the store on success, else NULL
     */
+
     axutil_hash_t * AXIS2_CALL
     savan_util_get_subscriber_store(
         const axutil_env_t *env,
@@ -126,6 +191,7 @@ extern "C"
     * @param subscriber
     * @return the store on success, else NULL
     */
+
     axis2_status_t AXIS2_CALL
     savan_util_add_subscriber(
         const axutil_env_t *env,
@@ -142,6 +208,7 @@ extern "C"
     * @param subscriber
     * @return the store on success, else NULL
     */
+
     axis2_status_t AXIS2_CALL
     savan_util_remove_subscriber(
         const axutil_env_t *env,
@@ -153,6 +220,7 @@ extern "C"
     * @param env pointer to environment struct
     * @return the expiry time on success, else NULL
     */
+
     axis2_char_t * AXIS2_CALL
     savan_util_get_expiry_time(
         const axutil_env_t *env);

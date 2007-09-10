@@ -39,6 +39,39 @@ extern "C"
 
     typedef struct savan_subscriber_t savan_subscriber_t;
 
+	/* Set the filter dialect
+	 * @param subscriber pointer to the subscriber
+	 * @param env pointer to the environment
+	 * @param filter_dailect pointer to the dialect
+	 */
+
+	axis2_status_t AXIS2_CALL
+	savan_subscriber_set_filter_dialect(
+		savan_subscriber_t *subscriber,
+    	const axutil_env_t *env,
+    	const axis2_char_t *filter_dialect);
+
+	/* Get the filter dialect
+	 * @param subscriber pointer to the filter dialect
+	 * @param env pointer to the enviornment
+	 */
+
+	axis2_char_t * AXIS2_CALL
+	savan_subscriber_get_filter_dialect(
+		savan_subscriber_t *subscriber,
+    	const axutil_env_t *env);
+
+	/*
+	* Get the delivery mode
+	* @param subscriber pointer to the subscriber
+	* @param env pointer to the environment
+	*/ 
+
+	axis2_char_t * AXIS2_CALL
+		savan_subscriber_get_delivery_mode(
+    	savan_subscriber_t *subscriber,
+    	const axutil_env_t *env);
+
 	/*
  	* Set the filter template into the subscriber.
  	* @param subscriber pointer to the subscriber

@@ -6,19 +6,16 @@ subscriber_SOURCES = subscriber.c
 subscriber_LDADD   = $(LDFLAGS) \
                     -L$(AXIS2C_HOME)/lib \
 					-L../../../src/core \
-                    ../../../../axis2c/util/src/libaxutil.la\
-                    ../../../../axis2c/axiom/src/om/libaxis2_axiom.la\
-                    ../../../../axis2c/src/core/engine/libaxis2_engine.la\
-                    ../../../../axis2c/src/core/transport/http/sender/libaxis2_http_sender.la \
-                    ../../../../axis2c/src/core/transport/http/receiver/libaxis2_http_receiver.la \
+					-laxutil \
+                    -laxis2_axiom \
+                    -laxis2_engine \
+                    -laxis2_http_sender \
+                    -laxis2_http_receiver \
                     -lpthread \
                     $(GUTHTHILA_LIBS) \
                     $(LIBXML2_LIBS)\
 					-lmod_savan
 
-INCLUDES = -I$(AXIS2C_HOME)/include \
-			@AXIOMINC@ \
-			@UTILINC@ \
+INCLUDES =  -I$(AXIS2C_HOME)/include/axis2-1.1 \
 			@AXIS2INC@ \
-			@NEETHIINC@ \
-			-I../../../include
+			@SAVANINC@

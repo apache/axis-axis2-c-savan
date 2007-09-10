@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #include <axutil_hash.h>
 #include <axis2_svc.h>
 #include <axiom_element.h>
@@ -34,7 +34,7 @@ struct savan_sub_processor_t
 };
 
 /* Function Prototypes ********************************************************/
-     
+ 
 savan_subscriber_t * AXIS2_CALL 
 savan_sub_processor_create_subscriber_from_msg(
     const axutil_env_t *env,
@@ -50,6 +50,16 @@ axis2_bool_t AXIS2_CALL
 savan_sub_processor_is_subscription_renewable(
     const axutil_env_t *env,
     axis2_msg_ctx_t *msg_ctx);
+
+/* This method validates the subscription, and send a response (savan fault)
+ * incase if there is a fault
+ */
+
+axis2_bool_t AXIS2_CALL
+savan_sub_processor_validate_subscription(
+	savan_subscriber_t *subscriber,
+	const axutil_env_t *env,
+	axis2_msg_ctx_t *msg_ctx);
 
 /* End of Function Prototypes *************************************************/
 
@@ -108,12 +118,34 @@ savan_sub_processor_subscribe(
     savan_subscriber_set_expires(subscriber, env, expires);
 
     /*Set the filter template file for the subscriber*/
-    /*savan_util_set_filter_template_for_subscriber(subscriber, sub_processor, env);*/
+
+	#ifdef SAVAN_FILTERING
+    savan_util_set_filter_template_for_subscriber(subscriber, 
+ 		sub_processor, env);
+	#endif
 
     /* Store sub id in msg ctx to be used by the msg receiver */
     id = savan_subscriber_get_id(subscriber, env);
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);
-    savan_util_add_subscriber(env, msg_ctx, subscriber);
+
+	/* Validate the subscription with the available information 
+ 	 * If the validation fails, then, don't add the subscriber into
+ 	 * the list.
+ 	*/
+
+	if (savan_sub_processor_validate_subscription(subscriber, env, msg_ctx)
+		 == AXIS2_FAILURE)
+	{	
+    	AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:"
+			"savan_sub_processor_subscribe"
+			"encountered a subscription validation fault.");
+		return AXIS2_FAILURE;
+	}
+
+    if(savan_util_add_subscriber(env, msg_ctx, subscriber) == AXIS2_FAILURE)
+	{
+		return AXIS2_FAILURE;
+	}
     
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] End:savan_sub_processor_subscribe");
@@ -185,6 +217,10 @@ savan_sub_processor_renew_subscription(
     subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
     if (!subscriber)
     {
+        savan_util_create_fault_envelope(msg_ctx, env,
+            SAVAN_FAULT_UTR_CODE, SAVAN_FAULT_UTR_SUB_CODE,
+            "Count find the subscriber.", NULL);
+
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to find the"
             "subscriber"); 
         return AXIS2_FAILURE;
@@ -200,6 +236,9 @@ savan_sub_processor_renew_subscription(
     renewable = savan_sub_processor_is_subscription_renewable(env, msg_ctx);
     if (!renewable)
     {
+        savan_util_create_fault_envelope(msg_ctx, env, SAVAN_FAULT_UTR_CODE,
+            SAVAN_FAULT_UTR_SUB_CODE, "Subscription can't be renewed.", NULL);
+
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscription can not "
             "be renewed");
         savan_subscriber_set_renew_status(subscriber, env, AXIS2_FALSE);
@@ -272,6 +311,7 @@ savan_sub_processor_create_subscriber_from_msg(
     axis2_char_t *notify = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *filter = NULL;
+    axis2_char_t *filter_dialect = NULL;
     axis2_char_t *topic = NULL;
     
     axis2_endpoint_ref_t *endto_epr = NULL;
@@ -345,6 +385,7 @@ savan_sub_processor_create_subscriber_from_msg(
     qname = axutil_qname_create(env, ELEM_NAME_DELIVERY, EVENTING_NAMESPACE, NULL);
     delivery_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
         sub_node, &delivery_node);
+
     axutil_qname_free(qname, env);
     
     qname = axutil_qname_create(env, ELEM_NAME_NOTIFYTO, EVENTING_NAMESPACE, NULL);
@@ -373,8 +414,15 @@ savan_sub_processor_create_subscriber_from_msg(
     filter_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
         sub_node, &filter_node);
     axutil_qname_free(qname, env);
-    
+	
+	qname = axutil_qname_create(env, "Dialect", NULL, NULL);
+   
     filter = axiom_element_get_text(filter_elem, env, filter_node);
+	filter_dialect = axiom_element_get_attribute_value(filter_elem,
+		env, qname);
+	axutil_qname_free(qname, env);
+
+	savan_subscriber_set_filter_dialect(subscriber, env, filter_dialect);
     savan_subscriber_set_filter(subscriber, env, filter);
     
     topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
@@ -407,8 +455,6 @@ savan_sub_processor_set_sub_id_to_msg_ctx(
 
 /******************************************************************************/
 
-/******************************************************************************/
-
 axis2_bool_t AXIS2_CALL
 savan_sub_processor_is_subscription_renewable(
     const axutil_env_t *env,
@@ -417,4 +463,134 @@ savan_sub_processor_is_subscription_renewable(
     /* TODO: */
 
     return AXIS2_TRUE;
+}
+
+/******************************************************************************/
+
+axis2_bool_t AXIS2_CALL
+savan_sub_processor_validate_subscription(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env,
+    axis2_msg_ctx_t *msg_ctx)
+{
+	if(savan_sub_processor_validate_delivery_mode(subscriber, 
+		env, msg_ctx) == AXIS2_FAILURE)
+	{
+		return AXIS2_FAILURE;
+	}
+		
+	if(savan_sub_processor_validate_expiration_time(subscriber, 
+		env, msg_ctx) == AXIS2_FAILURE)
+	{
+		return AXIS2_FAILURE;
+	}
+	if(savan_sub_processor_validate_filter(subscriber, 
+		env, msg_ctx) == AXIS2_FAILURE)
+	{
+		return AXIS2_FAILURE;
+	}
+		
+	return AXIS2_SUCCESS;
+}
+
+/******************************************************************************/
+
+axis2_bool_t AXIS2_CALL
+savan_sub_processor_validate_delivery_mode(
+	savan_subscriber_t *subscriber,
+	const axutil_env_t *env,
+    axis2_msg_ctx_t *msg_ctx)
+{
+	axis2_char_t *delivery_mode = 
+		savan_subscriber_get_delivery_mode(subscriber, env);
+
+	/*if NULL we assueme, as default delivery mode*/	
+	if(delivery_mode == NULL)
+	{
+		return AXIS2_SUCCESS;
+	}
+	else if(axutil_strcmp(delivery_mode, DEFAULT_DELIVERY_MODE) == 0)
+	{
+		return AXIS2_SUCCESS;	
+	}
+	else
+	{
+        savan_util_create_fault_envelope(msg_ctx, env,
+            SAVAN_FAULT_DMRU_CODE, SAVAN_FAULT_DMRU_SUB_CODE,
+            SAVAN_FAULT_DMRU_REASON, SAVAN_FAULT_DMRU_DETAIL);
+
+		return AXIS2_FAILURE;
+	}
+	
+	return AXIS2_SUCCESS;
+}
+
+/******************************************************************************/
+
+axis2_bool_t AXIS2_CALL
+savan_sub_processor_validate_expiration_time(
+	savan_subscriber_t *subscriber,
+	const axutil_env_t *env,
+    axis2_msg_ctx_t *msg_ctx)
+{
+	/*
+	axis2_char_t *expires = savan_subscriber_get_expires(subscriber, env);	
+	if(expires == NULL)
+	{
+        savan_util_create_fault_envelope(msg_ctx, env,
+            SAVAN_FAULT_IET_CODE, SAVAN_FAULT_IET_SUB_CODE,
+            SAVAN_FAULT_IET_REASON, SAVAN_FAULT_IET_DETAIL);
+
+		return AXIS2_FAILURE;
+	}
+	else 
+	{
+        savan_util_create_fault_envelope(msg_ctx, env,
+            SAVAN_FAULT_UET_CODE, SAVAN_FAULT_UET_SUB_CODE,
+            SAVAN_FAULT_UET_REASON, SAVAN_FAULT_UET_DETAIL);
+
+		return AXIS2_FAILURE;
+	}
+	*/
+	return AXIS2_SUCCESS;
+}
+
+/******************************************************************************/
+
+axis2_bool_t AXIS2_CALL
+savan_sub_processor_validate_filter(
+	savan_subscriber_t *subscriber,
+	const axutil_env_t *env,
+    axis2_msg_ctx_t *msg_ctx)
+{	
+	axis2_char_t *filter = NULL;
+	axis2_char_t *filter_dialect = NULL;
+
+	filter = savan_subscriber_get_filter(subscriber, env);
+	filter_dialect = savan_subscriber_get_filter_dialect(subscriber, env);
+	
+	if(filter == NULL)
+	{	
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "Filter is Null");
+		return AXIS2_SUCCESS;
+	}
+	else if(axutil_strcmp(filter_dialect, DEFAULT_FILTER_DIALECT) == 0)
+	{
+		#ifdef SAVAN_FILTERING
+			return AXIS2_SUCCESS;
+		#else
+            savan_util_create_fault_envelope(msg_ctx, env,
+                SAVAN_FAULT_FNS_CODE, SAVAN_FAULT_FNS_SUB_CODE,
+                SAVAN_FAULT_FNS_REASON, "Server doesn't support filtering");
+
+		return AXIS2_FAILURE;
+		#endif
+	}
+	else
+	{
+		savan_util_create_fault_envelope(msg_ctx, env,
+			SAVAN_FAULT_FRU_CODE, SAVAN_FAULT_FRU_SUB_CODE,
+			SAVAN_FAULT_FRU_REASON, "Server does not support the dialect.");
+		return AXIS2_FAILURE;
+	}
 }

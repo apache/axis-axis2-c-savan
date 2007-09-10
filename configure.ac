@@ -75,12 +75,12 @@ AC_ARG_ENABLE(filtering, [  --enable-filtering
   *)
     AC_MSG_RESULT(yes)
     PKG_CHECK_MODULES(XSLT, libxslt)
-    CFLAGS="$CFLAGS DSAVAN_FILTERING $XSLT_CFLAGS"
-    LDFLAGS="$LDFLAGS $XSLT_LIBS"
+    CFLAGS="$CFLAGS -DSAVAN_FILTERING $XSLT_CFLAGS"
+    LDFLAGS="$LDFLAGS -lxslt"
 
     ;;
   esac ],
-  AC_MSG_RESULT(yes)
+  AC_MSG_RESULT(no)
 )
 
 
@@ -95,8 +95,6 @@ AC_SUBST(AXIOMINC)
 AC_SUBST(UTILINC)
 AC_SUBST(NEETHIINC)
 AC_SUBST(XMLSCHEMAINC)
-AC_SUBST(XSLT_LIBS)
-AC_SUBST(XSLT_INCLUDES)
 
 AC_CONFIG_FILES([Makefile \
     src/Makefile \
@@ -107,13 +105,7 @@ AC_CONFIG_FILES([Makefile \
     src/subscribers/Makefile\
     src/subs_mgr/Makefile\
     src/data/Makefile\
-    src/util/Makefile\
-    samples/Makefile\
-    samples/client/Makefile\
-    samples/client/subscriber/Makefile\
-    samples/server/Makefile\
-    samples/server/publisher/Makefile\
-    samples/server/listener/Makefile\
+    src/util/Makefile
     ])
     
 AC_OUTPUT

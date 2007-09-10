@@ -30,6 +30,7 @@
 #include <axis2_options.h>
 #include <axis2_op.h>
 #include <axutil_qname.h>
+#include <savan_util.h>
 
 #include <savan.h>
 
@@ -77,7 +78,7 @@ publisher_init_with_conf(
 
 axiom_node_t* AXIS2_CALL
 publisher_on_fault(axis2_svc_skeleton_t *svc_skeli, 
-              const axutil_env_t *env, axiom_node_t *node);
+    const axutil_env_t *env, axiom_node_t *node);
 
 static void * AXIS2_THREAD_FUNC
 publisher_worker_func(
@@ -227,12 +228,19 @@ publisher_worker_func(
     axutil_env_t *main_env = NULL;
     axutil_env_t *env = NULL;
     axiom_namespace_t *test_ns = NULL;
-    axiom_node_t *test_node = NULL;
     axiom_element_t* test_elem = NULL;
+    axiom_node_t *test_node = NULL;
+    axiom_element_t* test_elem1 = NULL;
+    axiom_node_t *test_node1 = NULL;
+    axiom_element_t* test_elem2 = NULL;
+    axiom_node_t *test_node2 = NULL;
+    axiom_element_t* test_elem3 = NULL;
+    axiom_node_t *test_node3 = NULL;
     axis2_conf_t *conf = NULL;
     axis2_svc_t *svc = NULL;
     axutil_param_t *param = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
+	axiom_attribute_t *test_data = NULL;
     
     publisher_data_t *mydata = (publisher_data_t*)data;
     main_env = mydata->env;
@@ -261,7 +269,17 @@ publisher_worker_func(
             /* Build a payload and pass it to the savan publishing client */ 
             test_ns = axiom_namespace_create (env, "http://www.wso2.com/savan/c/publisher", "test");
             test_elem = axiom_element_create(env, NULL, "notify", test_ns, &test_node);
+            test_elem1 = axiom_element_create(env, test_node, "test1", NULL, &test_node1);
+            test_elem2 = axiom_element_create(env, test_node1, "test2", NULL, &test_node2);
+            test_elem3 = axiom_element_create(env, test_node1, "test3", NULL, &test_node3);
+			test_data = axiom_attribute_create(env, "data", "5", NULL);
+			axiom_element_add_attribute(test_elem3, env, test_data, test_node3);
+
+			axiom_element_set_text(test_elem3, env, "test data3", test_node3);
+
             axiom_element_set_text(test_elem, env, "test data", test_node);
+		
+			/*printf("%s\n", axiom_node_to_string(test_node, env));*/
             savan_publishing_client_publish(pub_client, env, test_node);
             savan_publishing_client_free(pub_client, env);
         }
