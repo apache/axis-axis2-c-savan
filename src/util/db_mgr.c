@@ -39,7 +39,7 @@
  *
  * topic table has following schema
  * name varchar(100) primary key,
-   url vahrchar(200)
+   url varchar(200)
  *
  */
 
