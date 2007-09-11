@@ -256,12 +256,7 @@ publisher_worker_func(
     while(1)
     {
         axutil_hash_t *subs_list = NULL;
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "Inside while loop");
-
-        param = axis2_svc_get_param(svc, env, SAVAN_SUBSCRIBER_LIST);
-        if(param)
-            subs_list = axutil_param_get_value(param, env);
-        if(subs_list)
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] Inside while loop");
         {
             savan_publishing_client_t *pub_client = NULL;
 
@@ -280,10 +275,12 @@ publisher_worker_func(
             axiom_element_set_text(test_elem, env, "test data", test_node);
 		
 			/*printf("%s\n", axiom_node_to_string(test_node, env));*/
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] came10");
             savan_publishing_client_publish(pub_client, env, test_node);
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] came11");
             savan_publishing_client_free(pub_client, env);
         }
-        AXIS2_SLEEP(1);
+        AXIS2_SLEEP(5);
     }
 }
 
