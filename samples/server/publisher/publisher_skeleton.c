@@ -248,7 +248,7 @@ publisher_worker_func(
     
     env = axutil_init_thread_env(main_env);
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "inside thread worker func...");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "Start:publisher_worker_func");
 
 
     svc = axis2_conf_get_svc(conf, env, "publisher");
@@ -262,7 +262,8 @@ publisher_worker_func(
 
             pub_client = savan_publishing_client_create(env, conf_ctx, svc);
             /* Build a payload and pass it to the savan publishing client */ 
-            test_ns = axiom_namespace_create (env, "http://www.wso2.com/savan/c/publisher", "test");
+            test_ns = axiom_namespace_create (env, 
+                "http://www.wso2.com/savan/c/publisher", "test");
             test_elem = axiom_element_create(env, NULL, "notify", test_ns, &test_node);
             test_elem1 = axiom_element_create(env, test_node, "test1", NULL, &test_node1);
             test_elem2 = axiom_element_create(env, test_node1, "test2", NULL, &test_node2);
@@ -275,13 +276,12 @@ publisher_worker_func(
             axiom_element_set_text(test_elem, env, "test data", test_node);
 		
 			/*printf("%s\n", axiom_node_to_string(test_node, env));*/
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] came10");
             savan_publishing_client_publish(pub_client, env, test_node);
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] came11");
             savan_publishing_client_free(pub_client, env);
         }
         AXIS2_SLEEP(5);
     }
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "End:publisher_worker_func");
 }
 
 /**

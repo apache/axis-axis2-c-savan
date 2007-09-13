@@ -16,7 +16,9 @@
 #include <axis2_module.h>
 #include <axis2_conf_ctx.h>
 
-#include "mod_savan.h"
+#include <mod_savan.h>
+#include <sqlite3.h>
+#include <savan_db_mgr.h>
 
 /**************************** Function Prototypes *****************************/
 
@@ -64,6 +66,35 @@ mod_savan_init(
         axis2_module_desc_t *module_desc)
 {
     /* Any initialization stuff of mod_savan goes here */
+    int rc = -1;
+    axis2_char_t *error_msg = NULL;
+    sqlite3 *dbconn = NULL;
+    axis2_char_t *sql_stmt1 = NULL;
+    axis2_char_t *sql_stmt2 = NULL;
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] Start:mod_savan_init");
+    sql_stmt1 = "create table if not exists topic(topic_name varchar(100) "\
+                 "primary key, topic_url varchar(200))";
+    sql_stmt2 = "create table if not exists subscriber(id varchar(100) "\
+                  "primary key, end_to varchar(200), notify_to varchar(200), "\
+                  "delivery_mode varchar(100), expires varchar(100), "\
+                  "filter varchar(200), topic_name varchar(100), "\
+                  "renewed boolean)";
+    savan_db_mgr_t *db_mgr = savan_db_mgr_create(env, conf_ctx);
+    dbconn = savan_db_mgr_get_dbconn(db_mgr, env);
+    rc = sqlite3_exec(dbconn, sql_stmt1, NULL, 0, &error_msg);
+    if( rc != SQLITE_OK )
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "SQL Error: %s", error_msg);
+        sqlite3_free(error_msg);
+    }
+    rc = sqlite3_exec(dbconn, sql_stmt2, NULL, 0, &error_msg);
+    if( rc != SQLITE_OK )
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "SQL Error: %s", error_msg);
+        sqlite3_free(error_msg);
+    }
+    sqlite3_close(dbconn);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] End:mod_savan_init");
     return AXIS2_SUCCESS;
 }
 

@@ -198,6 +198,12 @@ extern "C"
         axis2_msg_ctx_t *msg_ctx,
         savan_subscriber_t *subscriber);
 
+    axis2_status_t AXIS2_CALL
+    savan_util_update_subscriber(
+        const axutil_env_t *env,
+        axis2_msg_ctx_t *msg_ctx,
+        savan_subscriber_t *subscriber);
+
     /**
     * Remove the subscriber from subscription manager services' store
     * Note that if the subscription manager is a separate service from
@@ -254,9 +260,9 @@ extern "C"
     * @param env pointer to environment struct
     * @param topic topic for which the subscribers are registered
     * @param subs_mgr_url url of the subscription manager
-    * @return subscribers in a hash table
+    * @return subscribers in a array list
     */
-    AXIS2_EXTERN axutil_hash_t *AXIS2_CALL
+    AXIS2_EXTERN axutil_array_list_t *AXIS2_CALL
     savan_util_get_subscriber_list_from_remote_subs_mgr(
         const axutil_env_t *env,
         axis2_char_t *topic,

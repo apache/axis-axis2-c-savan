@@ -27,6 +27,7 @@
 #include <savan_subscriber.h>
 #include <savan_util.h>
 #include <savan_constants.h>
+#include <savan_db_mgr.h>
 
 struct savan_publishing_client_t
 {
@@ -80,96 +81,74 @@ savan_publishing_client_publish(
     axiom_node_t *payload)
 {
     axutil_param_t *param = NULL;
-    axutil_hash_index_t *hi = NULL;
     axis2_svc_t *pubs_svc = NULL;
-    axutil_hash_t *subs_store = NULL;
+    axutil_array_list_t *subs_store = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+    int i = 0, size = 0;
+    axutil_param_t *topic_param = NULL;
+    axis2_char_t *topic_url = NULL;
 
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] "
         "Start:savan_publishing_client_publish");
    
+    conf_ctx = client->conf_ctx;
     pubs_svc = client->svc;
-    param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrName");
+    topic_param = axis2_svc_get_param(pubs_svc, env, "TopicURL");
+    topic_url = axutil_param_get_value(topic_param, env);
+    param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
     if(param)
     {
-        axis2_svc_t *subs_svc = NULL;
-        axis2_conf_ctx_t *conf_ctx = NULL;
-        axis2_conf_t *conf = NULL;
-        axutil_param_t *subs_store_param = NULL;
-        axis2_char_t *subs_svc_name = NULL;
+        axis2_char_t *subs_mgr_url = NULL;
 
-        subs_svc_name = axutil_param_get_value(param, env);
-        conf_ctx = client->conf_ctx;
-        conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-        if(conf)
-            subs_svc = axis2_conf_get_svc(conf, env, subs_svc_name);
-        if(subs_svc)
+        axis2_svc_client_t* svc_client = NULL;
+        axutil_param_t *svc_client_param = NULL;
+
+        subs_mgr_url = axutil_param_get_value(param, env);
+        svc_client_param = axis2_svc_get_param(pubs_svc, env, "svc_client");
+        if(svc_client_param)
+            svc_client = axutil_param_get_value(svc_client_param, env);
+        if(!svc_client)
         {
-            subs_store_param = axis2_svc_get_param(subs_svc, env,
-                SAVAN_SUBSCRIBER_LIST);
-            if(!subs_store_param)
-            {
-                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                    "[SAVAN] No Subscriber found");
-                return AXIS2_SUCCESS;/* returning FAILURE will break handler chain */
-            }
-            subs_store = axutil_param_get_value(subs_store_param, env);
+            svc_client = 
+                (axis2_svc_client_t *) savan_util_get_svc_client(env);
+            svc_client_param = axutil_param_create(env, "svc_client", 
+                svc_client);
+            axis2_svc_add_param(pubs_svc, env, svc_client_param);
         }
-        else
-        {
-            axis2_char_t *subs_mgr_url = NULL;
-
-            param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
-            if(param)
-            {
-                axis2_svc_client_t* svc_client = NULL;
-                axutil_param_t *svc_client_param = NULL;
-                axutil_param_t *topic_param = NULL;
-                axis2_char_t *topic_url = NULL;
-
-                subs_mgr_url = axutil_param_get_value(param, env);
-                topic_param = axis2_svc_get_param(pubs_svc, env, "TopicURL");
-                topic_url = axutil_param_get_value(topic_param, env);
-                svc_client_param = axis2_svc_get_param(pubs_svc, env, "svc_client");
-                if(svc_client_param)
-                    svc_client = axutil_param_get_value(svc_client_param, env);
-                if(!svc_client)
-                {
-                    svc_client = 
-                        (axis2_svc_client_t *) savan_util_get_svc_client(env);
-                    svc_client_param = axutil_param_create(env, "svc_client", 
-                        svc_client);
-                    axis2_svc_add_param(pubs_svc, env, svc_client_param);
-                }
-                subs_store = 
-                    savan_util_get_subscriber_list_from_remote_subs_mgr(env, 
-                        topic_url, subs_mgr_url, svc_client);
-            }
-        }
+        subs_store = 
+            savan_util_get_subscriber_list_from_remote_subs_mgr(env, 
+                topic_url, subs_mgr_url, svc_client);
     }
     else
-    { 
-        param = axis2_svc_get_param(pubs_svc, env, SAVAN_SUBSCRIBER_LIST);
-        if (param)
-        {
-            subs_store = (axutil_hash_t*)axutil_param_get_value(param, env);
-        }
+    {
+        axis2_char_t sql_retrieve[256];
+        savan_db_mgr_t *db_mgr = NULL;
+        axis2_char_t *topic_name = NULL;
+
+        topic_name = savan_util_get_topic_name_from_topic_url(env, topic_url);
+        sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
+            "expires, filter, renewed, topic_url from subscriber, topic"\
+            " where topic.topic_name=subscriber.topic_name and"\
+            " topic.topic_name='%s';", topic_name);
+        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        if(db_mgr)
+            subs_store = savan_db_mgr_retrieve_all(db_mgr, env,
+                savan_db_mgr_subs_find_callback, sql_retrieve);
     }
     if (!subs_store)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Subscriber store is null"); 
+            "[SAVAN] Subscriber store is NULL"); 
         return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
     }
 
-    for (hi = axutil_hash_first(subs_store, env); hi; hi =
-        axutil_hash_next(env, hi))
+    size = axutil_array_list_size(subs_store, env);
+    for(i = 0; i < size; i++)
     {
-        void *val = NULL;
         savan_subscriber_t * sub = NULL;
-        axutil_hash_this(hi, NULL, NULL, &val);
-        sub = (savan_subscriber_t *)val;
+        sub = axutil_array_list_get(subs_store, env, i);
         if (sub)
         {
             axis2_char_t *id = savan_subscriber_get_id(sub, env);
@@ -177,8 +156,6 @@ savan_publishing_client_publish(
                 "Publishing to %s", id);
             savan_subscriber_publish(sub, env, payload);
         }
-
-        val = NULL;
     }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] "
         "End:savan_publishing_client_publish");

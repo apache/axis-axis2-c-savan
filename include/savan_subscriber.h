@@ -277,6 +277,11 @@ extern "C"
         savan_subscriber_t *subscriber, 
         const axutil_env_t *env);
 
+    AXIS2_EXTERN void AXIS2_CALL
+    savan_subscriber_free_void_arg(
+        void *subscriber, 
+        const axutil_env_t *env);
+
     axis2_status_t AXIS2_CALL
         savan_subscriber_set_topic(
         savan_subscriber_t *subscriber,

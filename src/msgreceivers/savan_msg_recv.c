@@ -186,6 +186,7 @@ savan_msg_recv_handle_sub_request(
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     axis2_module_desc_t *module_desc = NULL;
+    axutil_property_t *subs_prop = NULL;
     savan_subscriber_t *subscriber = NULL;
     
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] "
@@ -248,12 +249,14 @@ savan_msg_recv_handle_sub_request(
     axiom_element_set_text(id_elem, env, id, id_node);
     
     /* Expires element. Get expiry time from subscriber and set */
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, id);
+    /*subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, id);*/
+    subs_prop = axis2_msg_ctx_get_property(msg_ctx, env, SAVAN_SUBSCRIBER);
+    subscriber = axutil_property_get_value(subs_prop, env);
     if(subscriber)
         expires = savan_subscriber_get_expires(subscriber, env);
     else
     {
-        printf("subscriber not found \n");
+        printf("Subscriber not found \n");
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Subscriber not found");
         return AXIS2_FAILURE;
     }
@@ -350,8 +353,8 @@ savan_msg_recv_handle_renew_request(
     savan_subscriber_t *subscriber = NULL;
     axis2_bool_t renewed = AXIS2_FALSE;
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] "
-        "handle renew request...");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[SAVAN] Start:savan_msg_recv_handle_renew_request");
 
     subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
     if (!subscriber)
@@ -364,21 +367,23 @@ savan_msg_recv_handle_renew_request(
     renewed = savan_subscriber_get_renew_status(subscriber, env);
     if (!renewed)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscription is "
-            "not renewed");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Subscription is not renewed");
         return AXIS2_FAILURE;
     }
 
     /* Set wsa action as RenewResponse. */
     info_header =  axis2_msg_ctx_get_msg_info_headers(new_msg_ctx, env);
-    axis2_msg_info_headers_set_action(info_header, env, SAVAN_ACTIONS_RENEW_RESPONSE);
+    axis2_msg_info_headers_set_action(info_header, env, 
+        SAVAN_ACTIONS_RENEW_RESPONSE);
     
     default_envelope = savan_msg_recv_build_soap_envelope(env, &body_node);
     if (!default_envelope)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to build "
-            "soap envelope for response message"); 
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Failed to build soap envelope for response message"); 
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, 
+            AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
 
@@ -400,6 +405,8 @@ savan_msg_recv_handle_renew_request(
     axiom_node_add_child(body_node , env, response_node);
      axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
     
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[SAVAN] End:savan_msg_recv_handle_renew_request");
     return AXIS2_SUCCESS;
 }
 

@@ -79,6 +79,15 @@ savan_subscriber_create(
 }
 
 AXIS2_EXTERN void AXIS2_CALL
+savan_subscriber_free_void_arg(
+    void *subscriber, 
+    const axutil_env_t *env)
+{
+    savan_subscriber_t *subs = (savan_subscriber_t *) subscriber;
+    savan_subscriber_free(subs, env);
+}
+
+AXIS2_EXTERN void AXIS2_CALL
 savan_subscriber_free(
     savan_subscriber_t *subscriber, 
     const axutil_env_t *env)

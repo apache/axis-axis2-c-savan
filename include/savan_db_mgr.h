@@ -51,8 +51,6 @@ typedef AXIS2_DECLARE_DATA struct savan_db_mgr_args
 typedef struct savan_db_mgr
 {
     axis2_conf_ctx_t *conf_ctx;
-    axutil_thread_mutex_t *mutex;
-    sqlite3* dbconn;
 }savan_db_mgr_t;
 
 AXIS2_EXTERN savan_db_mgr_t * AXIS2_CALL
@@ -66,27 +64,33 @@ savan_db_mgr_free(
     const axutil_env_t *env);
 
 int AXIS2_CALL
-savan_db_mgr_find_callback(
+savan_db_mgr_topic_find_callback(
     void *not_used, 
     int argc, 
     char **argv, 
     char **col_name);
 
 int AXIS2_CALL
-savan_db_mgr_retrieve_callback(
+savan_db_mgr_subs_find_callback(
     void *not_used, 
     int argc, 
     char **argv, 
     char **col_name);
 
-axis2_bool_t AXIS2_CALL
+int AXIS2_CALL
+savan_db_mgr_subs_retrieve_callback(
+    void *not_used, 
+    int argc, 
+    char **argv, 
+    char **col_name);
+
+axis2_status_t AXIS2_CALL
 savan_db_mgr_insert(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
-    savan_subscriber_t *subscriber,
     axis2_char_t *sql_stmt_insert);
 
-axis2_bool_t AXIS2_CALL
+axis2_status_t AXIS2_CALL
 savan_db_mgr_remove(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
@@ -99,18 +103,16 @@ savan_db_mgr_retrieve(
     int (*retrieve_func)(void *, int, char **, char **),
     axis2_char_t *sql_stmt_retrieve);
 
-axis2_bool_t AXIS2_CALL
+axis2_status_t AXIS2_CALL
 savan_db_mgr_update(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
-    savan_subscriber_t *subscriber,
     axis2_char_t *sql_stmt_update);
 
 axutil_array_list_t *AXIS2_CALL
 savan_db_mgr_retrieve_all(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
-    savan_subscriber_t *subscriber,
     int (*find_func)(void *, int, char **, char **),
     axis2_char_t *sql_stmt_find);
 
@@ -118,6 +120,18 @@ void * AXIS2_CALL
 savan_db_mgr_get_dbconn(
     savan_db_mgr_t *db_mgr, 
     const axutil_env_t *env);
+
+axis2_char_t *AXIS2_CALL
+savan_db_mgr_create_insert_sql(
+    const axutil_env_t *env,
+    savan_subscriber_t *subscriber,
+    axis2_conf_ctx_t *conf_ctx);
+
+axis2_char_t *AXIS2_CALL
+savan_db_mgr_create_update_sql(
+    const axutil_env_t *env,
+    savan_subscriber_t *subscriber,
+    axis2_conf_ctx_t *conf_ctx);
 
 /** @} */
 #ifdef __cplusplus

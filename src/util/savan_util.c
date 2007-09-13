@@ -28,6 +28,7 @@
 #include <savan_util.h>
 #include <savan_msg_recv.h>
 #include <savan_error.h>
+#include <savan_db_mgr.h>
 #ifdef SAVAN_FILTERING
 #include <libxslt/xsltutils.h>
 #endif
@@ -82,7 +83,7 @@ process_subscriber_node(
     const axutil_env_t *env,
     axiom_node_t *sub_node);
 
-static axutil_hash_t *
+static axutil_array_list_t *
 process_subscriber_list_node(
     const axutil_env_t *env,
     axiom_node_t *subs_list_node);
@@ -405,9 +406,8 @@ savan_util_get_subscriber_from_msg(
         axis2_msg_ctx_t *msg_ctx,
         axis2_char_t *sub_id)
 {
-    axutil_hash_t *subs_store = NULL;
     savan_subscriber_t *subscriber = NULL;
-    axutil_param_t *param = NULL;
+    /*axutil_param_t *param = NULL;*/
     axis2_svc_t *pubs_svc = NULL;
 
     AXIS2_ENV_CHECK(env, NULL);
@@ -427,80 +427,49 @@ savan_util_get_subscriber_from_msg(
             "[SAVAN] Failed to extract the service"); 
         return NULL;
     }
-    param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrName");
+    /*param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
     if(param)
     {
-        axis2_svc_t *subs_svc = NULL;
-        axis2_conf_ctx_t *conf_ctx = NULL;
-        axis2_conf_t *conf = NULL;
-        axutil_param_t *subs_store_param = NULL;
-        axis2_char_t *subs_svc_name = NULL;
-
-        subs_svc_name = axutil_param_get_value(param, env);
-        conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-        conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-        if(conf)
-            subs_svc = axis2_conf_get_svc(conf, env, subs_svc_name);
-        if(subs_svc)
+        axis2_char_t *subs_mgr_url = NULL;
+        if(param)
         {
-            subs_store_param = axis2_svc_get_param(subs_svc, env,
-                SAVAN_SUBSCRIBER_LIST);
-            if(!subs_store_param)
-            {
-                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                    "[SAVAN] No Subscriber found");
-                return NULL;
-            }
-            subs_store = axutil_param_get_value(subs_store_param, env);
-            subscriber = axutil_hash_get(subs_store, sub_id, 
-                AXIS2_HASH_KEY_STRING);
-        }
-        else
-        {
-            axis2_char_t *subs_mgr_url = NULL;
+            axis2_svc_client_t* svc_client = NULL;
+            axutil_param_t *svc_client_param = NULL;
+            axis2_endpoint_ref_t *topic_epr = NULL;
+            axis2_char_t *topic_url = NULL;
 
-            param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
-            if(param)
+            subs_mgr_url = axutil_param_get_value(param, env);
+            topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
+            topic_url = (axis2_char_t *) axis2_endpoint_ref_get_address(
+                topic_epr, env);
+            svc_client_param = axis2_svc_get_param(pubs_svc, env, "svc_client");
+            if(svc_client_param)
+                svc_client = axutil_param_get_value(svc_client_param, env);
+            if(!svc_client)
             {
-                axis2_svc_client_t* svc_client = NULL;
-                axutil_param_t *svc_client_param = NULL;
-                axis2_endpoint_ref_t *topic_epr = NULL;
-                axis2_char_t *topic_url = NULL;
-
-                subs_mgr_url = axutil_param_get_value(param, env);
-                topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
-                topic_url = (axis2_char_t *) axis2_endpoint_ref_get_address(
-                    topic_epr, env);
-                svc_client_param = axis2_svc_get_param(pubs_svc, env, "svc_client");
-                if(svc_client_param)
-                    svc_client = axutil_param_get_value(svc_client_param, env);
-                if(!svc_client)
-                {
-                    svc_client = 
-                        (axis2_svc_client_t *) savan_util_get_svc_client(env);
-                    svc_client_param = axutil_param_create(env, "svc_client", 
-                        svc_client);
-                    axis2_svc_add_param(pubs_svc, env, svc_client_param);
-                }
-                subscriber = savan_util_get_subscriber_from_remote_subs_mgr(env, 
-                    sub_id, subs_mgr_url, svc_client);
+                svc_client = 
+                    (axis2_svc_client_t *) savan_util_get_svc_client(env);
+                svc_client_param = axutil_param_create(env, "svc_client", 
+                    svc_client);
+                axis2_svc_add_param(pubs_svc, env, svc_client_param);
             }
+            subscriber = savan_util_get_subscriber_from_remote_subs_mgr(env, 
+                sub_id, subs_mgr_url, svc_client);
         }
     }
-    else
+    else*/
     { 
-        param = axis2_svc_get_param(pubs_svc, env, SAVAN_SUBSCRIBER_LIST);
-        if (param)
-        {
-            subs_store = (axutil_hash_t*)axutil_param_get_value(param, env);
-        }
-        if (!subs_store)
-        {
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "[SAVAN] Subscriber store is null"); 
-            return NULL;
-        }
-        subscriber = axutil_hash_get(subs_store, sub_id, AXIS2_HASH_KEY_STRING);
+        axis2_char_t sql_retrieve[256];
+        savan_db_mgr_t *db_mgr = NULL;
+        axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+
+        sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
+            "expires, filter, renewed, topic_url from subscriber, topic"\
+            " where id='%s' and topic.topic_name=subscriber.topic_name;", sub_id);
+        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        if(db_mgr)
+            subscriber = savan_db_mgr_retrieve(db_mgr, env, 
+            savan_db_mgr_subs_retrieve_callback, sql_retrieve);
     }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] End:savan_util_get_subscriber_from_msg");
@@ -509,7 +478,7 @@ savan_util_get_subscriber_from_msg(
 }
 
 /******************************************************************************/
-
+/*
 axutil_hash_t * AXIS2_CALL
 savan_util_get_subscriber_store(
     const axutil_env_t *env,
@@ -608,7 +577,7 @@ savan_util_get_subscriber_store(
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] End:savan_util_get_subscriber_store");
     return subs_store;
-}
+}*/
 
 axis2_status_t AXIS2_CALL
 savan_util_add_subscriber(
@@ -616,16 +585,17 @@ savan_util_add_subscriber(
     axis2_msg_ctx_t *msg_ctx,
     savan_subscriber_t *subscriber)
 {
+    axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_svc_t *pubs_svc = NULL;
     axutil_param_t *param = NULL;
-    axis2_char_t *subs_svc_name = NULL;
     axis2_endpoint_ref_t *topic_epr = NULL;
     axis2_char_t *topic_url = NULL;
     axis2_char_t *topic = NULL;
-    axutil_hash_t *subs_store = NULL;
+    axis2_status_t status = AXIS2_FAILURE;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[SAVAN] Start:savan_util_add_subscriber"); 
+        "[SAVAN] Start:savan_util_add_subscriber");
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
     topic_url = (axis2_char_t *) axis2_endpoint_ref_get_address(topic_epr, 
         env);
@@ -637,61 +607,57 @@ savan_util_add_subscriber(
             "[SAVAN] Failed to extract the %s publisher service", topic); 
         return AXIS2_FAILURE;
     }
-    param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrName");
+    param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
     if(param)
     {
-        axis2_svc_t *subs_svc = NULL;
-        axutil_param_t *subs_store_param = NULL;
-        axis2_conf_ctx_t *conf_ctx = NULL;
-        axis2_conf_t *conf = NULL;
-        
-        subs_svc_name = axutil_param_get_value(param, env);
-        conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-        conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-        if(conf)
-            subs_svc = axis2_conf_get_svc(conf, env, subs_svc_name);
-        if(subs_svc)
-        {
-            axis2_char_t *subs_id = NULL;
-            subs_id = savan_subscriber_get_id(subscriber, env);
-            subs_store_param = axis2_svc_get_param(subs_svc, env, 
-                SAVAN_SUBSCRIBER_LIST);
-            if(!subs_store_param)
-            {
-                savan_util_set_store(subs_svc, env, SAVAN_SUBSCRIBER_LIST);
-                subs_store_param = axis2_svc_get_param(subs_svc, env, 
-                    SAVAN_SUBSCRIBER_LIST);
-            }
-            subs_store = axutil_param_get_value(subs_store_param, env);
-            if(subs_store)
-            {
-                axutil_hash_set(subs_store, subs_id, 
-                    AXIS2_HASH_KEY_STRING, subscriber);
-            }
-        }
-        else
-        {
-            axis2_char_t *subs_mgr_url = NULL;
-            param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
-            subs_mgr_url = axutil_param_get_value(param, env);
-            add_subscriber_to_remote_subs_mgr(env, subscriber, subs_mgr_url);
-        }
+        axis2_char_t *subs_mgr_url = NULL;
+        subs_mgr_url = axutil_param_get_value(param, env);
+        status = add_subscriber_to_remote_subs_mgr(env, subscriber, subs_mgr_url);
     }
     else
     {
-        param = axis2_svc_get_param(pubs_svc, env, SAVAN_SUBSCRIBER_LIST);
-        if (!param)
-        {
-            /* Store not found. Create and set it as a param */
-            savan_util_set_store(pubs_svc, env, SAVAN_SUBSCRIBER_LIST);
-            param = axis2_svc_get_param(pubs_svc, env, SAVAN_SUBSCRIBER_LIST);
-        }
-        subs_store = (axutil_hash_t*)axutil_param_get_value(param, env);
-        axutil_hash_set(subs_store, savan_subscriber_get_id(subscriber, env), 
-            AXIS2_HASH_KEY_STRING, subscriber);
-    } 
+        savan_db_mgr_t *db_mgr = NULL;
+        axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+        axis2_char_t *sql_insert = savan_db_mgr_create_insert_sql(env, 
+            subscriber, conf_ctx);
+        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        if(db_mgr)
+            status = savan_db_mgr_insert(db_mgr, env, sql_insert);
+    }
+    if(status)
+    {
+        axutil_property_t *subs_prop = NULL;
+        subs_prop = axutil_property_create_with_args(env, 0, 0, 
+            savan_subscriber_free_void_arg, subscriber);
+        axis2_msg_ctx_set_property(msg_ctx, env, SAVAN_SUBSCRIBER, subs_prop);
+    }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] End:savan_util_add_subscriber"); 
+    return AXIS2_SUCCESS;
+}
+
+axis2_status_t AXIS2_CALL
+savan_util_update_subscriber(
+    const axutil_env_t *env,
+    axis2_msg_ctx_t *msg_ctx,
+    savan_subscriber_t *subscriber)
+{
+    axis2_conf_ctx_t *conf_ctx = NULL;
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[SAVAN] Start:savan_util_update_subscriber");
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    {
+        savan_db_mgr_t *db_mgr = NULL;
+        axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+        axis2_char_t *sql_update = savan_db_mgr_create_update_sql(env, 
+            subscriber, conf_ctx);
+        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        if(db_mgr)
+            savan_db_mgr_update(db_mgr, env, sql_update);
+    } 
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[SAVAN] End:savan_util_update_subscriber"); 
     return AXIS2_SUCCESS;
 }
 
@@ -703,8 +669,6 @@ savan_util_remove_subscriber(
 {
     axis2_svc_t *pubs_svc = NULL;
     axutil_param_t *param = NULL;
-    axutil_hash_t *subs_store = NULL;
-    axis2_char_t *subs_svc_name = NULL;
     axis2_char_t *topic_url = NULL;
     axis2_char_t *topic = NULL;
     axis2_endpoint_ref_t *topic_epr = NULL;
@@ -725,65 +689,27 @@ savan_util_remove_subscriber(
             "[SAVAN] Failed to extract the %s publisher service", topic); 
         return AXIS2_FAILURE;
     }
-    param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrName");
+    param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
     if(param)
     {
-        axis2_svc_t *subs_svc = NULL;
-        axis2_conf_ctx_t *conf_ctx = NULL;
-        axis2_conf_t *conf = NULL;
-        axutil_param_t *subs_store_param = NULL;
-        
-        subs_svc_name = axutil_param_get_value(param, env);
-        conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-        conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-        if(conf)
-            subs_svc = axis2_conf_get_svc(conf, env, subs_svc_name);
-        if(subs_svc)
-        {
-            axis2_char_t *subs_id = NULL;
-            subs_id = savan_subscriber_get_id(subscriber, env);
-
-            subs_store_param = axis2_svc_get_param(subs_svc, env, 
-                SAVAN_SUBSCRIBER_LIST);
-            if (!subs_store_param)
-            {
-                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                    "No Subscriber list found");
-                return AXIS2_SUCCESS;
-            }
-            subs_store = axutil_param_get_value(subs_store_param, env);
-            /* Setting NULL as value will remove the entry */
-            if(subs_store)
-                axutil_hash_set(subs_store, subs_id, AXIS2_HASH_KEY_STRING, 
-                    NULL);
-        }
-        else
-        {
-            axis2_char_t *subs_mgr_url = NULL;
-            param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
-            subs_mgr_url = axutil_param_get_value(param, env);
-            remove_subscriber_from_remote_subs_mgr(env, subscriber, subs_mgr_url);
-        }
+        axis2_char_t *subs_mgr_url = NULL;
+        subs_mgr_url = axutil_param_get_value(param, env);
+        remove_subscriber_from_remote_subs_mgr(env, subscriber, subs_mgr_url);
     }
     else
     {
         axis2_char_t *subs_id = NULL;
+        axis2_char_t sql_remove[256];
+        savan_db_mgr_t *db_mgr = NULL;
+        axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
 
         subs_id = savan_subscriber_get_id(subscriber, env);
         /* Extract the store from the svc and remove the given subscriber */
-        param = axis2_svc_get_param(pubs_svc, env, SAVAN_SUBSCRIBER_LIST);
-        if (param)
-        {
-            subs_store = (axutil_hash_t*)axutil_param_get_value(param, env);
-        }
-        if (!subs_store)
-        {
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                "[SAVAN] Subscriber store is NULL"); 
-            return AXIS2_SUCCESS;
-        }
-        /* Setting NULL as value will remove the entry */
-        axutil_hash_set(subs_store, subs_id, AXIS2_HASH_KEY_STRING, NULL);
+        sprintf(sql_remove, "delete from subscriber where id='%s'",
+            subs_id);
+        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        if(db_mgr)
+            savan_db_mgr_remove(db_mgr, env, sql_remove);
     }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] End:savan_util_remove_subscriber");
@@ -1074,7 +1000,7 @@ process_subscriber_node(
     return subscriber;
 }
 
-axutil_hash_t *AXIS2_CALL
+axutil_array_list_t *AXIS2_CALL
 savan_util_get_subscriber_list_from_remote_subs_mgr(
     const axutil_env_t *env,
     axis2_char_t *topic,
@@ -1086,7 +1012,7 @@ savan_util_get_subscriber_list_from_remote_subs_mgr(
     axis2_svc_client_t* svc_client = NULL;
     axiom_node_t *payload = NULL;
     axiom_node_t *ret_node = NULL;
-    axutil_hash_t *subscriber_list = NULL;
+    axutil_array_list_t *subscriber_list = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] Start:savan_util_get_subscriber_list_from_remote_subs_mgr");
@@ -1142,7 +1068,7 @@ build_subscribers_request_om_payload(
     return om_node;
 }
 
-static axutil_hash_t *
+static axutil_array_list_t *
 process_subscriber_list_node(
     const axutil_env_t *env,
     axiom_node_t *subs_list_node)
@@ -1153,7 +1079,7 @@ process_subscriber_list_node(
     axiom_node_t *topic_node = NULL;
     axiom_element_t *topic_elem = NULL;
     axis2_char_t *topic_url = NULL;
-    axutil_hash_t *subscriber_list = NULL;
+    axutil_array_list_t *subscriber_list = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] Start:process_subscriber_list_node");
@@ -1180,7 +1106,7 @@ process_subscriber_list_node(
     }
     if(axiom_children_qname_iterator_has_next(subs_iter, env))
     {
-        subscriber_list = axutil_hash_make(env);
+        subscriber_list = axutil_array_list_create(env, 0);
     }
 
     while(axiom_children_qname_iterator_has_next(subs_iter, env))
@@ -1281,8 +1207,7 @@ process_subscriber_list_node(
             filter = axiom_element_get_text(filter_elem, env, filter_node);
 
             savan_subscriber_set_filter(subscriber, env, filter);
-            axutil_hash_set(subscriber_list, savan_subscriber_get_id(subscriber, 
-                env), AXIS2_HASH_KEY_STRING, subscriber);
+            axutil_array_list_add(subscriber_list, env, subscriber);
         }
     }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
