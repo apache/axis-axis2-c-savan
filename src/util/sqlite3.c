@@ -16757,8 +16757,8 @@ static int fillInUnixFile(
 ** the file descriptor *pFd using close().
 */
 static int openDirectory(const char *zFilename, int *pFd){
-  int ii;
-  int fd;
+  int ii=0;
+  int fd=0;
   char zDirname[MAX_PATHNAME+1];
 
   sqlite3_snprintf(MAX_PATHNAME, zDirname, "%s", zFilename);
@@ -16919,7 +16919,7 @@ static int unixDelete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
 ** Otherwise return 0.
 */
 static int unixAccess(sqlite3_vfs *pVfs, const char *zPath, int flags){
-  int amode;
+  int amode=0;
   switch( flags ){
     case SQLITE_ACCESS_EXISTS:
       amode = F_OK;
@@ -30562,7 +30562,7 @@ SQLITE_PRIVATE int sqlite3BtreeDelete(BtCursor *pCur){
     */
     BtCursor leafCur;
     unsigned char *pNext;
-    int szNext;  /* The compiler warning is wrong: szNext is always 
+    int szNext=0;  /* The compiler warning is wrong: szNext is always 
                  ** initialized before use.  Adding an extra initialization
                  ** to silence the compiler slows down the code. */
     int notUsed;
@@ -40028,7 +40028,7 @@ case OP_Rewind: {        /* no-push */
   int i = pOp->p1;
   Cursor *pC;
   BtCursor *pCrsr;
-  int res;
+  int res=0;
 
   assert( i>=0 && i<p->nCursor );
   pC = p->apCsr[i];
@@ -40300,8 +40300,8 @@ case OP_IdxGE: {        /* no-push */
 ** See also: Clear
 */
 case OP_Destroy: {
-  int iMoved;
-  int iCnt;
+  int iMoved=0;
+  int iCnt=0;
 #ifndef SQLITE_OMIT_VIRTUALTABLE
   Vdbe *pVdbe;
   iCnt = 0;
@@ -40549,10 +40549,10 @@ case OP_DropTrigger: {        /* no-push */
 ** This opcode is used to implement the integrity_check pragma.
 */
 case OP_IntegrityCk: {
-  int nRoot;
-  int *aRoot;
-  int j;
-  int nErr;
+  int nRoot=0;
+  int *aRoot=NULL;
+  int j=0;
+  int nErr=0;
   char *z;
   Mem *pnErr;
 
@@ -63031,7 +63031,7 @@ SQLITE_PRIVATE FuncDef *sqlite3VtabOverloadFunction(
   void (*xFunc)(sqlite3_context*,int,sqlite3_value**);
   void *pArg;
   FuncDef *pNew;
-  int rc;
+  int rc=0;
   char *zLowerName;
   unsigned char *z;
 
