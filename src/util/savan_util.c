@@ -48,21 +48,21 @@ add_subscriber_to_remote_subs_mgr(
     savan_subscriber_t *subscriber,
     axis2_char_t *subs_mgr_url);
 
-static axis2_status_t
+/*static axis2_status_t
 remove_subscriber_from_remote_subs_mgr(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,
-    axis2_char_t *subs_mgr_url);
+    axis2_char_t *subs_mgr_url);*/
 
 static axiom_node_t *
 build_add_subscriber_om_payload(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
-static axiom_node_t *
+/*static axiom_node_t *
 build_remove_subscriber_om_payload(
     const axutil_env_t *env,
-    savan_subscriber_t *subscriber);
+    savan_subscriber_t *subscriber);*/
 
 static axiom_node_t *
 build_subscriber_request_om_payload(
@@ -667,18 +667,18 @@ savan_util_remove_subscriber(
     axis2_msg_ctx_t *msg_ctx,
     savan_subscriber_t *subscriber)
 {
-    axis2_svc_t *pubs_svc = NULL;
+    /*axis2_svc_t *pubs_svc = NULL;
     axutil_param_t *param = NULL;
     axis2_char_t *topic_url = NULL;
     axis2_char_t *topic = NULL;
-    axis2_endpoint_ref_t *topic_epr = NULL;
+    axis2_endpoint_ref_t *topic_epr = NULL;*/
 
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] Start:savan_util_remove_subscriber");
 
-    topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
+    /*topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
     topic_url = (axis2_char_t *) axis2_endpoint_ref_get_address(topic_epr, 
         env);
     topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
@@ -696,7 +696,7 @@ savan_util_remove_subscriber(
         subs_mgr_url = axutil_param_get_value(param, env);
         remove_subscriber_from_remote_subs_mgr(env, subscriber, subs_mgr_url);
     }
-    else
+    else*/
     {
         axis2_char_t *subs_id = NULL;
         axis2_char_t sql_remove[256];
@@ -785,7 +785,7 @@ add_subscriber_to_remote_subs_mgr(
     return AXIS2_SUCCESS;
 }
 
-static axis2_status_t
+/*static axis2_status_t
 remove_subscriber_from_remote_subs_mgr(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,
@@ -806,13 +806,13 @@ remove_subscriber_from_remote_subs_mgr(
         "http://ws.apache.org/axis2/c/subscription/remove_subscriber");
 
     payload = build_remove_subscriber_om_payload(env, subscriber);
-    /* Send request */
+    // Send request
     axis2_svc_client_send_robust(svc_client, env, payload);
     if(svc_client)
         axis2_svc_client_free(svc_client, env);
 
     return AXIS2_SUCCESS;
-}
+}*/
 
 savan_subscriber_t *AXIS2_CALL
 savan_util_get_subscriber_from_remote_subs_mgr(
@@ -1298,7 +1298,7 @@ build_add_subscriber_om_payload(
     return add_node;
 }
 
-static axiom_node_t *
+/*static axiom_node_t *
 build_remove_subscriber_om_payload(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber)
@@ -1321,20 +1321,20 @@ build_remove_subscriber_om_payload(
     remove_ele = axiom_element_create(env, NULL, ELEM_NAME_REMOVE_SUBSCRIBER, 
         ns1, &remove_node);
     
-    /* create the id element */
+    // create the id element
     if(id)
     {
         id_elem = axiom_element_create(env, remove_node, ELEM_NAME_ID, ns1, &id_node);
             axiom_element_set_text(id_elem, env, id, id_node);
     }
-    /* create the topic element */
+    // create the topic element
     topic_elem = axiom_element_create(env, remove_node, ELEM_NAME_TOPIC, ns1, &topic_node);
     topic = savan_subscriber_get_topic(subscriber, env);
     if(topic)
         axiom_element_set_text(topic_elem, env, topic, topic_node);
     
     return remove_node;
-}
+}*/
 
 /******************************************************************************/
 
