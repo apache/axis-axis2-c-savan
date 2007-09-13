@@ -44,6 +44,16 @@
  *
  */
 
+int
+savan_db_mgr_busy_handler(
+    sqlite3* dbconn,
+    char *sql_stmt,
+    int (*callback_func)(void *, int, char **, char **),
+    void *args,
+    char **error_msg,
+    int rc);
+
+
 AXIS2_EXTERN savan_db_mgr_t * AXIS2_CALL
 savan_db_mgr_create(
     const axutil_env_t *env,
@@ -104,7 +114,7 @@ savan_db_mgr_topic_find_callback(
     }
     return 0;
 }
-int AXIS2_CALL
+int
 savan_db_mgr_subs_find_callback(
     void *not_used, 
     int argc, 
@@ -175,7 +185,7 @@ savan_db_mgr_subs_find_callback(
     return 0;
 }
 
-int AXIS2_CALL 
+int  
 savan_db_mgr_subs_retrieve_callback(
     void *not_used, 
     int argc, 
@@ -183,11 +193,14 @@ savan_db_mgr_subs_retrieve_callback(
     char **col_name)
 {
     int i = 0;
-    savan_db_mgr_args_t *args = (savan_db_mgr_args_t *) not_used;
-    const axutil_env_t *env = args->env;
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+	savan_subscriber_t *subscriber = NULL;
+	const axutil_env_t *env = NULL;
+	savan_db_mgr_args_t *args = (savan_db_mgr_args_t *) not_used;
+    env = args->env;
+
+	AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] Start:savan_db_mgr_subs_retrieve_callback");
-    savan_subscriber_t *subscriber = (savan_subscriber_t *) args->data;
+     subscriber = (savan_subscriber_t *) args->data;
     if(argc < 1)
     {
         args->data = NULL;
@@ -459,7 +472,7 @@ savan_db_mgr_retrieve(
     return subscriber;
 }
 
-axutil_array_list_t *AXIS2_CALL
+axutil_array_list_t * AXIS2_CALL
 savan_db_mgr_retrieve_all(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,

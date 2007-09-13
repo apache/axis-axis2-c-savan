@@ -71,6 +71,7 @@ mod_savan_init(
     sqlite3 *dbconn = NULL;
     axis2_char_t *sql_stmt1 = NULL;
     axis2_char_t *sql_stmt2 = NULL;
+	savan_db_mgr_t *db_mgr = NULL; 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] Start:mod_savan_init");
     sql_stmt1 = "create table if not exists topic(topic_name varchar(100) "\
                  "primary key, topic_url varchar(200))";
@@ -79,7 +80,7 @@ mod_savan_init(
                   "delivery_mode varchar(100), expires varchar(100), "\
                   "filter varchar(200), topic_name varchar(100), "\
                   "renewed boolean)";
-    savan_db_mgr_t *db_mgr = savan_db_mgr_create(env, conf_ctx);
+    db_mgr = savan_db_mgr_create(env, conf_ctx);
     dbconn = savan_db_mgr_get_dbconn(db_mgr, env);
     rc = sqlite3_exec(dbconn, sql_stmt1, NULL, 0, &error_msg);
     if( rc != SQLITE_OK )

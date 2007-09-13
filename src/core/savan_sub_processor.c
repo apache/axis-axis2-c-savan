@@ -474,33 +474,6 @@ savan_sub_processor_is_subscription_renewable(
 
 /******************************************************************************/
 
-axis2_bool_t AXIS2_CALL
-savan_sub_processor_validate_subscription(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env,
-    axis2_msg_ctx_t *msg_ctx)
-{
-	if(savan_sub_processor_validate_delivery_mode(subscriber, 
-		env, msg_ctx) == AXIS2_FAILURE)
-	{
-		return AXIS2_FAILURE;
-	}
-		
-	if(savan_sub_processor_validate_expiration_time(subscriber, 
-		env, msg_ctx) == AXIS2_FAILURE)
-	{
-		return AXIS2_FAILURE;
-	}
-	if(savan_sub_processor_validate_filter(subscriber, 
-		env, msg_ctx) == AXIS2_FAILURE)
-	{
-		return AXIS2_FAILURE;
-	}
-		
-	return AXIS2_SUCCESS;
-}
-
-/******************************************************************************/
 
 axis2_bool_t AXIS2_CALL
 savan_sub_processor_validate_delivery_mode(
@@ -601,3 +574,33 @@ savan_sub_processor_validate_filter(
 		return AXIS2_FAILURE;
 	}
 }
+
+/****************************************************************************/
+
+axis2_bool_t AXIS2_CALL
+savan_sub_processor_validate_subscription(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env,
+    axis2_msg_ctx_t *msg_ctx)
+{
+	if(savan_sub_processor_validate_delivery_mode(subscriber, 
+		env, msg_ctx) == AXIS2_FAILURE)
+	{
+		return AXIS2_FAILURE;
+	}
+		
+	if(savan_sub_processor_validate_expiration_time(subscriber, 
+		env, msg_ctx) == AXIS2_FAILURE)
+	{
+		return AXIS2_FAILURE;
+	}
+	if(savan_sub_processor_validate_filter(subscriber, 
+		env, msg_ctx) == AXIS2_FAILURE)
+	{
+		return AXIS2_FAILURE;
+	}
+		
+	return AXIS2_SUCCESS;
+}
+
+/******************************************************************************/

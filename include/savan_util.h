@@ -53,13 +53,13 @@ extern "C"
 	*/
 
 	axis2_status_t AXIS2_CALL
-	savan_create_fault_envelope(
-    	axis2_msg_ctx_t *msg_ctx,
-    	const axutil_env_t *env,
-        axis2_char_t *code,
-        axis2_char_t *subcode,
-        axis2_char_t *reason,
-        axis2_char_t *detail);
+	savan_util_create_fault_envelope(
+		axis2_msg_ctx_t *msg_ctx,
+		const axutil_env_t *env,
+		axis2_char_t *code,
+		axis2_char_t *subcode,
+		axis2_char_t *reason,
+		axis2_char_t *detail);
 
 	/**
  	* Build a savan fault message and send.

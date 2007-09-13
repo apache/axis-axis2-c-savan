@@ -70,14 +70,14 @@ savan_db_mgr_topic_find_callback(
     char **argv, 
     char **col_name);
 
-int AXIS2_CALL
+int 
 savan_db_mgr_subs_find_callback(
     void *not_used, 
     int argc, 
     char **argv, 
     char **col_name);
 
-int AXIS2_CALL
+int 
 savan_db_mgr_subs_retrieve_callback(
     void *not_used, 
     int argc, 
@@ -109,7 +109,7 @@ savan_db_mgr_update(
     const axutil_env_t *env,
     axis2_char_t *sql_stmt_update);
 
-axutil_array_list_t *AXIS2_CALL
+axutil_array_list_t * AXIS2_CALL
 savan_db_mgr_retrieve_all(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
