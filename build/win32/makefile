@@ -27,7 +27,8 @@ SAVAN_CODE = $(SAVANSRC)\src\core\*.c \
 	     
 #compiler options
 CC = @cl.exe
-CFLAGS = /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "AXIS2_DECLARE_EXPORT" /w /nologo \
+
+CFLAGS = /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "AXIS2_DECLARE_EXPORT" /D_WIN32_WINNT=0x0400  /w /nologo \
 	/I$(AXIS2_BIN_DIR)\include  /I$(SAVANSRC)\include 
 
 #linker options 
