@@ -32,6 +32,7 @@
            <parameter name="ganglia_discovery" locked="xsd:false">http://localhost:9090/axis2/services/ganglia_discovery</parameter>
            <parameter name="ganglia_power" locked="xsd:false">http://localhost:9090/axis2/services/ganglia_power</parameter>
            <parameter name="ganglia_load" locked="xsd:false">http://localhost:9090/axis2/services/ganglia_load</parameter>
+           <parameter name="syslog" locked="xsd:false">http://localhost:9090/axis2/services/syslog</parameter>
            <parameter name="publisher" locked="xsd:false">http://localhost:9090/axis2/services/publisher</parameter>
    </operation>
 
