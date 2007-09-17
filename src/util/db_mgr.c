@@ -271,7 +271,7 @@ savan_db_mgr_insert(
     dbconn = (sqlite3 *) savan_db_mgr_get_dbconn(
         db_mgr, env);
     if(!dbconn)
-        return AXIS2_FALSE;
+        return AXIS2_FAILURE;
     rc = sqlite3_exec(dbconn, "BEGIN;", 0, 0, &error_msg);
     if(rc == SQLITE_BUSY)
     {
@@ -320,7 +320,7 @@ savan_db_mgr_remove(
     dbconn = (sqlite3 *) savan_db_mgr_get_dbconn(
         db_mgr, env);
     if(!dbconn)
-        return AXIS2_FALSE;
+        return AXIS2_FAILURE;
     rc = sqlite3_exec(dbconn, "BEGIN;", 0, 0, &error_msg);
     if(rc == SQLITE_BUSY)
     {
@@ -371,7 +371,7 @@ savan_db_mgr_update(
     dbconn = (sqlite3 *) savan_db_mgr_get_dbconn(
         db_mgr, env);
     if(!dbconn)
-        return AXIS2_FALSE;
+        return AXIS2_FAILURE;
     rc = sqlite3_exec(dbconn, "BEGIN;", 0, 0, &error_msg);
     if(rc == SQLITE_BUSY)
     {
