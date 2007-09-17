@@ -456,11 +456,6 @@ savan_subs_mgr_get_subscriber_list(
         return NULL;
     }
 
-    /* create the body of the subscribers element */
-    ns = axiom_namespace_create (env, EVENTING_NAMESPACE, EVENTING_NS_PREFIX);
-    ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
-    subs_list_elem = axiom_element_create(env, NULL, ELEM_NAME_SUBSCRIBERS, ns1, 
-        &subs_list_node);
     sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
         "expires, filter, topic_url, renewed from subscriber, topic where "\
         "subscriber.topic_name=topic.topic_name and topic.topic_name='%s';", 
@@ -469,7 +464,18 @@ savan_subs_mgr_get_subscriber_list(
     if(db_mgr)
         subs_store = savan_db_mgr_retrieve_all(db_mgr, env, 
             savan_db_mgr_subs_find_callback, sql_retrieve);
-    size = axutil_array_list_size(subs_store, env);
+    if(subs_store)
+    {
+        size = axutil_array_list_size(subs_store, env);
+        if(size > 0)
+        {
+            /* create the body of the subscribers element */
+            ns = axiom_namespace_create (env, EVENTING_NAMESPACE, EVENTING_NS_PREFIX);
+            ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
+            subs_list_elem = axiom_element_create(env, NULL, ELEM_NAME_SUBSCRIBERS, ns1, 
+            &subs_list_node);
+        }
+    }
     for(i = 0; i < size; i++)
     {
         savan_subscriber_t * subscriber = axutil_array_list_get(subs_store, 

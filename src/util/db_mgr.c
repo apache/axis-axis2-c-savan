@@ -604,6 +604,7 @@ savan_db_mgr_get_dbconn(
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Can't open database: %s"
             " sqlite error: %s\n", path, sqlite3_errmsg(dbconn));
         sqlite3_close(dbconn);
+        dbconn = NULL;
         return NULL;
     }
     return dbconn;

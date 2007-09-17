@@ -81,25 +81,24 @@ mod_savan_init(
                   "filter varchar(200), topic_name varchar(100), "\
                   "renewed boolean)";
     db_mgr = savan_db_mgr_create(env, conf_ctx);
-    dbconn = savan_db_mgr_get_dbconn(db_mgr, env);
-    if (!dbconn)
+    if(db_mgr)
+        dbconn = savan_db_mgr_get_dbconn(db_mgr, env);
+    if(dbconn)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Could not connect to databse");
-        return AXIS2_FAILURE;
+        rc = sqlite3_exec(dbconn, sql_stmt1, NULL, 0, &error_msg);
+        if( rc != SQLITE_OK )
+        {
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "SQL Error: %s", error_msg);
+            sqlite3_free(error_msg);
+        }
+        rc = sqlite3_exec(dbconn, sql_stmt2, NULL, 0, &error_msg);
+        if( rc != SQLITE_OK )
+        {
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "SQL Error: %s", error_msg);
+            sqlite3_free(error_msg);
+        }
+        sqlite3_close(dbconn);
     }
-    rc = sqlite3_exec(dbconn, sql_stmt1, NULL, 0, &error_msg);
-    if( rc != SQLITE_OK )
-    {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "SQL Error: %s", error_msg);
-        sqlite3_free(error_msg);
-    }
-    rc = sqlite3_exec(dbconn, sql_stmt2, NULL, 0, &error_msg);
-    if( rc != SQLITE_OK )
-    {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "SQL Error: %s", error_msg);
-        sqlite3_free(error_msg);
-    }
-    sqlite3_close(dbconn);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] End:mod_savan_init");
     return AXIS2_SUCCESS;
 }

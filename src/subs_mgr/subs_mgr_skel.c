@@ -108,16 +108,6 @@ savan_subs_mgr_init(
     axis2_svc_skeleton_t *svc_skeleton,
     const axutil_env_t *env)
 {
-    svc_skeleton->func_array = axutil_array_list_create(env, 0);
-    /* Add the implemented operation names of the service to
-     * the array list of functions
-     */
-    axutil_array_list_add(svc_skeleton->func_array, env, "add_subscriber");
-    axutil_array_list_add(svc_skeleton->func_array, env, "remove_subscriber");
-    axutil_array_list_add(svc_skeleton->func_array, env, "get_subscriber");
-    axutil_array_list_add(svc_skeleton->func_array, env, "get_subscriber_list");
-    axutil_array_list_add(svc_skeleton->func_array, env, "add_topic");
-    axutil_array_list_add(svc_skeleton->func_array, env, "get_topic_list");
     return AXIS2_SUCCESS;
 }
 
