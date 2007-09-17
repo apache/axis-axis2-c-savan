@@ -82,6 +82,11 @@ mod_savan_init(
                   "renewed boolean)";
     db_mgr = savan_db_mgr_create(env, conf_ctx);
     dbconn = savan_db_mgr_get_dbconn(db_mgr, env);
+    if (!dbconn)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Could not connect to databse");
+        return AXIS2_FAILURE;
+    }
     rc = sqlite3_exec(dbconn, sql_stmt1, NULL, 0, &error_msg);
     if( rc != SQLITE_OK )
     {
