@@ -56,6 +56,8 @@ distdir:
 	if not exist $(SAVANDISTDIR)\bin\samples\savan mkdir $(SAVANDISTDIR)\bin\samples\savan
 	if not exist $(SAVANDISTDIR)\services\listener mkdir $(SAVANDISTDIR)\services\listener
 	if not exist $(SAVANDISTDIR)\services\publisher mkdir $(SAVANDISTDIR)\services\publisher
+	if not exist $(SAVANDISTDIR)\services\subscription mkdir $(SAVANDISTDIR)\services\subscription
+
 
 intdir:
 	if not exist $(SAVANINTDIR) mkdir $(SAVANINTDIR)
@@ -63,7 +65,8 @@ intdir:
 	if not exist $(SAVANINTDIR)\samples\subscriber mkdir $(SAVANINTDIR)\samples\subscriber
 	if not exist $(SAVANINTDIR)\samples\listener mkdir $(SAVANINTDIR)\samples\listener
 	if not exist $(SAVANINTDIR)\samples\publisher mkdir $(SAVANINTDIR)\samples\publisher
-
+	if not exist $(SAVANINTDIR)\samples\subscription mkdir $(SAVANINTDIR)\samples\subscription
+	
 clean :
 	@if exist $(SAVANDISTDIR) rmdir /S /Q $(SAVANDISTDIR)
 	@if exist int.msvc rmdir /S /Q int.msvc
@@ -89,6 +92,12 @@ savan:
 
 ###samples
 
+subscription:
+	$(CC) $(CFLAGS) $(SAVANSRC)\src\subs_mgr\*.c /Fo$(SAVANINTDIR)\samples\subscription\ /c
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscription\*.obj $(SAVANDLL).lib /DLL \
+	/OUT:$(SAVANDISTDIR)\services\subscription\subscription.dll
+	@copy $(SAVANSRC)\src\subs_mgr\services.xml $(SAVANDISTDIR)\services\subscription\
+
 publisher:
 	$(CC) $(CFLAGS) $(SAVANSRC)\samples\server\publisher\*.c /Fo$(SAVANINTDIR)\samples\publisher\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\publisher\*.obj $(SAVANDLL).lib /DLL \
@@ -106,7 +115,7 @@ subscriber:
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscriber\*.obj $(SAVANDLL).lib \
 	/OUT:$(SAVANDISTDIR)\bin\samples\savan\subscriber.exe
 	
-dist: clean distdir intdir savan publisher listener subscriber copy_include copy_samples copy_extra
+dist: clean distdir intdir savan publisher listener subscription subscriber copy_include copy_samples copy_extra
 
 
 	 

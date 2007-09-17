@@ -58,70 +58,70 @@ savan_db_mgr_create(
     const axutil_env_t *env,
     axis2_conf_ctx_t *conf_ctx);
 
-void AXIS2_CALL
+AXIS2_EXTERN void AXIS2_CALL
 savan_db_mgr_free(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env);
 
-int AXIS2_CALL
+AXIS2_EXTERN int 
 savan_db_mgr_topic_find_callback(
     void *not_used, 
     int argc, 
     char **argv, 
     char **col_name);
 
-int 
+AXIS2_EXTERN int 
 savan_db_mgr_subs_find_callback(
     void *not_used, 
     int argc, 
     char **argv, 
     char **col_name);
 
-int 
+AXIS2_EXTERN int 
 savan_db_mgr_subs_retrieve_callback(
     void *not_used, 
     int argc, 
     char **argv, 
     char **col_name);
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_insert(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
     axis2_char_t *sql_stmt_insert);
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_remove(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
     axis2_char_t *sql_stmt_remove);
 
-savan_subscriber_t *AXIS2_CALL
+AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
 savan_db_mgr_retrieve(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
     int (*retrieve_func)(void *, int, char **, char **),
     axis2_char_t *sql_stmt_retrieve);
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_update(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
     axis2_char_t *sql_stmt_update);
 
-axutil_array_list_t * AXIS2_CALL
+AXIS2_EXTERN axutil_array_list_t * AXIS2_CALL
 savan_db_mgr_retrieve_all(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
     int (*find_func)(void *, int, char **, char **),
     axis2_char_t *sql_stmt_find);
 
-void * AXIS2_CALL
+AXIS2_EXTERN void * AXIS2_CALL
 savan_db_mgr_get_dbconn(
     savan_db_mgr_t *db_mgr, 
     const axutil_env_t *env);
 
-axis2_char_t *AXIS2_CALL
+AXIS2_EXTERN axis2_char_t *AXIS2_CALL
 savan_db_mgr_create_insert_sql(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,

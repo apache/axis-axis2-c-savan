@@ -326,10 +326,12 @@ savan_subs_mgr_get_subscriber(
         const axis2_char_t *filter = NULL;
         const axis2_char_t *expires = NULL;
         axis2_char_t *id = NULL;
+		axis2_endpoint_ref_t *endto_ref = NULL;
+		axis2_endpoint_ref_t *notify_ref = NULL;
 
-        axis2_endpoint_ref_t *endto_ref = savan_subscriber_get_end_to(subscriber, env);
+        endto_ref = savan_subscriber_get_end_to(subscriber, env);
         endto = axis2_endpoint_ref_get_address(endto_ref, env);
-        axis2_endpoint_ref_t *notify_ref = savan_subscriber_get_notify_to(subscriber, env);
+        notify_ref = savan_subscriber_get_notify_to(subscriber, env);
         notify = axis2_endpoint_ref_get_address(notify_ref, env);
         filter = savan_subscriber_get_filter(subscriber, env); 
         expires = savan_subscriber_get_expires(subscriber, env);
@@ -498,6 +500,8 @@ savan_subs_mgr_get_subscriber_list(
             axis2_char_t *id = NULL;
             axis2_char_t *topic_url_l = NULL;
             axis2_char_t *topic_l = NULL;
+			axis2_endpoint_ref_t *endto_ref = NULL;
+			axis2_endpoint_ref_t *notify_ref = NULL;
 
             /* Check whether the subscriber has subscribed for the topic. 
              * If so create the topic element */
@@ -517,9 +521,9 @@ savan_subs_mgr_get_subscriber_list(
             }
             else
                 continue;
-            axis2_endpoint_ref_t *endto_ref = savan_subscriber_get_end_to(subscriber, env);
+            endto_ref = savan_subscriber_get_end_to(subscriber, env);
             endto = axis2_endpoint_ref_get_address(endto_ref, env);
-            axis2_endpoint_ref_t *notify_ref = savan_subscriber_get_notify_to(subscriber, env);
+            notify_ref = savan_subscriber_get_notify_to(subscriber, env);
             notify = axis2_endpoint_ref_get_address(notify_ref, env);
             filter = savan_subscriber_get_filter(subscriber, env); 
             expires = savan_subscriber_get_expires(subscriber, env);

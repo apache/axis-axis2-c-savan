@@ -45,7 +45,7 @@ extern "C"
 	 * @param filter_dailect pointer to the dialect
 	 */
 
-	axis2_status_t AXIS2_CALL
+	AXIS2_EXTERN axis2_status_t AXIS2_CALL
 	savan_subscriber_set_filter_dialect(
 		savan_subscriber_t *subscriber,
     	const axutil_env_t *env,
@@ -56,7 +56,7 @@ extern "C"
 	 * @param env pointer to the enviornment
 	 */
 
-	axis2_char_t * AXIS2_CALL
+	AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 	savan_subscriber_get_filter_dialect(
 		savan_subscriber_t *subscriber,
     	const axutil_env_t *env);
@@ -67,7 +67,7 @@ extern "C"
 	* @param env pointer to the environment
 	*/ 
 
-	axis2_char_t * AXIS2_CALL
+	AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 		savan_subscriber_get_delivery_mode(
     	savan_subscriber_t *subscriber,
     	const axutil_env_t *env);
@@ -79,7 +79,7 @@ extern "C"
  	* @param xslt template pointer to the stylesheet
  	*/
 
-	axis2_status_t AXIS2_CALL
+	AXIS2_EXTERN axis2_status_t AXIS2_CALL
 	savan_subscriber_set_filter_template(
     	savan_subscriber_t *subscriber,
     	const axutil_env_t *env,
@@ -93,7 +93,7 @@ extern "C"
  	* @param xslt template pointer to the stylesheet
  	*/
 
-	void* AXIS2_CALL
+	AXIS2_EXTERN void* AXIS2_CALL
 	savan_subscriber_get_filter_template(
     	savan_subscriber_t *subscriber,
     	const axutil_env_t *env);
@@ -104,7 +104,7 @@ extern "C"
      * @param env pointer to environment struct
      * @return the unique id assigned to the subscriber 
      */
-    axis2_char_t * AXIS2_CALL
+    AXIS2_EXTERN axis2_char_t * AXIS2_CALL
     savan_subscriber_get_id(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env);
@@ -115,7 +115,7 @@ extern "C"
      * @param env pointer to environment struct
      * @param id the id
      */
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_subscriber_set_id(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
@@ -127,7 +127,7 @@ extern "C"
      * @param env pointer to environment struct
      * @param end_to the EndTo reference
      */
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_subscriber_set_end_to(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
@@ -139,7 +139,7 @@ extern "C"
      * @param env pointer to environment struct
      * @return end_to 
      */
-    axis2_endpoint_ref_t *AXIS2_CALL
+    AXIS2_EXTERN axis2_endpoint_ref_t *AXIS2_CALL
     savan_subscriber_get_end_to(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env);
@@ -150,7 +150,7 @@ extern "C"
      * @param env pointer to environment struct
      * @param notify_to the NotifyTo reference
      */
-    axis2_status_t AXIS2_CALL
+	AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_subscriber_set_notify_to(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
@@ -162,7 +162,7 @@ extern "C"
      * @param env pointer to environment struct
      * @return notify_to
      */
-    axis2_endpoint_ref_t *AXIS2_CALL
+    AXIS2_EXTERN axis2_endpoint_ref_t *AXIS2_CALL
     savan_subscriber_get_notify_to(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env);
@@ -173,7 +173,7 @@ extern "C"
      * @param env pointer to environment struct
      * @param mode the delivery mode
      */
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_subscriber_set_delivery_mode(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
@@ -185,7 +185,7 @@ extern "C"
      * @param env pointer to environment struct
      * @param expires the expires date and time
      */
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_subscriber_set_expires(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
@@ -197,7 +197,7 @@ extern "C"
      * @param env pointer to environment struct
      * @return expire date and time as string
      */
-    axis2_char_t * AXIS2_CALL
+    AXIS2_EXTERN axis2_char_t * AXIS2_CALL
     savan_subscriber_get_expires(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env);
@@ -208,7 +208,7 @@ extern "C"
      * @param env pointer to environment struct
      * @param filter the filter string
      */
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_subscriber_set_filter(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
@@ -220,7 +220,7 @@ extern "C"
      * @param env pointer to environment struct
      * @return filter the filter string
      */
-    axis2_char_t *AXIS2_CALL
+    AXIS2_EXTERN axis2_char_t *AXIS2_CALL
     savan_subscriber_get_filter(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env);
@@ -232,7 +232,7 @@ extern "C"
      * @param payload the content to be published
      * @return AXIS2_SUCCESS on success, else AXIS2_FAILURE 
      */
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_subscriber_publish(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
@@ -245,7 +245,7 @@ extern "C"
      * @param msg_ctx the msg to be published
      * @return AXIS2_SUCCESS on success, else AXIS2_FAILURE 
      */
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_subscriber_set_renew_status(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
@@ -258,7 +258,7 @@ extern "C"
      * @param msg_ctx the msg to be published
      * @return AXIS2_SUCCESS on success, else AXIS2_FAILURE 
      */
-    axis2_bool_t AXIS2_CALL
+    AXIS2_EXTERN axis2_bool_t AXIS2_CALL
     savan_subscriber_get_renew_status(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env);
@@ -282,13 +282,13 @@ extern "C"
         void *subscriber, 
         const axutil_env_t *env);
 
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
         savan_subscriber_set_topic(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
         axis2_char_t *topic);
 
-    axis2_char_t *AXIS2_CALL
+    AXIS2_EXTERN axis2_char_t *AXIS2_CALL
     savan_subscriber_get_topic(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env);

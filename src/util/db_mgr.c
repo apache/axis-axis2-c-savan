@@ -44,7 +44,7 @@
  *
  */
 
-int
+AXIS2_EXTERN int
 savan_db_mgr_busy_handler(
     sqlite3* dbconn,
     char *sql_stmt,
@@ -68,7 +68,7 @@ savan_db_mgr_create(
     return db_mgr;
 }
 
-void AXIS2_CALL
+AXIS2_EXTERN void AXIS2_CALL
 savan_db_mgr_free(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env)
@@ -84,7 +84,7 @@ savan_db_mgr_free(
         "[SAVAN] Exit:savan_db_mgr_free");
 }
 
-int AXIS2_CALL
+AXIS2_EXTERN int 
 savan_db_mgr_topic_find_callback(
     void *not_used, 
     int argc, 
@@ -114,7 +114,8 @@ savan_db_mgr_topic_find_callback(
     }
     return 0;
 }
-int
+
+AXIS2_EXTERN int
 savan_db_mgr_subs_find_callback(
     void *not_used, 
     int argc, 
@@ -185,7 +186,7 @@ savan_db_mgr_subs_find_callback(
     return 0;
 }
 
-int  
+AXIS2_EXTERN int  
 savan_db_mgr_subs_retrieve_callback(
     void *not_used, 
     int argc, 
@@ -256,7 +257,7 @@ savan_db_mgr_subs_retrieve_callback(
     return 0;
 }
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_insert(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
@@ -306,7 +307,7 @@ savan_db_mgr_insert(
     return AXIS2_SUCCESS;
 }
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_remove(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
@@ -355,7 +356,7 @@ savan_db_mgr_remove(
     return AXIS2_SUCCESS;
 }
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_update(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
@@ -408,7 +409,7 @@ savan_db_mgr_update(
     return AXIS2_SUCCESS;
 }
 
-savan_subscriber_t *AXIS2_CALL
+AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
 savan_db_mgr_retrieve(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
@@ -472,7 +473,7 @@ savan_db_mgr_retrieve(
     return subscriber;
 }
 
-axutil_array_list_t * AXIS2_CALL
+AXIS2_EXTERN axutil_array_list_t * AXIS2_CALL
 savan_db_mgr_retrieve_all(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
