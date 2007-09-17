@@ -251,7 +251,8 @@ savan_msg_recv_handle_sub_request(
     /* Expires element. Get expiry time from subscriber and set */
     /*subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, id);*/
     subs_prop = axis2_msg_ctx_get_property(msg_ctx, env, SAVAN_SUBSCRIBER);
-    subscriber = axutil_property_get_value(subs_prop, env);
+    if(subs_prop)
+        subscriber = axutil_property_get_value(subs_prop, env);
     if(subscriber)
         expires = savan_subscriber_get_expires(subscriber, env);
     else
