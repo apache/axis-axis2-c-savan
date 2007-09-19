@@ -129,7 +129,6 @@ extern "C"
     axis2_status_t AXIS2_CALL
     savan_util_set_filter_template_for_subscriber(
         savan_subscriber_t *subscriber,
-        savan_sub_processor_t *sub_processor,
         const axutil_env_t *env);
     #endif
 

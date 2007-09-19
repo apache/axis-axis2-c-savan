@@ -120,11 +120,6 @@ savan_sub_processor_subscribe(
 
     /*Set the filter template file for the subscriber*/
 
-	#ifdef SAVAN_FILTERING
-    savan_util_set_filter_template_for_subscriber(subscriber, 
- 		sub_processor, env);
-	#endif
-
     /* Store sub id in msg ctx to be used by the msg receiver */
     id = savan_subscriber_get_id(subscriber, env);
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);

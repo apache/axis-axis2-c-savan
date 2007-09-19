@@ -148,7 +148,6 @@ savan_util_create_fault_envelope(
 axis2_status_t AXIS2_CALL
 savan_util_set_filter_template_for_subscriber(
     savan_subscriber_t *subscriber,
-    savan_sub_processor_t *sub_processor,
     const axutil_env_t *env)
 {
     AXIS2_ENV_CHECK(env, NULL);
@@ -194,25 +193,38 @@ savan_util_apply_filter(
     axiom_document_t *document = NULL;
     axiom_node_t *node = NULL;
 
-	if(savan_subscriber_get_filter(subscriber, env) == NULL)
+	if(!savan_subscriber_get_filter(subscriber, env))
 	{
 		return AXIS2_SUCCESS;
 	}
 
     payload_string = axiom_node_to_string(payload, env);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[SAVAN] payload_string before applying filter:%s", payload_string);
 
     payload_doc = (xmlDocPtr)xmlParseDoc((xmlChar*)payload_string);
+
+    #ifdef SAVAN_FILTERING
+        savan_util_set_filter_template_for_subscriber(subscriber, env);
+	#endif
 
     xslt_template_filter = 
 		(xsltStylesheetPtr)savan_subscriber_get_filter_template(subscriber,
         env);
-
+    if(xslt_template_filter)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "came0");
+    }
     xmlDocPtr result_doc = (xmlDocPtr)xsltApplyStylesheet(xslt_template_filter,
         payload_doc, NULL);
 
     if(result_doc)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "came1");
         xmlDocDumpMemory(result_doc, &buffer, &size);
+    }
 
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] Buffer:%s", buffer);
     if(buffer)
     {
         reader = axiom_xml_reader_create_for_memory(env, 
@@ -220,11 +232,20 @@ savan_util_apply_filter(
 		    NULL, AXIS2_XML_PARSER_TYPE_BUFFER);
     }
     if(reader)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "came2");
         om_builder = axiom_stax_builder_create(env, reader);
+    }
     if(om_builder)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "came3");
         document = axiom_stax_builder_get_document(om_builder, env);
+    }
     if(document)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "came4");
         node = axiom_document_build_all(document, env);
+    }
 
     if(om_builder)
         axiom_stax_builder_free_self(om_builder, env);
