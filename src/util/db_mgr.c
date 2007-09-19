@@ -416,10 +416,189 @@ savan_db_mgr_insert_subscriber(
             "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] renewed:%d", renewed);
     if (sqlite3_step(insertqry) == SQLITE_DONE)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Subscriber is added to the database");
         sqlite3_reset(insertqry);
+    }
+    else
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    }
    
     AXIS2_FREE(env->allocator, sql_insert);
     sqlite3_finalize(insertqry);
+    sqlite3_close(dbconn);
+    return AXIS2_SUCCESS;
+}
+
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_db_mgr_update_subscriber(
+    savan_db_mgr_t *db_mgr,
+    const axutil_env_t *env,
+    savan_subscriber_t *subscriber)
+{
+    axis2_char_t *sql_update = NULL;
+    sqlite3 *dbconn = NULL;
+    axis2_char_t *id = NULL;
+    axis2_char_t *endto = NULL;
+    axis2_char_t *notifyto = NULL;
+    axis2_char_t *delivery_mode = NULL;
+    axis2_char_t *expires = NULL;
+    axis2_char_t *filter = NULL;
+    axis2_char_t *topic = NULL;
+    axis2_char_t *topic_url = NULL;
+    int renewed = 0;
+    axis2_endpoint_ref_t *endto_epr = NULL;
+    axis2_endpoint_ref_t *notifyto_epr = NULL;
+    int counter = 1;
+    struct sqlite3_stmt* updateqry;
+    sql_update = AXIS2_MALLOC(env->allocator, 1028);
+    sprintf(sql_update, "%s", "update subscriber set ");
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_update:%s", sql_update);
+
+    if(subscriber)
+    {
+        id = savan_subscriber_get_id(subscriber, env);
+        endto_epr = savan_subscriber_get_end_to(subscriber, env);
+        if(endto_epr)
+        {
+            endto = (axis2_char_t *) axis2_endpoint_ref_get_address(endto_epr, 
+                env);
+            if(endto)
+            {
+                sprintf(sql_update, "%s%s", sql_update, "end_to=?, ");
+                counter++;
+                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_update:%s", sql_update);
+            }
+        }
+        notifyto_epr = savan_subscriber_get_notify_to(subscriber, env);
+        if(notifyto_epr)
+        {
+            notifyto = (axis2_char_t *) axis2_endpoint_ref_get_address(
+                notifyto_epr, env);
+            if(notifyto)
+            {
+                sprintf(sql_update, "%s%s", sql_update, "notify_to=?, ");   
+                counter++;
+                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_update:%s", sql_update);
+            }
+        }
+        delivery_mode = savan_subscriber_get_delivery_mode(subscriber, env);
+        if(delivery_mode)
+        {
+            sprintf(sql_update, "%s%s", sql_update, "delivery_mode=?, ");   
+            counter++;
+        }
+        expires = savan_subscriber_get_expires(subscriber, env);
+        if(expires)
+        {
+            sprintf(sql_update, "%s%s", sql_update, "expires=?, ");   
+            counter++;
+        }
+        filter = savan_subscriber_get_filter(subscriber, env);
+        if(filter)
+        {
+            sprintf(sql_update, "%s%s", sql_update, "filter=?, ");   
+            counter++;
+        }
+        topic_url = savan_subscriber_get_topic(subscriber, env);
+        if(topic_url)
+        {
+            topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
+            sprintf(sql_update, "%s%s", sql_update, "topic_name=?, ");   
+            counter++;
+        }
+        renewed = (int) savan_subscriber_get_renew_status(subscriber, env);
+        sprintf(sql_update, "%s%s", sql_update, "renewed=? where id=?;");   
+    }
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_update:%s", sql_update);
+    dbconn = (sqlite3 *) savan_db_mgr_get_dbconn(
+        db_mgr, env);
+    if(!dbconn)
+        return AXIS2_FAILURE;
+
+    counter = 0;
+    if (sqlite3_prepare(dbconn, sql_update, strlen(sql_update), &updateqry, NULL))
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Sql Update Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if(endto)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] endto:%s", endto);
+        counter++;
+        if (sqlite3_bind_text(updateqry, counter, endto, strlen(endto), 
+                SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Update Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if(notifyto)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] notifyto:%s", notifyto);
+        counter++;
+        if (sqlite3_bind_text(updateqry, counter, notifyto, strlen(notifyto), 
+                SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Update Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if(delivery_mode)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] delivery_mode:%s", delivery_mode);
+        counter++;
+        if (sqlite3_bind_text(updateqry, counter, delivery_mode, strlen(delivery_mode), SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Update Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if(expires)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] expires:%s", expires);
+        counter++;
+        if (sqlite3_bind_text(updateqry, counter, expires, strlen(expires), SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Update Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if(filter)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] filter:%s", filter);
+        counter++;
+        if (sqlite3_bind_text(updateqry, counter, filter, strlen(filter), SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Update Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if(topic)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] topic:%s", topic);
+        counter++;
+        if (sqlite3_bind_text(updateqry, counter, topic, strlen(topic), SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Update Error: %s", sqlite3_errmsg(dbconn));
+    }
+    counter++;
+    if (sqlite3_bind_int(updateqry, counter, renewed))
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Sql Update Error: %s", sqlite3_errmsg(dbconn));
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] renewed:%d", renewed);
+    counter++;
+    if (sqlite3_bind_text(updateqry, counter, id, strlen(id), SQLITE_STATIC))
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Sql Update Error: %s", sqlite3_errmsg(dbconn));
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] id:%s", id);
+    if (sqlite3_step(updateqry) == SQLITE_DONE)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Subscriber is updated to the database");
+        sqlite3_reset(updateqry);
+    }
+    else
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Sql Update Error: %s", sqlite3_errmsg(dbconn));
+    }
+   
+    AXIS2_FREE(env->allocator, sql_update);
+    sqlite3_finalize(updateqry);
     sqlite3_close(dbconn);
     return AXIS2_SUCCESS;
 }

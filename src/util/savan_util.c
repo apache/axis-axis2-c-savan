@@ -431,8 +431,6 @@ savan_util_get_subscriber_from_msg(
         axis2_char_t *sub_id)
 {
     savan_subscriber_t *subscriber = NULL;
-    /*axutil_param_t *param = NULL;*/
-    axis2_svc_t *pubs_svc = NULL;
 
     AXIS2_ENV_CHECK(env, NULL);
 
@@ -443,13 +441,6 @@ savan_util_get_subscriber_from_msg(
     if (!sub_id)
     {
         sub_id = savan_util_get_subscription_id_from_msg(env, msg_ctx);
-    }
-    pubs_svc = axis2_msg_ctx_get_svc(msg_ctx, env);
-    if (!pubs_svc)
-    {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Failed to extract the service"); 
-        return NULL;
     }
     { 
         axis2_char_t sql_retrieve[256];
@@ -543,7 +534,7 @@ savan_util_update_subscriber(
         axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
         db_mgr = savan_db_mgr_create(env, conf_ctx);
         if(db_mgr)
-            savan_db_mgr_insert_subscriber(db_mgr, env, subscriber);
+            savan_db_mgr_update_subscriber(db_mgr, env, subscriber);
     } 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] End:savan_util_update_subscriber"); 

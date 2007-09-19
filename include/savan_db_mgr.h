@@ -91,6 +91,12 @@ savan_db_mgr_insert_subscriber(
     savan_subscriber_t *subscriber);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_db_mgr_update_subscriber(
+    savan_db_mgr_t *db_mgr,
+    const axutil_env_t *env,
+    savan_subscriber_t *subscriber);
+
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_insert_topic(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,

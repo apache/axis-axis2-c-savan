@@ -251,7 +251,7 @@ savan_sub_processor_renew_subscription(
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     db_mgr = savan_db_mgr_create(env, conf_ctx);
     if(db_mgr)
-        status = savan_db_mgr_insert_subscriber(db_mgr, env, subscriber);
+        status = savan_db_mgr_update_subscriber(db_mgr, env, subscriber);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] End:savan_sub_processor_renew_subscription");
 

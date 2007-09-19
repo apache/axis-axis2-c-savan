@@ -360,13 +360,12 @@ savan_msg_recv_handle_renew_request(
     subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
     if (!subscriber)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to find "
-            "the subscriber from local store");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Failed to find the subscriber from local store");
         return AXIS2_FAILURE;
     }
 
     renewed = savan_subscriber_get_renew_status(subscriber, env);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "renewed:%d", renewed); 
     if (!renewed)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
