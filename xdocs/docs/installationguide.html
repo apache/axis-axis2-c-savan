@@ -51,7 +51,7 @@ distributions)</p>
 
 <h3>1.1. Installing Savan/C Source Release on Linux</h3>
 
-<p>This version of Savan/C depends on Axis2/C 1.0. <a href="http://ws.apache.org/axis2/c/download.cgi">Download Axis2/C</a> from  and
+<p>This version of Savan/C depends on Axis2/C 1.1. <a href="http://ws.apache.org/axis2/c/download.cgi">Download Axis2/C</a> from  and
 install. /p>
 <ol>
     <li> Download Savan source distribution</li>
@@ -63,7 +63,8 @@ install. /p>
 </ol>
     
 This will install the Savan/C as a module in Axis2/C in &lt;axis2c_deploy_path&gt;/modules folder. The module
-folder contains the Savan/C libraries and the module.xml file.
+folder contains the Savan/C libraries and the module.xml file. It will also install libsavan_client.so savan client
+library in &lt;axis2c_deploy_path&gt;/lib folder. This client library is needed for savan clients to be linked with.
 
 
 <a id="linux_binary"></a>
@@ -88,8 +89,6 @@ folder contains the Savan/C libraries and the module.xml file.
 </pre>
 <p>
     To deploy Savan/C in Axis2/C running environment copy the modules/savan into &lt;axis2c_deploy_path&gt;/modules folder.
-    Do the necessary changes to the &lt;axis2c_deploy_path&gt;/axis2.xml to run Savan/C(Refer to the sample <deploy_path>/axis2.xml
-    for help).
 </p>
 <a id="win"></a>
 
