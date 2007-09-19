@@ -153,29 +153,29 @@ savan_db_mgr_subs_find_callback(
             endto_epr = axis2_endpoint_ref_create(env, argv[i]);
             savan_subscriber_set_end_to(subscriber, env, endto_epr);
         }
-        if(0 == axutil_strcmp(col_name[i], "notify_to"))
+        if(0 == axutil_strcmp(col_name[i], "notify_to") )
         {
             axis2_endpoint_ref_t *notify_epr = NULL;
             notify_epr = axis2_endpoint_ref_create(env, argv[i]);
             savan_subscriber_set_notify_to(subscriber, env, notify_epr);
         }
-        if(0 == axutil_strcmp(col_name[i], "delivery_mode"))
+        if(0 == axutil_strcmp(col_name[i], "delivery_mode") )
         {
             savan_subscriber_set_delivery_mode(subscriber, env, argv[i]);
         }
-        if(0 == axutil_strcmp(col_name[i], "expires"))
+        if(0 == axutil_strcmp(col_name[i], "expires") )
         {
             savan_subscriber_set_expires(subscriber, env, argv[i]);
         }
-        if(0 == axutil_strcmp(col_name[i], "filter"))
+        if(0 == axutil_strcmp(col_name[i], "filter") )
         {
             savan_subscriber_set_filter(subscriber, env, argv[i]);
         }
-        if(0 == axutil_strcmp(col_name[i], "topic_url"))
+        if(0 == axutil_strcmp(col_name[i], "topic_url") )
         {
             savan_subscriber_set_topic(subscriber, env, argv[i]);
         }
-        if(0 == axutil_strcmp(col_name[i], "renewed"))
+        if(0 == axutil_strcmp(col_name[i], "renewed") )
         {
             savan_subscriber_set_renew_status(subscriber, env, 
                 AXIS2_ATOI(argv[i]));
@@ -258,54 +258,202 @@ savan_db_mgr_subs_retrieve_callback(
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_db_mgr_insert(
+savan_db_mgr_insert_subscriber(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
-    axis2_char_t *sql_stmt_insert)
+    savan_subscriber_t *subscriber)
 {
-    char *error_msg;
-    int rc = -1;
+    axis2_char_t *sql_insert = NULL;
     sqlite3 *dbconn = NULL;
-    AXIS2_ENV_CHECK(env, AXIS2_FALSE);
-   
+    axis2_char_t *id = NULL;
+    axis2_char_t *endto = NULL;
+    axis2_char_t *notifyto = NULL;
+    axis2_char_t *delivery_mode = NULL;
+    axis2_char_t *expires = NULL;
+    axis2_char_t *filter = NULL;
+    axis2_char_t *topic = NULL;
+    axis2_char_t *topic_url = NULL;
+    axis2_bool_t renewed = AXIS2_FALSE;
+    axis2_endpoint_ref_t *endto_epr = NULL;
+    axis2_endpoint_ref_t *notifyto_epr = NULL;
+    int counter = 1;
+    struct sqlite3_stmt* insertqry;
+    sql_insert = AXIS2_MALLOC(env->allocator, 1028);
+    sprintf(sql_insert, "%s", "insert into subscriber(id");
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
+
+    if(subscriber)
+    {
+        int i = 0;
+        id = savan_subscriber_get_id(subscriber, env);
+        endto_epr = savan_subscriber_get_end_to(subscriber, env);
+        if(endto_epr)
+        {
+            endto = (axis2_char_t *) axis2_endpoint_ref_get_address(endto_epr, 
+                env);
+            sprintf(sql_insert, "%s%s", sql_insert, ",end_to");
+            counter++;
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
+        }
+        notifyto_epr = savan_subscriber_get_notify_to(subscriber, env);
+        if(notifyto_epr)
+        {
+            notifyto = (axis2_char_t *) axis2_endpoint_ref_get_address(
+                notifyto_epr, env);
+            sprintf(sql_insert, "%s%s", sql_insert, ",notify_to");   
+            counter++;
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
+        }
+        delivery_mode = savan_subscriber_get_delivery_mode(subscriber, env);
+        if(delivery_mode)
+        {
+            sprintf(sql_insert, "%s%s", sql_insert, ",delivery_mode");   
+            counter++;
+        }
+        expires = savan_subscriber_get_expires(subscriber, env);
+        if(expires)
+        {
+            sprintf(sql_insert, "%s%s", sql_insert, ",expires");   
+            counter++;
+        }
+        filter = savan_subscriber_get_filter(subscriber, env);
+        if(filter)
+        {
+            sprintf(sql_insert, "%s%s", sql_insert, ",filter");   
+            counter++;
+        }
+        topic_url = savan_subscriber_get_topic(subscriber, env);
+        if(topic_url)
+        {
+            topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
+            sprintf(sql_insert, "%s%s", sql_insert, ",topic_name");   
+            counter++;
+        }
+        renewed = savan_subscriber_get_renew_status(subscriber, env);
+        sprintf(sql_insert, "%s%s", sql_insert, ",renewed");   
+        sprintf(sql_insert, "%s%s", sql_insert, ") values(?");
+        for(i = 0; i < counter; i++)
+        {
+            sprintf(sql_insert, "%s%s", sql_insert, ",?");
+        }
+        sprintf(sql_insert, "%s%s", sql_insert, ");");
+    }
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
     dbconn = (sqlite3 *) savan_db_mgr_get_dbconn(
         db_mgr, env);
     if(!dbconn)
         return AXIS2_FAILURE;
-    rc = sqlite3_exec(dbconn, "BEGIN;", 0, 0, &error_msg);
-    if(rc == SQLITE_BUSY)
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] id:%s", id);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] endto:%s", endto);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] notifyto:%s", notifyto);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] delivery_mode:%s", delivery_mode);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] expires:%s", expires);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] filter:%s", filter);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] topic:%s", topic);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVANC] renewed:%d", renewed);
+    counter = 1;
+    if (sqlite3_prepare(dbconn, sql_insert, strlen(sql_insert), &insertqry, NULL))
     {
-        rc = savan_db_mgr_busy_handler(dbconn,
-            "BEGIN;", 0, 0, &error_msg, rc);
-    }
-    rc = sqlite3_exec(dbconn, sql_stmt_insert, 0, 0, &error_msg);
-    if(rc == SQLITE_BUSY)
-        rc = savan_db_mgr_busy_handler(dbconn, sql_stmt_insert, 
-            0, 0, &error_msg, rc);
-    if( rc != SQLITE_OK )
-    {
-        rc = sqlite3_exec(dbconn, "ROLLBACK;", 0, 0, &error_msg);
-        if(rc == SQLITE_BUSY)
-        {
-            rc = savan_db_mgr_busy_handler(dbconn,
-                "ROLLBACK;", 0, 0, &error_msg, rc);
-        }
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Error Sql Insert Stmt: %s. Sql Insert Error: %s", 
-            sql_stmt_insert, error_msg);
-        sqlite3_free(error_msg);
-        sqlite3_close(dbconn);
-        return AXIS2_FAILURE;
+            "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
     }
-    rc = sqlite3_exec(dbconn, "COMMIT;", 0, 0, &error_msg);
-    if(rc == SQLITE_BUSY)
+    if (sqlite3_bind_text(insertqry, counter, id, strlen(id), SQLITE_STATIC))
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    if(endto)
     {
-        rc = savan_db_mgr_busy_handler(dbconn,
-            "COMMIT;", 0, 0, &error_msg, rc);
+        counter++;
+        if (sqlite3_bind_text(insertqry, counter, endto, strlen(endto), 
+                SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
     }
+    if(notifyto)
+    {
+        counter++;
+        if (sqlite3_bind_text(insertqry, counter, notifyto, strlen(notifyto), 
+                SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if(delivery_mode)
+    {
+        counter++;
+        if (sqlite3_bind_text(insertqry, counter, delivery_mode, strlen(delivery_mode), SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if(expires)
+    {
+        counter++;
+        if (sqlite3_bind_text(insertqry, counter, expires, strlen(expires), SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if(filter)
+    {
+        counter++;
+        if (sqlite3_bind_text(insertqry, counter, filter, strlen(filter), SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if(topic)
+    {
+        counter++;
+        if (sqlite3_bind_text(insertqry, counter, topic, strlen(topic), SQLITE_STATIC))
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    }
+    counter++;
+    if (sqlite3_bind_int(insertqry, counter, renewed))
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    if (sqlite3_step(insertqry) == SQLITE_DONE)
+        sqlite3_reset(insertqry);
+   
+    AXIS2_FREE(env->allocator, sql_insert);
+    sqlite3_finalize(insertqry);
     sqlite3_close(dbconn);
     return AXIS2_SUCCESS;
 }
+
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_db_mgr_insert_topic(
+    savan_db_mgr_t *db_mgr,
+    const axutil_env_t *env,
+    axis2_char_t *topic_name,
+    axis2_char_t *topic_url)
+{
+    axis2_char_t *sql_insert = NULL;
+    sqlite3 *dbconn = NULL;
+    struct sqlite3_stmt* insertqry;
+
+    sql_insert = "insert into topic(topic_name, topic_url) values(?, ?);";
+    dbconn = (sqlite3 *) savan_db_mgr_get_dbconn(
+        db_mgr, env);
+    if(!dbconn)
+        return AXIS2_FAILURE;
+
+    if (sqlite3_prepare(dbconn, sql_insert, strlen(sql_insert), &insertqry, NULL))
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    }
+    if (sqlite3_bind_text(insertqry, 1, topic_name, strlen(topic_name), SQLITE_STATIC))
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    if (sqlite3_bind_text(insertqry, 2, topic_url, strlen(topic_url), SQLITE_STATIC))
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
+    if (sqlite3_step(insertqry) == SQLITE_DONE)
+        sqlite3_reset(insertqry);
+    
+    sqlite3_finalize(insertqry);
+    sqlite3_close(dbconn);
+    return AXIS2_SUCCESS;
+}
+
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_remove(
@@ -617,7 +765,6 @@ savan_db_mgr_create_insert_sql(
     axis2_conf_ctx_t *conf_ctx)
 {
     axis2_char_t *sql_insert = NULL;
-    savan_db_mgr_t *db_mgr = NULL;
     axis2_char_t *id = NULL;
     axis2_char_t *endto = NULL;
     axis2_char_t *notifyto = NULL;
@@ -643,7 +790,6 @@ savan_db_mgr_create_insert_sql(
     topic_url = savan_subscriber_get_topic(subscriber, env);
     topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
     renewed = savan_subscriber_get_renew_status(subscriber, env);
-    db_mgr = savan_db_mgr_create(env, conf_ctx);
     sprintf(sql_insert, "insert into subscriber(id, end_to, notify_to,"\
         "delivery_mode, expires, filter, topic_name, renewed) values('%s'"\
         ", '%s', '%s', '%s', '%s', '%s', '%s', %d);", id, endto, notifyto, 
@@ -682,8 +828,11 @@ savan_db_mgr_create_update_sql(
     expires = savan_subscriber_get_expires(subscriber, env);
     filter = savan_subscriber_get_filter(subscriber, env);
     topic_url = savan_subscriber_get_topic(subscriber, env);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "topic_url:%s", topic_url);
-    topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
+    if(topic_url)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "topic_url:%s", topic_url);
+        topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
+    }
     renewed = savan_subscriber_get_renew_status(subscriber, env);
     db_mgr = savan_db_mgr_create(env, conf_ctx);
     sprintf(sql_update, "update subscriber set end_to='%s', notify_to='%s',"\

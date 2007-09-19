@@ -85,10 +85,17 @@ savan_db_mgr_subs_retrieve_callback(
     char **col_name);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_db_mgr_insert(
+savan_db_mgr_insert_subscriber(
     savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
-    axis2_char_t *sql_stmt_insert);
+    savan_subscriber_t *subscriber);
+
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_db_mgr_insert_topic(
+    savan_db_mgr_t *db_mgr,
+    const axutil_env_t *env,
+    axis2_char_t *topic_name,
+    axis2_char_t *topic_url);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_remove(

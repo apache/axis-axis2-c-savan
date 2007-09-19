@@ -189,6 +189,10 @@ savan_util_apply_filter(
     axis2_char_t *payload_string = NULL;
     xmlDocPtr payload_doc = NULL;
     xsltStylesheetPtr xslt_template_filter = NULL;
+    axiom_xml_reader_t *reader = NULL;
+    axiom_stax_builder_t *om_builder = NULL;
+    axiom_document_t *document = NULL;
+    axiom_node_t *node = NULL;
 
 	if(savan_subscriber_get_filter(subscriber, env) == NULL)
 	{
@@ -206,19 +210,27 @@ savan_util_apply_filter(
     xmlDocPtr result_doc = (xmlDocPtr)xsltApplyStylesheet(xslt_template_filter,
         payload_doc, NULL);
 
-    xmlDocDumpMemory(result_doc, &buffer, &size);
+    if(result_doc)
+        xmlDocDumpMemory(result_doc, &buffer, &size);
 
-    axiom_xml_reader_t *reader = axiom_xml_reader_create_for_memory(env, 
-		(char*)buffer,axutil_strlen((char*)buffer), 
-		NULL, AXIS2_XML_PARSER_TYPE_BUFFER);
-    axiom_stax_builder_t *om_builder = axiom_stax_builder_create(env, reader);
-    axiom_document_t *document = axiom_stax_builder_get_document(om_builder, 
-		env);
-    axiom_node_t *node = axiom_document_build_all(document, env);
+    if(buffer)
+    {
+        reader = axiom_xml_reader_create_for_memory(env, 
+		    (char*)buffer,axutil_strlen((char*)buffer), 
+		    NULL, AXIS2_XML_PARSER_TYPE_BUFFER);
+    }
+    if(reader)
+        om_builder = axiom_stax_builder_create(env, reader);
+    if(om_builder)
+        document = axiom_stax_builder_get_document(om_builder, env);
+    if(document)
+        node = axiom_document_build_all(document, env);
 
-    axiom_stax_builder_free_self(om_builder, env);
+    if(om_builder)
+        axiom_stax_builder_free_self(om_builder, env);
     free(payload_string);
-	xmlFreeDoc(result_doc);
+    if(result_doc)
+	    xmlFreeDoc(result_doc);
 
 	if(node == NULL)
 	{
@@ -427,37 +439,6 @@ savan_util_get_subscriber_from_msg(
             "[SAVAN] Failed to extract the service"); 
         return NULL;
     }
-    /*param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
-    if(param)
-    {
-        axis2_char_t *subs_mgr_url = NULL;
-        if(param)
-        {
-            axis2_svc_client_t* svc_client = NULL;
-            axutil_param_t *svc_client_param = NULL;
-            axis2_endpoint_ref_t *topic_epr = NULL;
-            axis2_char_t *topic_url = NULL;
-
-            subs_mgr_url = axutil_param_get_value(param, env);
-            topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
-            topic_url = (axis2_char_t *) axis2_endpoint_ref_get_address(
-                topic_epr, env);
-            svc_client_param = axis2_svc_get_param(pubs_svc, env, "svc_client");
-            if(svc_client_param)
-                svc_client = axutil_param_get_value(svc_client_param, env);
-            if(!svc_client)
-            {
-                svc_client = 
-                    (axis2_svc_client_t *) savan_util_get_svc_client(env);
-                svc_client_param = axutil_param_create(env, "svc_client", 
-                    svc_client);
-                axis2_svc_add_param(pubs_svc, env, svc_client_param);
-            }
-            subscriber = savan_util_get_subscriber_from_remote_subs_mgr(env, 
-                sub_id, subs_mgr_url, svc_client);
-        }
-    }
-    else*/
     { 
         axis2_char_t sql_retrieve[256];
         savan_db_mgr_t *db_mgr = NULL;
@@ -618,11 +599,9 @@ savan_util_add_subscriber(
     {
         savan_db_mgr_t *db_mgr = NULL;
         axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-        axis2_char_t *sql_insert = savan_db_mgr_create_insert_sql(env, 
-            subscriber, conf_ctx);
         db_mgr = savan_db_mgr_create(env, conf_ctx);
         if(db_mgr)
-            status = savan_db_mgr_insert(db_mgr, env, sql_insert);
+            status = savan_db_mgr_insert_subscriber(db_mgr, env, subscriber);
     }
     if(status)
     {
@@ -633,7 +612,7 @@ savan_util_add_subscriber(
     }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] End:savan_util_add_subscriber"); 
-    return AXIS2_SUCCESS;
+    return status;
 }
 
 axis2_status_t AXIS2_CALL
@@ -1365,7 +1344,10 @@ savan_util_get_topic_name_from_topic_url(
     axis2_char_t *topic_url)
 {
     axis2_char_t *topic = NULL;
-    topic  = axutil_strdup(env, axutil_rindex(topic_url, '/') + 1);
+    axis2_char_t *temp = NULL;
+    temp = axutil_rindex(topic_url, '/') + 1;
+    if(temp)
+        topic  = axutil_strdup(env, temp);
     return topic;
 }
 

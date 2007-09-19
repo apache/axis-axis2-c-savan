@@ -366,11 +366,12 @@ savan_msg_recv_handle_renew_request(
     }
 
     renewed = savan_subscriber_get_renew_status(subscriber, env);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "renewed:%d", renewed); 
     if (!renewed)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
             "[SAVAN] Subscription is not renewed");
-        return AXIS2_FAILURE;
+        /*return AXIS2_FAILURE;*/
     }
 
     /* Set wsa action as RenewResponse. */

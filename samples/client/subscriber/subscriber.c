@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        printf("Subscription failed\n");
+        printf("Subscription Failed\n");
         exit(0);
     }
 

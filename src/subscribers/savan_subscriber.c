@@ -392,9 +392,16 @@ savan_subscriber_publish(
 
     /* Setup options */
     options = axis2_options_create(env);
-    address = axis2_endpoint_ref_get_address(subscriber->notify_to, env);
-    to = axis2_endpoint_ref_create(env, address);
-    axis2_options_set_to(options, env, to);
+    if(subscriber->notify_to)
+    {
+        address = axis2_endpoint_ref_get_address(subscriber->notify_to, env);
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "address:%s", address);
+        if(address)
+        {
+            to = axis2_endpoint_ref_create(env, address);
+            axis2_options_set_to(options, env, to);
+        }
+    }
     axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
 
 	/* Apply the filter, and check whether it evaluates to success */

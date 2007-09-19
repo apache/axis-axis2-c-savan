@@ -135,7 +135,6 @@ savan_subs_mgr_init_with_conf(
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "dam_size:%d", size);
     for(i = 0; i < size; i++)
     {
-        axis2_char_t sql_insert[1024];
         savan_db_mgr_t *db_mgr = NULL;
         axutil_param_t *topic_param = NULL;
         axis2_char_t *topic_url_str = NULL;
@@ -147,9 +146,7 @@ savan_subs_mgr_init_with_conf(
             continue;
 
         db_mgr = savan_db_mgr_create(env, conf_ctx);
-        sprintf(sql_insert, "insert into topic(topic_name, topic_url) "\
-            "values('%s', '%s');", topic_name, topic_url_str); 
-        if(savan_db_mgr_insert(db_mgr, env, sql_insert))
+        if(savan_db_mgr_insert_topic(db_mgr, env, topic_name, topic_url_str))
             AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
                 "[SAVAN] Topic %s added", topic_url_str);
         else

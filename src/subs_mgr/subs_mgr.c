@@ -33,6 +33,7 @@ savan_subs_mgr_add_subscriber(
     axis2_msg_ctx_t *msg_ctx)
 {
     axis2_conf_ctx_t *conf_ctx = NULL;
+    savan_subscriber_t *subscriber = NULL;
     axis2_char_t *topic_url = NULL;
     axis2_char_t *topic = NULL;
 
@@ -59,15 +60,17 @@ savan_subs_mgr_add_subscriber(
     
     axis2_char_t *id = NULL;
     axis2_char_t *endto = NULL;
-    axis2_char_t *notify = NULL;
+    axis2_char_t *notifyto = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *filter = NULL;
-    axis2_char_t *delivery_mode = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] Start:savan_subs_mgr_add_subscriber");
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    add_sub_elem = (axiom_element_t*)axiom_node_get_data_element(add_sub_node, env);
+    subscriber = savan_subscriber_create(env);
+    if(add_sub_node)
+        add_sub_elem = (axiom_element_t*)axiom_node_get_data_element(
+            add_sub_node, env);
     
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] node:%s", axiom_node_to_string(add_sub_node, env));
@@ -77,17 +80,25 @@ savan_subs_mgr_add_subscriber(
         add_sub_node, &topic_node);
     axutil_qname_free(qname, env);
     topic_url = axiom_element_get_text(topic_elem, env, topic_node);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[SAVAN] Subscriber will be added to the topic:%s ", topic_url);
-    topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
+    if(topic_url)
+    {
+        savan_subscriber_set_topic(subscriber, env, topic_url);
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Subscriber will be added to the topic:%s ", topic_url);
+        topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
+    }
 
     /* Get Id element from AddSubscriber*/
     qname = axutil_qname_create(env, ELEM_NAME_ID, SAVAN_NAMESPACE, NULL);
     id_elem = axiom_element_get_first_child_with_qname(add_sub_elem, env, qname,
         add_sub_node, &id_node);
     axutil_qname_free(qname, env);
-   
-    id = axiom_element_get_text(id_elem, env, id_node);
+  
+    if(id_elem)
+    {
+        id = axiom_element_get_text(id_elem, env, id_node);
+        savan_subscriber_set_id(subscriber, env, id);
+    }
     /* Get subscriber element from Body */
     qname = axutil_qname_create(env, ELEM_NAME_SUBSCRIBE, EVENTING_NAMESPACE, NULL);
     sub_elem = axiom_element_get_first_child_with_qname(add_sub_elem, env, qname,
@@ -97,52 +108,79 @@ savan_subs_mgr_add_subscriber(
     /* Now read each sub element of Subscribe element */
         
     /* EndTo */
-    qname = axutil_qname_create(env, ELEM_NAME_ENDTO, EVENTING_NAMESPACE, NULL);
-    endto_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
-        sub_node, &endto_node);
-    axutil_qname_free(qname, env);
-    
-    endto = axiom_element_get_text(endto_elem, env, endto_node);
-    
-    /* Get Delivery element and read NotifyTo */
-    qname = axutil_qname_create(env, ELEM_NAME_DELIVERY, EVENTING_NAMESPACE, NULL);
-    delivery_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
-        sub_node, &delivery_node);
-    axutil_qname_free(qname, env);
-    
-    qname = axutil_qname_create(env, ELEM_NAME_NOTIFYTO, EVENTING_NAMESPACE, NULL);
-    notify_elem = axiom_element_get_first_child_with_qname(delivery_elem, env, qname,
-        delivery_node, &notify_node);
-    axutil_qname_free(qname, env);
-    
-    notify = axiom_element_get_text(notify_elem, env, notify_node);
-    
-    /* Expires */
-    qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, NULL);
-    expires_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
-        sub_node, &expires_node);
-    axutil_qname_free(qname, env);
-    
-    expires = axiom_element_get_text(expires_elem, env, expires_node);
-    
-    /* Filter */
-    qname = axutil_qname_create(env, ELEM_NAME_FILTER, EVENTING_NAMESPACE, NULL);
-    filter_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
-        sub_node, &filter_node);
-    axutil_qname_free(qname, env);
-    
-    filter = axiom_element_get_text(filter_elem, env, filter_node);
-    
+    if(sub_elem)
     {
-        axis2_char_t sql_insert[1024];
+        qname = axutil_qname_create(env, ELEM_NAME_ENDTO, EVENTING_NAMESPACE, NULL);
+        endto_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &endto_node);
+        axutil_qname_free(qname, env);
+        if(endto_elem)
+        {
+            axis2_endpoint_ref_t *endto_ref = NULL;
+            endto = axiom_element_get_text(endto_elem, env, endto_node);
+            if(endto)
+            {
+                endto_ref = axis2_endpoint_ref_create(env, endto);
+                savan_subscriber_set_end_to(subscriber, env, endto_ref);
+            }
+        }
+    
+        /* Get Delivery element and read NotifyTo */
+        qname = axutil_qname_create(env, ELEM_NAME_DELIVERY, EVENTING_NAMESPACE, 
+            NULL);
+        delivery_elem = axiom_element_get_first_child_with_qname(sub_elem, env, 
+            qname, sub_node, &delivery_node);
+        axutil_qname_free(qname, env);
+   
+        if(delivery_elem)
+        {
+            qname = axutil_qname_create(env, ELEM_NAME_NOTIFYTO, 
+                EVENTING_NAMESPACE, NULL);
+            notify_elem = axiom_element_get_first_child_with_qname(
+                delivery_elem, env, qname, delivery_node, &notify_node);
+            axutil_qname_free(qname, env);
+            if(notify_elem)
+            {
+                axis2_endpoint_ref_t *notifyto_ref = NULL;
+                notifyto = axiom_element_get_text(notify_elem, env, notify_node);
+                if(notifyto)
+                {
+                    notifyto_ref = axis2_endpoint_ref_create(env, notifyto);
+                    savan_subscriber_set_notify_to(subscriber, env, notifyto_ref);
+                }
+            }
+        }
+    
+        /* Expires */
+        qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, 
+            NULL);
+        expires_elem = axiom_element_get_first_child_with_qname(sub_elem, env, 
+            qname, sub_node, &expires_node);
+        axutil_qname_free(qname, env);
+        if(expires_elem)
+        {
+            expires = axiom_element_get_text(expires_elem, env, expires_node);
+            if(expires)
+                savan_subscriber_set_expires(subscriber, env, expires);
+        }
+    
+        /* Filter */
+        qname = axutil_qname_create(env, ELEM_NAME_FILTER, EVENTING_NAMESPACE, NULL);
+        filter_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &filter_node);
+        axutil_qname_free(qname, env);
+        if(filter_elem)
+        {
+            filter = axiom_element_get_text(filter_elem, env, filter_node);
+            if(filter)
+                savan_subscriber_set_filter(subscriber, env, filter);
+        }
+    } 
+    {
         savan_db_mgr_t *db_mgr = NULL;
 
         db_mgr = savan_db_mgr_create(env, conf_ctx);
-        sprintf(sql_insert, "insert into subscriber(id, end_to, notify_to,"\
-            "delivery_mode, expires, filter, topic_name, renewed) values('%s'"\
-            ", '%s', '%s', '%s', '%s', '%s', '%s', %d);", id, endto, notify, 
-            delivery_mode, expires, filter, topic, AXIS2_FALSE);
-        if(savan_db_mgr_insert(db_mgr, env, sql_insert))
+        if(savan_db_mgr_insert_subscriber(db_mgr, env, subscriber))
             AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
                 "[SAVAN] Subscriber %s added to the topic:%s", id, topic_url);
         else

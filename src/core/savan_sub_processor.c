@@ -27,6 +27,7 @@
 #include <savan_error.h>
 #include <savan_subscriber.h>
 #include <savan_util.h>
+#include <savan_db_mgr.h>
 
 struct savan_sub_processor_t
 {
@@ -208,6 +209,9 @@ savan_sub_processor_renew_subscription(
     axis2_bool_t renewable = AXIS2_TRUE;
     axis2_char_t *expires = NULL;
     axis2_char_t *renewed_expires = NULL;
+    savan_db_mgr_t *db_mgr = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_status_t status = AXIS2_FAILURE;
 
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
@@ -249,11 +253,14 @@ savan_sub_processor_renew_subscription(
     renewed_expires = savan_util_get_renewed_expiry_time(env, expires);
     savan_subscriber_set_expires(subscriber, env, renewed_expires);
     savan_subscriber_set_renew_status(subscriber, env, AXIS2_TRUE);
-    savan_util_update_subscriber(env, msg_ctx, subscriber);
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    db_mgr = savan_db_mgr_create(env, conf_ctx);
+    if(db_mgr)
+        status = savan_db_mgr_insert_subscriber(db_mgr, env, subscriber);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] End:savan_sub_processor_renew_subscription");
 
-    return AXIS2_SUCCESS;
+    return status;
 }
 
 /******************************************************************************/
@@ -373,66 +380,81 @@ savan_sub_processor_create_subscriber_from_msg(
     axutil_qname_free(qname, env);
     
     /* Now read each sub element of Subscribe element */
+    if(sub_elem)
+    {
+        /* EndTo */
+        qname = axutil_qname_create(env, ELEM_NAME_ENDTO, EVENTING_NAMESPACE, NULL);
+        endto_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &endto_node);
+        axutil_qname_free(qname, env);
+       
+        if(endto_elem)
+        {
+            endto = axiom_element_get_text(endto_elem, env, endto_node);
+            if(endto)
+            {
+                endto_epr = axis2_endpoint_ref_create(env, endto);
+                savan_subscriber_set_end_to(subscriber, env, endto_epr);
+            }
+        }
         
-    /* EndTo */
-    qname = axutil_qname_create(env, ELEM_NAME_ENDTO, EVENTING_NAMESPACE, NULL);
-    endto_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
-        sub_node, &endto_node);
-    axutil_qname_free(qname, env);
-    
-    endto = axiom_element_get_text(endto_elem, env, endto_node);
-    
-    endto_epr = axis2_endpoint_ref_create(env, endto);
-    
-    savan_subscriber_set_end_to(subscriber, env, endto_epr);
-    
-    /* Get Delivery element and read NotifyTo */
-    qname = axutil_qname_create(env, ELEM_NAME_DELIVERY, EVENTING_NAMESPACE, NULL);
-    delivery_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
-        sub_node, &delivery_node);
-
-    axutil_qname_free(qname, env);
-    
-    qname = axutil_qname_create(env, ELEM_NAME_NOTIFYTO, EVENTING_NAMESPACE, NULL);
-    notify_elem = axiom_element_get_first_child_with_qname(delivery_elem, env, qname,
-        delivery_node, &notify_node);
-    axutil_qname_free(qname, env);
-    
-    notify = axiom_element_get_text(notify_elem, env, notify_node);
-    
-    notify_epr = axis2_endpoint_ref_create(env, notify);
-    
-    savan_subscriber_set_notify_to(subscriber, env, notify_epr);
-    
-    /* Expires */
-    qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, NULL);
-    expires_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
-        sub_node, &expires_node);
-    axutil_qname_free(qname, env);
-    
-    expires = axiom_element_get_text(expires_elem, env, expires_node);
-    
-    savan_subscriber_set_expires(subscriber, env, expires);
-    
-    /* Filter */
-    qname = axutil_qname_create(env, ELEM_NAME_FILTER, EVENTING_NAMESPACE, NULL);
-    filter_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
-        sub_node, &filter_node);
-    axutil_qname_free(qname, env);
-	
-	qname = axutil_qname_create(env, "Dialect", NULL, NULL);
-   
-    filter = axiom_element_get_text(filter_elem, env, filter_node);
-	filter_dialect = axiom_element_get_attribute_value(filter_elem,
-		env, qname);
-	axutil_qname_free(qname, env);
-
-	savan_subscriber_set_filter_dialect(subscriber, env, filter_dialect);
-    savan_subscriber_set_filter(subscriber, env, filter);
-    
-    topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
-    topic = (axis2_char_t *)axis2_endpoint_ref_get_address(topic_epr, env);
-    savan_subscriber_set_topic(subscriber, env, topic);
+        /* Get Delivery element and read NotifyTo */
+        qname = axutil_qname_create(env, ELEM_NAME_DELIVERY, EVENTING_NAMESPACE, NULL);
+        delivery_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &delivery_node);
+        axutil_qname_free(qname, env);
+        if(delivery_elem)
+        {
+            qname = axutil_qname_create(env, ELEM_NAME_NOTIFYTO, EVENTING_NAMESPACE, NULL);
+            notify_elem = axiom_element_get_first_child_with_qname(delivery_elem, env, qname,
+                delivery_node, &notify_node);
+            axutil_qname_free(qname, env);
+            if(notify_elem)
+            {
+                notify = axiom_element_get_text(notify_elem, env, notify_node);
+                if(notify)
+                {
+                    notify_epr = axis2_endpoint_ref_create(env, notify);
+                    savan_subscriber_set_notify_to(subscriber, env, notify_epr);
+                }
+            }
+        } 
+        /* Expires */
+        qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, NULL);
+        expires_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &expires_node);
+        axutil_qname_free(qname, env);
+        if(expires_elem)
+        {
+            expires = axiom_element_get_text(expires_elem, env, expires_node);
+            if(expires)
+                savan_subscriber_set_expires(subscriber, env, expires);
+        }
+        
+        /* Filter */
+        qname = axutil_qname_create(env, ELEM_NAME_FILTER, EVENTING_NAMESPACE, NULL);
+        filter_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+            sub_node, &filter_node);
+        axutil_qname_free(qname, env);
+        if(filter_elem)
+        {
+            qname = axutil_qname_create(env, "Dialect", NULL, NULL);
+            filter = axiom_element_get_text(filter_elem, env, filter_node);
+            filter_dialect = axiom_element_get_attribute_value(filter_elem,
+                env, qname);
+            axutil_qname_free(qname, env);
+            if(filter_dialect)
+                savan_subscriber_set_filter_dialect(subscriber, env, filter_dialect);
+            if(filter)
+                savan_subscriber_set_filter(subscriber, env, filter);
+        }
+        
+        topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
+        if(topic_epr)
+            topic = (axis2_char_t *)axis2_endpoint_ref_get_address(topic_epr, env);
+        if(topic)
+            savan_subscriber_set_topic(subscriber, env, topic);
+    }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[SAVAN] End:savan_sub_processor_create_subscriber_from_msg");
     return subscriber;    
