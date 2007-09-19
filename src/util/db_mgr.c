@@ -759,45 +759,6 @@ savan_db_mgr_get_dbconn(
 }
 
 axis2_char_t *AXIS2_CALL
-savan_db_mgr_create_insert_sql(
-    const axutil_env_t *env,
-    savan_subscriber_t *subscriber,
-    axis2_conf_ctx_t *conf_ctx)
-{
-    axis2_char_t *sql_insert = NULL;
-    axis2_char_t *id = NULL;
-    axis2_char_t *endto = NULL;
-    axis2_char_t *notifyto = NULL;
-    axis2_char_t *delivery_mode = NULL;
-    axis2_char_t *expires = NULL;
-    axis2_char_t *filter = NULL;
-    axis2_char_t *topic = NULL;
-    axis2_char_t *topic_url = NULL;
-    axis2_bool_t renewed = AXIS2_FALSE;
-    axis2_endpoint_ref_t *endto_epr = NULL;
-    axis2_endpoint_ref_t *notifyto_epr = NULL;
-    sql_insert = AXIS2_MALLOC(env->allocator, 1024);
-
-    id = savan_subscriber_get_id(subscriber, env);
-    endto_epr = savan_subscriber_get_end_to(subscriber, env);
-    endto = (axis2_char_t *) axis2_endpoint_ref_get_address(endto_epr, env);
-    notifyto_epr = savan_subscriber_get_notify_to(subscriber, env);
-    notifyto = (axis2_char_t *) axis2_endpoint_ref_get_address(notifyto_epr, 
-        env);
-    delivery_mode = savan_subscriber_get_delivery_mode(subscriber, env);
-    expires = savan_subscriber_get_expires(subscriber, env);
-    filter = savan_subscriber_get_filter(subscriber, env);
-    topic_url = savan_subscriber_get_topic(subscriber, env);
-    topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
-    renewed = savan_subscriber_get_renew_status(subscriber, env);
-    sprintf(sql_insert, "insert into subscriber(id, end_to, notify_to,"\
-        "delivery_mode, expires, filter, topic_name, renewed) values('%s'"\
-        ", '%s', '%s', '%s', '%s', '%s', '%s', %d);", id, endto, notifyto, 
-        delivery_mode, expires, filter, topic, renewed);
-    return sql_insert;
-}
-
-axis2_char_t *AXIS2_CALL
 savan_db_mgr_create_update_sql(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,
