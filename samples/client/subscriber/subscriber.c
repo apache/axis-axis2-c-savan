@@ -90,11 +90,15 @@ int main(int argc, char** argv)
     axutil_hash_set(savan_options, SAVAN_OP_KEY_NOTIFY_EPR, AXIS2_HASH_KEY_STRING,
         "http://localhost:9090/axis2/services/listener");
 
-    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
+    /**
+     * Following commented lines show how to use filtering when savan server side is
+     * built and running with filtering enabled.
+     */
+    /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
         "//test3[@data='5']");
 
     axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
-        DEFAULT_FILTER_DIALECT);
+        DEFAULT_FILTER_DIALECT);*/
 
     /* Create a savan client */
     savan_client = savan_client_create(env);
