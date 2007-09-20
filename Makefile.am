@@ -7,11 +7,6 @@ include_HEADERS=$(top_builddir)/include/*.h
 
 install-data-hook:
 	cp -rf xdocs/docs/* $(docsdir)
-	rm -rf `find $(samplesdir)/ -type d -name *.svn`
-	rm -rf `find $(samplesdir)/ -type d -name *.libs`
-	rm -rf `find $(samplesdir)/ -type d -name *.deps`
-	rm -rf `find $(samplesdir)/ -type f -name Makefile`
-	rm -rf `find $(samplesdir)/ -type d -name autom4te.cache`
 
 dist-hook:
 	sh dist_hook.sh
