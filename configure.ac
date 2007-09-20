@@ -20,6 +20,10 @@ AC_PROG_MAKE_SET
 dnl Checks for libraries.
 AC_CHECK_LIB(dl, dlopen)
 
+if test -d $srcdir/samples; then
+    AC_CONFIG_SUBDIRS(samples)
+fi
+
 CFLAGS="$CFLAGS -D_LARGEFILE64_SOURCE"
 if test "$GCC" = "yes"; then
     CFLAGS="$CFLAGS -ansi -Wall -Werror -Wno-implicit-function-declaration"

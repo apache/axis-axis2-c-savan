@@ -49,3 +49,7 @@ else
 fi
 
 echo 'done'
+cd samples
+echo "Running autogen.sh in Savan/C samples"
+./autogen.sh
+
