@@ -1102,9 +1102,11 @@ build_add_subscriber_om_payload(
     axis2_char_t *id = NULL;
 	axis2_endpoint_ref_t *notify_ref = NULL;
     axis2_endpoint_ref_t *endto_ref = savan_subscriber_get_end_to(subscriber, env);
-    endto = axis2_endpoint_ref_get_address(endto_ref, env);
+    if(endto_ref)
+        endto = axis2_endpoint_ref_get_address(endto_ref, env);
     notify_ref = savan_subscriber_get_notify_to(subscriber, env);
-    notify = axis2_endpoint_ref_get_address(notify_ref, env);
+    if(notify_ref)
+        notify = axis2_endpoint_ref_get_address(notify_ref, env);
     filter = savan_subscriber_get_filter(subscriber, env); 
     expires = savan_subscriber_get_expires(subscriber, env); 
     id = savan_subscriber_get_id(subscriber, env);
