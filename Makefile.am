@@ -1,12 +1,12 @@
 datadir=$(prefix)
 SUBDIRS = src
-docsdir=$(prefix)/xdocs
+docsdir=$(prefix)/docs
 samplesdir=$(prefix)/samples/savanc
 includedir=$(prefix)/include/savan-0.90
 include_HEADERS=$(top_builddir)/include/*.h
 
 install-data-hook:
-	cp -rf xdocs/* $(docsdir)
+	cp -rf xdocs/docs/* $(docsdir)
 	cp -rf samples/* $(samplesdir)
 	rm -rf `find $(samplesdir)/ -type d -name *.svn`
 	rm -rf `find $(samplesdir)/ -type d -name *.libs`
