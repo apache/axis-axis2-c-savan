@@ -7,7 +7,6 @@ include_HEADERS=$(top_builddir)/include/*.h
 
 install-data-hook:
 	cp -rf xdocs/docs/* $(docsdir)
-	cp -rf samples/* $(samplesdir)
 	rm -rf `find $(samplesdir)/ -type d -name *.svn`
 	rm -rf `find $(samplesdir)/ -type d -name *.libs`
 	rm -rf `find $(samplesdir)/ -type d -name *.deps`
