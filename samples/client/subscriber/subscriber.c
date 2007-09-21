@@ -117,7 +117,7 @@ int main(int argc, char** argv)
         exit(0);
     }
 
-    AXIS2_SLEEP(5);
+    AXIS2_SLEEP(16);
 
 
     printf("\n***************************************\n");

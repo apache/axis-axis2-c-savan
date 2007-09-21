@@ -84,9 +84,12 @@ savan_publishing_client_publish(
     axis2_svc_t *pubs_svc = NULL;
     axutil_array_list_t *subs_store = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
+    axis2_module_desc_t *module_desc = NULL;
     int i = 0, size = 0;
     axutil_param_t *topic_param = NULL;
     axis2_char_t *topic_url = NULL;
+    axutil_qname_t *qname = NULL;
 
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
@@ -97,7 +100,11 @@ savan_publishing_client_publish(
     pubs_svc = client->svc;
     topic_param = axis2_svc_get_param(pubs_svc, env, "TopicURL");
     topic_url = axutil_param_get_value(topic_param, env);
-    param = axis2_svc_get_param(pubs_svc, env, "SubscriptionMgrURL");
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+    qname = axutil_qname_create(env, "savan", NULL, NULL);
+    module_desc = axis2_conf_get_module(conf, env, qname);
+    param = axis2_module_desc_get_param(module_desc, env, "SubscriptionMgrURL");
+    axutil_qname_free(qname, env);
     if(param)
     {
         axis2_char_t *subs_mgr_url = NULL;
