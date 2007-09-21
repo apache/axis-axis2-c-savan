@@ -1,0 +1,113 @@
+                        Apache Savan/C
+
+  What is it?
+  -----------
+Savan/C is a C implementation of WS-Eventing specification. Savan/C is built on top of Axis2/C. Therefore by using Savan/C 
+you can add WS-Eventing capability to Web services hosted using Axis2/C. Savan/C was designed as a general 
+publisher/subscriber tool. The architecture was designed to abstract the general publisher/subscriber features so that 
+people could support more than one publisher/subscriber mechanisms within the same infrastructure. 
+  
+  The Latest Version
+  ------------------
+  0.90.
+
+  Documentation
+  -------------
+  The documentation not available yet.
+
+  Acknowledgments
+  ----------------
+  Apache Savan/C relies heavily on the use of autoconf and libtool to
+  provide a build environment.
+
+  Installation
+  ------------
+  Please see the INSTALL file.
+
+  Licensing
+  ---------
+  Please see the LICENSE file.
+
+  How To Run.
+  ----------
+  Install savan module into <axis2 deploy folder>/modules folder. Add the Savan Phase
+  information into axis2.xml as following. Search for 'SavanPhase' in the
+  following xml block to identify the Savan specific entries.
+
+    <!-- ================================================= -->
+    <!-- Phases  -->
+    <!-- ================================================= -->
+    <phaseOrder type="inflow">
+        <!-- System pre defined phases       -->
+        <phase name="Transport"/>
+        <phase name="PreDispatch"/>
+        <phase name="Dispatch"/>
+        <phase name="PostDispatch"/>
+        <!-- End system pre defined phases       -->
+        <!-- After PostDispatch phase, module or service author can add any phase as required  -->
+        <!-- User defined phases could be added here -->
+        <!--phase name="userphase1"/-->
+        <!--phase name="RMPhase"/-->
+        <phase name="SavanPhase"/>
+    </phaseOrder>
+    <phaseOrder type="outflow">
+        <!-- User defined phases could be added here -->
+        <!--phase name="RMPhase"/-->
+        <phase name="SavanPhase"/>
+        <!--phase name="userphase1"/-->
+        <!--system predefined phase-->
+        <phase name="MessageOut"/>
+        <!--phase name="Security"/-->
+    </phaseOrder>
+    <phaseOrder type="INfaultflow">
+        <!-- User defined phases could be added here -->
+        <!--phase name="userphase1"/-->
+        <!--phase name="RMPhase"/-->
+        <phase name="SavanPhase"/>
+    </phaseOrder>
+    <phaseOrder type="Outfaultflow">
+        <!-- User defined phases could be added here -->
+        <!--phase name="RMPhase"/-->
+        <phase name="SavanPhase"/>
+        <!--phase name="userphase1"/-->
+        <phase name="MessageOut"/>
+    </phaseOrder>
+
+In the services xml file for the service which require Savan enabled
+add the entry
+ <module ref="savan"/>
+If you need all services in the engine Savan enabled add the above entry into
+axis2.xml.
+
+In the module.xml file for the savan module give a valid path for database storage
+<parameter name="savan_db" locked="false">/axis2c/deploy/savan_db</parameter>
+
+You can use the sample in the samples folder for testing.
+This sample consists of two services called listener and publisher and a subscriber client.
+Install these samples by running the build.sh script in the smaples folder and you will find
+publisher and listener services added to the $AXIS2C_HOME/services folder.
+Here is the publisher's serivces.xml file
+
+<service name="publisher">
+    <parameter name="ServiceClass" locked="xsd:false">publisher</parameter>
+    <parameter name="loadServiceAtStartup" locked="xsd:false">true</parameter>
+   <description>
+       This is a sample eventing data source which loads as the axis2 engine startup and
+       start publishing to its subscribers.
+   </description>
+   <module ref="savan"/>
+   <parameter name="TopicURL" locked="xsd:false">http://localhost:9090/axis2/services/publisher</parameter>
+
+   <operation name="start">
+           <parameter name="wsamapping" >http://ws.apache.org/axis2/c/savan/samples/pubilsher/start</parameter>
+   </operation>
+</service>
+
+TopicURL  parameter is the url the data source(publisher) is listening for subscriber requests.
+loadServiceAtStartup parameter tells to the axis2c engine that this service should be loaded at engine startup time.
+
+
+Please keep in mind the following when using Savan/C with Axis2/C.
+
+1. If Axis2 C engine is running as an Apache module make sure that Apache execute user has the full access to the
+    database path you included in the module.xml
