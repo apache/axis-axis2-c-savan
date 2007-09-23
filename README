@@ -106,6 +106,17 @@ Here is the publisher's serivces.xml file
 TopicURL  parameter is the url the data source(publisher) is listening for subscriber requests.
 loadServiceAtStartup parameter tells to the axis2c engine that this service should be loaded at engine startup time.
 
+Now to test the sample edit the client sample in samples/client/subscriber/subscriber.c.
+
+You may need to edit the following line to point to the listener to which the publisher publish when subscriber subscribes.
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_NOTIFY_EPR, AXIS2_HASH_KEY_STRING,
+        "http://localhost:9090/axis2/services/listener");
+
+Now compile, install and execute the subscriber sample $AXIS2C_HOME/bin/samples/savan/subscriber.
+This will send a subscription request to the publisher data source and receive a subscription id if subscription is
+successful. The pubisher data source then starts publishing test data to the listener data sink provided by subscriber.
+Using the subscription the subscriber request for renew subscription request and also a subscription status request message.
+Finally it unsubscribe indicating that it has no further interest in receiving data source events.
 
 Please keep in mind the following when using Savan/C with Axis2/C.
 
