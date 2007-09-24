@@ -14,7 +14,7 @@ subscriber_LDADD   = $(LDFLAGS) \
                     -lpthread \
                     $(GUTHTHILA_LIBS) \
                     $(LIBXML2_LIBS)\
-					-lmod_savan
+					-lsavan_client
 
 INCLUDES =  -I$(AXIS2C_HOME)/include/axis2-1.1 \
 			@AXIS2INC@ \
