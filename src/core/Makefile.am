@@ -10,7 +10,7 @@ INCLUDES = -I$(top_builddir)/include \
 		@AXIS2INC@ \
 		@NEETHIINC@
 
-libmod_savan_la_LIBADD = ../client/libsavan_client.la\
+libmod_savan_la_LIBADD = \
                         ../handlers/libsavan_handlers.la\
                         ../msgreceivers/libsavan_msgreceivers.la\
 						../subscribers/libsavan_subscribers.la\
