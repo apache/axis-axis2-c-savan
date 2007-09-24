@@ -7,11 +7,10 @@ sysconfdir=$(prefix)
 include_HEADERS=$(top_builddir)/include/*.h
 
 sysconf_DATA=src/data/axis2.xml
-install-data-hook:
-	cp -rf xdocs/docs/* $(docsdir)
 
 dist-hook:
+	cp -rf xdocs/docs $(distdir)/
 	sh dist_hook.sh
-EXTRA_DIST = build.sh autogen.sh build xdocs samples
+EXTRA_DIST = build.sh autogen.sh build samples
 
 
