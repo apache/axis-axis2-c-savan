@@ -1,9 +1,9 @@
 ####################################################
-# Makefile for savan c							   #
-# you can do 					                   #
+# Makefile for savan c				   #
+# you can do 					   #
 # nmake dist     - distribution  (dist / samples ) #
-# nmake clean  	 - clean			               #
-# nmake samples  - samples 			               #
+# nmake clean  	 - clean			   #
+# nmake samples  - samples 			   #
 ####################################################
 
 AUTOCONF = configure.in
@@ -15,6 +15,7 @@ SAVANSRC = ..\..
 SAVANDISTDIR = ..\savanc
 SAVANINTDIR = .\int.msvc
 SAVANDLL = mod_savan
+SAVAN_CLIENT = savan_client
 
 SAVAN_CODE = $(SAVANSRC)\src\core\*.c \
 		 $(SAVANSRC)\src\client\*.c \
@@ -23,8 +24,6 @@ SAVAN_CODE = $(SAVANSRC)\src\core\*.c \
 		 $(SAVANSRC)\src\subscribers\*.c \
 		 $(SAVANSRC)\src\msgreceivers\*.c 
 		
-		 
-	     
 #compiler options
 CC = @cl.exe
 
@@ -50,6 +49,7 @@ LDFLAGS = $(LDFLAGS)
 distdir:
 	if not exist $(SAVANDISTDIR) mkdir $(SAVANDISTDIR)
 	if not exist $(SAVANDISTDIR)\modules\savan mkdir $(SAVANDISTDIR)\modules\savan
+	if not exist $(SAVANDISTDIR)\lib mkdir $(SAVANDISTDIR)\lib
 	if not exist $(SAVANDISTDIR)\include mkdir $(SAVANDISTDIR)\include
 	if not exist $(SAVANDISTDIR)\samples mkdir $(SAVANDISTDIR)\samples
 	if not exist $(SAVANDISTDIR)\bin\samples mkdir $(SAVANDISTDIR)\bin\samples
@@ -61,6 +61,7 @@ distdir:
 
 intdir:
 	if not exist $(SAVANINTDIR) mkdir $(SAVANINTDIR)
+	if not exist $(SAVANINTDIR)\client mkdir $(SAVANINTDIR)\client
 	if not exist $(SAVANINTDIR)\samples mkdir $(SAVANINTDIR)\samples
 	if not exist $(SAVANINTDIR)\samples\subscriber mkdir $(SAVANINTDIR)\samples\subscriber
 	if not exist $(SAVANINTDIR)\samples\listener mkdir $(SAVANINTDIR)\samples\listener
@@ -74,6 +75,10 @@ clean :
 copy_extra:
 	@copy $(SAVANSRC)\README $(SAVANDISTDIR)
 	@copy $(SAVANSRC)\NEWS $(SAVANDISTDIR)
+	@copy $(SAVANSRC)\COPYING $(SAVANDISTDIR)
+	@copy $(SAVANSRC)\LICENSE $(SAVANDISTDIR)
+	@copy $(SAVANSRC)\INSTALL $(SAVANDISTDIR)
+	@copy $(SAVANSRC)\AUTHORS $(SAVANDISTDIR)
 	
 copy_samples:
 	@xcopy /E $(SAVANSRC)\samples $(SAVANDISTDIR)\samples
@@ -88,7 +93,17 @@ savan:
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\*.obj /DLL \
 	/OUT:$(SAVANDISTDIR)\modules\savan\$(SAVANDLL).dll /IMPLIB:$(SAVANDISTDIR)\modules\savan\$(SAVANDLL).lib
 	@copy $(SAVANSRC)\src\data\module.xml $(SAVANDISTDIR)\modules\savan\module.xml
-	
+
+##### savan client
+SAVAN_CLIENT_SRC = $(SAVANSRC)\src\client\*.c \
+		   $(SAVANSRC)\src\util\*.c \
+		   $(SAVANSRC)\src\subscribers\*.c
+
+savan_client:
+	if not exist $(SAVANINTDIR)\client mkdir $(SAVANINTDIR)\client
+	$(CC) $(CFLAGS) $(SAVAN_CLIENT_SRC) /Fo$(SAVANINTDIR)\client\ /c
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\client\*.obj /DLL \
+	/OUT:$(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll /IMPLIB:$(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).lib
 
 ###samples
 
@@ -115,7 +130,7 @@ subscriber:
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscriber\*.obj $(SAVANDLL).lib \
 	/OUT:$(SAVANDISTDIR)\bin\samples\savan\subscriber.exe
 	
-dist: clean distdir intdir savan publisher listener subscription subscriber copy_include copy_samples copy_extra
+dist: clean distdir intdir savan savan_client publisher listener subscription subscriber copy_include copy_samples copy_extra
 
 
 	 
