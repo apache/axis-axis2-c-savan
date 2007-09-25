@@ -73,6 +73,8 @@ people could support more than one publisher/subscriber mechanisms within the sa
         <phase name="MessageOut"/>
     </phaseOrder>
 
+You may find a sample axis2.xml in src/data of the source distribution or in
+samples/server in binary distribution.
 In the services xml file for the service which require Savan enabled
 add the entry
  <module ref="savan"/>
