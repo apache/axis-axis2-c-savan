@@ -95,7 +95,7 @@ AC_ARG_WITH(savan,
 [  --with-savan[=PATH]     Find the SAVAN header files in 'PATH'.
     'PATH' should point to SAVAN include files location.
     If you omit the '=PATH' part completely, the configure script will search
-    '$(AXIS2C_HOME)/include/axis2-1.1' for SAVAN headers.],
+    '$(AXIS2C_HOME)/include/savan-0.90' for SAVAN headers.],
 [ case "$withval" in
   no)
     AC_MSG_RESULT(no)
@@ -107,7 +107,7 @@ AC_ARG_WITH(savan,
         savaninc="-I$withval"
     dnl else find the savan include dir in $(AXIS2C_HOME)/include
     elif test -d '$(AXIS2C_HOME)/include'; then
-        savaninc="-I$(AXIS2C_HOME)/include/axis2-1.1"
+        savaninc="-I$(AXIS2C_HOME)/include/savan-0.90"
     else
         AC_MSG_ERROR(could not find savan. stop)
     fi
