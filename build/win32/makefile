@@ -32,7 +32,7 @@ CFLAGS = /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "AXIS2_DECLARE_EXPORT" /D_WIN32_
 
 #linker options 
 LD = @link.exe
-LDFLAGS = /nologo /LIBPATH:$(AXIS2_BIN_DIR)\lib /LIBPATH:$(SAVANDISTDIR)\modules\savan
+LDFLAGS = /nologo /LIBPATH:$(AXIS2_BIN_DIR)\lib /LIBPATH:$(SAVANDISTDIR)\modules\savan /LIBPATH:$(SAVANDISTDIR)\lib
 LIBS = axutil.lib axiom.lib axis2_parser.lib axis2_engine.lib axis2_http_receiver.lib axis2_http_sender.lib
 
 #debug symbols
@@ -109,25 +109,25 @@ savan_client:
 
 subscription:
 	$(CC) $(CFLAGS) $(SAVANSRC)\src\subs_mgr\*.c /Fo$(SAVANINTDIR)\samples\subscription\ /c
-	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscription\*.obj $(SAVANDLL).lib /DLL \
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscription\*.obj  $(SAVAN_CLIENT).lib /DLL \
 	/OUT:$(SAVANDISTDIR)\services\subscription\subscription.dll
 	@copy $(SAVANSRC)\src\subs_mgr\services.xml $(SAVANDISTDIR)\services\subscription\
 
 publisher:
 	$(CC) $(CFLAGS) $(SAVANSRC)\samples\server\publisher\*.c /Fo$(SAVANINTDIR)\samples\publisher\ /c
-	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\publisher\*.obj $(SAVANDLL).lib /DLL \
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\publisher\*.obj  $(SAVAN_CLIENT).lib /DLL \
 	/OUT:$(SAVANDISTDIR)\services\publisher\publisher.dll
 	@copy $(SAVANSRC)\samples\server\publisher\services.xml $(SAVANDISTDIR)\services\publisher\
 
 listener:
 	$(CC) $(CFLAGS) $(SAVANSRC)\samples\server\listener\*.c /Fo$(SAVANINTDIR)\samples\listener\ /c
-	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\listener\*.obj $(SAVANDLL).lib /DLL \
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\listener\*.obj  $(SAVAN_CLIENT).lib /DLL \
 	/OUT:$(SAVANDISTDIR)\services\listener\listener.dll
 	@copy $(SAVANSRC)\samples\server\listener\services.xml $(SAVANDISTDIR)\services\listener\
 
 subscriber:
 	$(CC) $(CFLAGS) $(SAVANSRC)\samples\client\subscriber\*.c /Fo$(SAVANINTDIR)\samples\subscriber\ /c
-	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscriber\*.obj $(SAVANDLL).lib \
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscriber\*.obj $(SAVAN_CLIENT).lib \
 	/OUT:$(SAVANDISTDIR)\bin\samples\savan\subscriber.exe
 	
 dist: clean distdir intdir savan savan_client publisher listener subscription subscriber copy_include copy_samples copy_extra
