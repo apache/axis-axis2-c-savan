@@ -84,6 +84,7 @@ copy_samples:
 	@xcopy /E $(SAVANSRC)\samples $(SAVANDISTDIR)\samples
 	@del /s /q $(SAVANDISTDIR)\samples\*.am
 	@del /q $(SAVANDISTDIR)\samples\*.*
+	@copy $(SAVANSRC)\src\data\axis2.xml $(SAVANDISTDIR)\samples\server
 
 copy_include:
 	@xcopy /E $(SAVANSRC)\include $(SAVANDISTDIR)\include
