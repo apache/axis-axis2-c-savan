@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <axis2_svc_skeleton.h>
-#include <axiom_element.h>
-#include <savan_util.h>
-
-#include <savan.h>
-
 #include "publisher.h"
+#include <axis2_svc_skeleton.h>
+#include <platforms/axutil_platform_auto_sense.h>
+#include <axiom_element.h>
+#include <savan_publishing_client.h>
 
 typedef struct publisher_data
 {
@@ -223,7 +221,6 @@ publisher_worker_func(
     axiom_node_t *test_node3 = NULL;
     axis2_conf_t *conf = NULL;
     axis2_svc_t *svc = NULL;
-    axutil_param_t *param = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
 	axiom_attribute_t *test_data = NULL;
     
@@ -240,7 +237,6 @@ publisher_worker_func(
     conf_ctx = axis2_conf_ctx_create(env, conf);
     while(1)
     {
-        axutil_hash_t *subs_list = NULL;
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] Inside while loop");
         {
             savan_publishing_client_t *pub_client = NULL;
