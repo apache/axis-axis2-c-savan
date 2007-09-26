@@ -21,6 +21,7 @@
 #include <axutil_array_list.h>
 #include <axis2_conf_ctx.h>
 #include <axis2_svc.h>
+#include <axis2_svc_client.h>
 #include <platforms/axutil_platform_auto_sense.h>
 
 #include <savan_publishing_client.h>
