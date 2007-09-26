@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "publisher.h"
+#include <axis2_util.h>
 #include <axis2_svc_skeleton.h>
-#include <platforms/axutil_platform_auto_sense.h>
 #include <axiom_element.h>
 #include <savan_publishing_client.h>
+
+#include "publisher.h"
 
 typedef struct publisher_data
 {
