@@ -414,11 +414,13 @@ savan_subscriber_publish(
 	#endif
 	
     /* Set service client options */
-    axis2_svc_client_set_options(svc_client, env, options);
-    axis2_svc_client_send_robust(svc_client, env, payload);
-
     if(svc_client)
+    {
+        axis2_svc_client_set_options(svc_client, env, options);
+        axis2_svc_client_send_robust(svc_client, env, payload);
+
         axis2_svc_client_free(svc_client, env);
+    }
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] End:savan_subscriber_publish");
