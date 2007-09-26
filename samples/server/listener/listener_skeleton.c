@@ -13,22 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <stdio.h>
 #include <axis2_svc_skeleton.h>
-#include <axutil_array_list.h>
 #include <axiom_element.h>
-#include <axiom_soap_envelope.h>
-#include <axiom_soap_header.h>
-#include <axiom_soap_body.h>
-#include <axiom_soap_fault.h>
-#include <axis2_engine.h>
-#include <axis2_conf_ctx.h>
-#include <axis2_conf_init.h>
-#include <axutil_thread_pool.h>
-#include <axis2_util.h>
-#include <axis2_svc_client.h>
-#include <axis2_options.h>
-
 #include "listener.h"
 
 int AXIS2_CALL

@@ -17,12 +17,7 @@
 #define LISTNER_H
 
 
-#include <axis2_svc_skeleton.h>
-#include <axutil_log_default.h>
-#include <axutil_error_default.h>
-#include <axiom_text.h>
 #include <axiom_node.h>
-#include <axiom_element.h>
 
 axiom_node_t *axis2_listener_notify(const axutil_env_t *env, axiom_node_t *node);
 
