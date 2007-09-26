@@ -15,6 +15,7 @@
  */
 
 #include <axiom_xml_writer.h>
+#include <axiom_element.h>
 #include <stdio.h>
 
 #include "publisher.h"
