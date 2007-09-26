@@ -17,6 +17,8 @@
 #ifndef SAVAN_CONSTANTS_H
 #define SAVAN_CONSTANTS_H
 
+#include <axis2_const.h>
+
 #ifdef __cplusplus
 extern "C"
 {
