@@ -55,6 +55,8 @@ Savan/C binary distribution for Linux has the following folder structure.
         + - bin/samples/savan ( sample executables)
         + - lib
     To deploy Savan/C in Axis2/C running environment copy the modules/savan into <axis2c_deploy_path>/modules folder.
+    Also copy lib/lib_savan_client.so into <axis2c_deploy_path>/lib folder so that clients using savan can link with the
+    savan client libarary.
 
 2. Installing and Running on Microsoft Windows
 
