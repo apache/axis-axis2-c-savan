@@ -81,7 +81,7 @@ add the entry
 If you need all services in the engine Savan enabled add the above entry into
 axis2.xml.
 
-In the module.xml file for the savan module give a valid path for database storage
+In the module.xml file for the savan module give a valid path for database storage. The database name should be savan_db.
 <parameter name="savan_db" locked="false">/axis2c/deploy/savan_db</parameter>
 
 You can use the sample in the samples folder for testing.
