@@ -22,6 +22,7 @@
 #include <axis2_conf_ctx.h>
 #include <axis2_svc.h>
 #include <axis2_svc_client.h>
+#include <axis2_endpoint_ref.h>
 #include <platforms/axutil_platform_auto_sense.h>
 
 #include <savan_publishing_client.h>
@@ -155,14 +156,24 @@ savan_publishing_client_publish(
     size = axutil_array_list_size(subs_store, env);
     for(i = 0; i < size; i++)
     {
-        savan_subscriber_t * sub = NULL;
-        sub = axutil_array_list_get(subs_store, env, i);
+        savan_subscriber_t *sub = NULL;
+        sub = (savan_subscriber_t *)axutil_array_list_get(subs_store, env, i);
         if (sub)
         {
             axis2_char_t *id = savan_subscriber_get_id(sub, env);
             AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][out handler] "
                 "Publishing to %s", id);
-            savan_subscriber_publish(sub, env, payload);
+            if(!savan_subscriber_publish(sub, env, payload))
+            {
+                axis2_endpoint_ref_t *notifyto = 
+                    savan_subscriber_get_notify_to(sub, env);
+                const axis2_char_t *address = NULL;
+                if(notifyto)
+                    address = axis2_endpoint_ref_get_address(notifyto, env);
+                AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Publishing to the "\
+                    "Data Sink:%s proviced by subscriber:%s Failed. Check "\
+                    "whether the Data Sink url is correct", address, id);
+            }
         }
     }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] "
@@ -170,4 +181,5 @@ savan_publishing_client_publish(
     
     return AXIS2_SUCCESS;
 }
+
 

@@ -380,7 +380,7 @@ savan_subscriber_publish(
     axis2_svc_client_t *svc_client = NULL;
     axis2_char_t *path = NULL;
     axis2_options_t *options = NULL;
-    axis2_status_t status = AXIS2_SUCCESS;
+    axis2_status_t status = AXIS2_FAILURE;
     axis2_endpoint_ref_t *to = NULL;
     const axis2_char_t *address = NULL;
 
@@ -417,7 +417,7 @@ savan_subscriber_publish(
     if(svc_client)
     {
         axis2_svc_client_set_options(svc_client, env, options);
-        axis2_svc_client_send_robust(svc_client, env, payload);
+        status = axis2_svc_client_send_robust(svc_client, env, payload);
 
         axis2_svc_client_free(svc_client, env);
     }
