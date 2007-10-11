@@ -879,6 +879,54 @@ savan_db_mgr_retrieve_all(
     return data_list;
 }
 
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_db_mgr_create_db(
+    savan_db_mgr_t *db_mgr,
+    const axutil_env_t *env)
+{
+    int rc = -1;
+    axis2_char_t *error_msg = NULL;
+    sqlite3 *dbconn = NULL;
+    axis2_char_t *sql_stmt1 = NULL;
+    axis2_char_t *sql_stmt2 = NULL;
+    axis2_status_t status = AXIS2_FAILURE;
+
+    sql_stmt1 = "create table if not exists topic(topic_name varchar(100) "\
+                 "primary key, topic_url varchar(200))";
+    sql_stmt2 = "create table if not exists subscriber(id varchar(100) "\
+                  "primary key, end_to varchar(200), notify_to varchar(200), "\
+                  "delivery_mode varchar(100), expires varchar(100), "\
+                  "filter varchar(200), topic_name varchar(100), "\
+                  "renewed boolean)";
+    if(db_mgr)
+        dbconn = savan_db_mgr_get_dbconn(db_mgr, env);
+    if(dbconn)
+    {
+        rc = sqlite3_exec(dbconn, sql_stmt1, NULL, 0, &error_msg);
+        if( rc != SQLITE_OK )
+        {
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "Error creating database table topic; SQL Error: %s", error_msg);
+            sqlite3_free(error_msg);
+            sqlite3_close(dbconn);
+            return AXIS2_FAILURE;
+        }
+        rc = sqlite3_exec(dbconn, sql_stmt2, NULL, 0, &error_msg);
+        if( rc != SQLITE_OK )
+        {
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "Error creating database table subscriber; SQL Error: %s", 
+                error_msg);
+            sqlite3_free(error_msg);
+            sqlite3_close(dbconn);
+            return AXIS2_FAILURE;
+        }
+        sqlite3_close(dbconn);
+        status = AXIS2_SUCCESS;
+    }
+    return status;
+}
+
 int
 savan_db_mgr_busy_handler(
     sqlite3* dbconn,

@@ -105,6 +105,8 @@ typedef struct savan_subs_mgr_info
 #define ELEM_NAME_REF_PARAM             "ReferenceParameter"
 #define ELEM_NAME_ID                    "Identifier"
 #define ELEM_NAME_SUB_MGR               "SubscriptionManager"
+#define SAVAN_IN_HANDLER                "SavanInHandler"
+#define SAVAN_OUT_HANDLER               "SavanOutHandler"
 
 /* Keys to set options on the client side */
 #define SAVAN_OP_KEY_ENDTO_EPR      "savan_op_key_endto"

@@ -146,6 +146,17 @@ savan_db_mgr_create_update_sql(
     savan_subscriber_t *subscriber,
     axis2_conf_ctx_t *conf_ctx);
 
+/**
+ * This function will create the savan_db database if it is not aleardy exists
+ * @param db_mgr database manager instance
+ * @param env axis2c environment
+ * @return status AXIS2_SUCCESS if success, AXIS2_FAILURE if failed.
+ */
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_db_mgr_create_db(
+    savan_db_mgr_t *db_mgr,
+    const axutil_env_t *env);
+
 /** @} */
 #ifdef __cplusplus
 }

@@ -19,6 +19,7 @@
 #include <mod_savan.h>
 #include <sqlite3.h>
 #include <savan_db_mgr.h>
+#include <savan_constants.h>
 
 /**************************** Function Prototypes *****************************/
 
@@ -51,6 +52,14 @@ mod_savan_create(const axutil_env_t *env)
     axis2_module_t *module = NULL;
     module = AXIS2_MALLOC(env->allocator, 
         sizeof(axis2_module_t));
+    if(!module)
+    {
+        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+           "[savan] Memory allocation failed for Savan Module");
+        return NULL;
+    }
+    /* Do the memset*/
     
     module->ops = &savan_module_ops_var;
     return module;
@@ -66,41 +75,30 @@ mod_savan_init(
         axis2_module_desc_t *module_desc)
 {
     /* Any initialization stuff of mod_savan goes here */
-    int rc = -1;
-    axis2_char_t *error_msg = NULL;
-    sqlite3 *dbconn = NULL;
-    axis2_char_t *sql_stmt1 = NULL;
-    axis2_char_t *sql_stmt2 = NULL;
 	savan_db_mgr_t *db_mgr = NULL; 
+    axis2_status_t status = AXIS2_FAILURE;
+
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] Start:mod_savan_init");
-    sql_stmt1 = "create table if not exists topic(topic_name varchar(100) "\
-                 "primary key, topic_url varchar(200))";
-    sql_stmt2 = "create table if not exists subscriber(id varchar(100) "\
-                  "primary key, end_to varchar(200), notify_to varchar(200), "\
-                  "delivery_mode varchar(100), expires varchar(100), "\
-                  "filter varchar(200), topic_name varchar(100), "\
-                  "renewed boolean)";
     db_mgr = savan_db_mgr_create(env, conf_ctx);
-    if(db_mgr)
-        dbconn = savan_db_mgr_get_dbconn(db_mgr, env);
-    if(dbconn)
+    if(!db_mgr)
     {
-        rc = sqlite3_exec(dbconn, sql_stmt1, NULL, 0, &error_msg);
-        if( rc != SQLITE_OK )
-        {
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "SQL Error: %s", error_msg);
-            sqlite3_free(error_msg);
-        }
-        rc = sqlite3_exec(dbconn, sql_stmt2, NULL, 0, &error_msg);
-        if( rc != SQLITE_OK )
-        {
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "SQL Error: %s", error_msg);
-            sqlite3_free(error_msg);
-        }
-        sqlite3_close(dbconn);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[SAVAN] Error creating db_mgr struct");
+        return status;
     }
+    if(!savan_db_mgr_create_db(db_mgr, env))
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[SAVAN] Could not create "\
+            "the database. Check whether database path is correct and "\
+            "accessible. Exit loading the Savan module");
+    }
+    else
+        status = AXIS2_SUCCESS;
+    if(db_mgr)
+        savan_db_mgr_free(db_mgr, env);
+
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] End:mod_savan_init");
-    return AXIS2_SUCCESS;
+    return status;
 }
 
 /******************************************************************************/
@@ -116,7 +114,6 @@ mod_savan_shutdown(axis2_module_t *module,
          */
         axutil_hash_free(module->handler_create_func_map, env);
     }
-    
     if(module)
     {
         AXIS2_FREE(env->allocator, module);
@@ -139,11 +136,12 @@ mod_savan_fill_handler_create_func_map(axis2_module_t *module,
             AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
-    axutil_hash_set(module->handler_create_func_map, "SavanInHandler", 
+    /* Remove the hard coded strings. Instead use macros */
+    axutil_hash_set(module->handler_create_func_map, SAVAN_IN_HANDLER, 
         AXIS2_HASH_KEY_STRING, savan_in_handler_create);
 
 
-    axutil_hash_set(module->handler_create_func_map, "SavanOutHandler", 
+    axutil_hash_set(module->handler_create_func_map, SAVAN_OUT_HANDLER, 
         AXIS2_HASH_KEY_STRING, savan_out_handler_create);
     
     return AXIS2_SUCCESS;
@@ -181,3 +179,4 @@ axis2_remove_instance(axis2_module_t *inst,
     }
     return status;
 }
+
