@@ -117,10 +117,10 @@ Savan/C binary distribution will have following directory structure.
     
 
 Notes:
-        Savan/C has a persistent storage mechanism for storing subscriber information and data source information. 
-        This is implemented using Sqlite embedded database
-        If you use Axis2/C Apache2 module instead of simple_axis2_server make 
-        sure that Apache2 user have full access to the sqlite database file savan_db. 
+       Savan/C has a persistent storage mechanism for storing subscriber information and data source information. 
+       This is implemented using Sqlite embedded database
+       If you use Axis2/C Apache2 module instead of simple_axis2_server make 
+       sure that Apache2 user have full access to the sqlite database file savan_db. 
 
        Savan/C module is installed into <AXIS2C_HOME>/modules/savanc directory. The installed module contain
        libsavan.so, module.xml. The sample clients are installed into <AXIS2C_HOME>/bin/samples/savan
