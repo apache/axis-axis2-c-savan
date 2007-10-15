@@ -28,7 +28,7 @@ SAVAN_CODE = $(SAVANSRC)\src\core\*.c \
 CC = @cl.exe
 
 CFLAGS = /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "AXIS2_DECLARE_EXPORT" /D_WIN32_WINNT=0x0400  /w /nologo \
-	/I$(AXIS2_BIN_DIR)\include /I$(SAVANSRC)\include 
+	/I$(AXIS2_BIN_DIR)\include /I$(SAVANSRC)\include $(CRUNTIME) 
 
 #linker options 
 LD = @link.exe
@@ -38,7 +38,7 @@ LIBS = axutil.lib axiom.lib axis2_parser.lib axis2_engine.lib axis2_http_receive
 #debug symbols
 !if "$(DEBUG)" == "1"
 CFLAGS = $(CFLAGS) /D "_DEBUG" /Od /Z7
-LDFLAGS = $(LDFLAGS) /DEBUG /NODEFAULTLIB:LIBCMTD.lib
+LDFLAGS = $(LDFLAGS) /DEBUG
 !else
 CFLAGS = $(CFLAGS) /D "NDEBUG" /O2 
 LDFLAGS = $(LDFLAGS)
