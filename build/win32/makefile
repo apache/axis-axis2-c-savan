@@ -44,6 +44,19 @@ CFLAGS = $(CFLAGS) /D "NDEBUG" /O2
 LDFLAGS = $(LDFLAGS)
 !endif
 
+##############
+MT=mt.exe
+MT="$(MT)"
+
+!if "$(VC_VERSION_2005_OR_ABOVE)" == "0"
+_VC_MANIFEST_EMBED_EXE=
+_VC_MANIFEST_EMBED_DLL=
+!else
+_VC_MANIFEST_EMBED_EXE= if exist $@.manifest $(MT) -nologo -manifest $@.manifest -outputresource:$@;1
+_VC_MANIFEST_EMBED_DLL= if exist $@.manifest $(MT) -nologo -manifest $@.manifest -outputresource:$@;2
+!endif
+###############
+
 #create the directory structure
 
 distdir:
@@ -89,47 +102,66 @@ copy_samples:
 copy_include:
 	@xcopy /E $(SAVANSRC)\include $(SAVANDISTDIR)\include
 
-savan:
+$(SAVANDISTDIR)\modules\savan\$(SAVANDLL).dll:
 	$(CC) $(CFLAGS) $(SAVAN_CODE) /Fo$(SAVANINTDIR)\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\*.obj /DLL \
 	/OUT:$(SAVANDISTDIR)\modules\savan\$(SAVANDLL).dll /IMPLIB:$(SAVANDISTDIR)\modules\savan\$(SAVANDLL).lib
+	-@$(_VC_MANIFEST_EMBED_DLL)
 	@copy $(SAVANSRC)\src\data\module.xml $(SAVANDISTDIR)\modules\savan\module.xml
+
+savan: $(SAVANDISTDIR)\modules\savan\$(SAVANDLL).dll
 
 ##### savan client
 SAVAN_CLIENT_SRC = $(SAVANSRC)\src\client\*.c \
 		   $(SAVANSRC)\src\util\*.c \
 		   $(SAVANSRC)\src\subscribers\*.c
 
-savan_client:
+$(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll :
 	if not exist $(SAVANINTDIR)\client mkdir $(SAVANINTDIR)\client
 	$(CC) $(CFLAGS) $(SAVAN_CLIENT_SRC) /Fo$(SAVANINTDIR)\client\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\client\*.obj /DLL \
 	/OUT:$(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll /IMPLIB:$(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).lib
+	-@$(_VC_MANIFEST_EMBED_DLL)
+
+savan_client: $(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll
+
 
 ###samples
 
-subscription:
+$(SAVANDISTDIR)\services\subscription\subscription.dll :
 	$(CC) $(CFLAGS) $(SAVANSRC)\src\subs_mgr\*.c /Fo$(SAVANINTDIR)\samples\subscription\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscription\*.obj  $(SAVAN_CLIENT).lib /DLL \
 	/OUT:$(SAVANDISTDIR)\services\subscription\subscription.dll
+	-@$(_VC_MANIFEST_EMBED_DLL)
 	@copy $(SAVANSRC)\src\subs_mgr\services.xml $(SAVANDISTDIR)\services\subscription\
 
-publisher:
+subscription: $(SAVANDISTDIR)\services\subscription\subscription.dll
+
+$(SAVANDISTDIR)\services\publisher\publisher.dll :
 	$(CC) $(CFLAGS) $(SAVANSRC)\samples\server\publisher\*.c /Fo$(SAVANINTDIR)\samples\publisher\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\publisher\*.obj  $(SAVAN_CLIENT).lib /DLL \
 	/OUT:$(SAVANDISTDIR)\services\publisher\publisher.dll
+	-@$(_VC_MANIFEST_EMBED_DLL)
 	@copy $(SAVANSRC)\samples\server\publisher\services.xml $(SAVANDISTDIR)\services\publisher\
 
-listener:
+publisher: $(SAVANDISTDIR)\services\publisher\publisher.dll
+
+$(SAVANDISTDIR)\services\listener\listener.dll :
 	$(CC) $(CFLAGS) $(SAVANSRC)\samples\server\listener\*.c /Fo$(SAVANINTDIR)\samples\listener\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\listener\*.obj  $(SAVAN_CLIENT).lib /DLL \
 	/OUT:$(SAVANDISTDIR)\services\listener\listener.dll
+	-@$(_VC_MANIFEST_EMBED_DLL)
 	@copy $(SAVANSRC)\samples\server\listener\services.xml $(SAVANDISTDIR)\services\listener\
 
-subscriber:
+listener: $(SAVANDISTDIR)\services\listener\listener.dll
+		
+$(SAVANDISTDIR)\bin\samples\savan\subscriber.exe :
 	$(CC) $(CFLAGS) $(SAVANSRC)\samples\client\subscriber\*.c /Fo$(SAVANINTDIR)\samples\subscriber\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscriber\*.obj $(SAVAN_CLIENT).lib \
 	/OUT:$(SAVANDISTDIR)\bin\samples\savan\subscriber.exe
+	-@$(_VC_MANIFEST_EMBED_EXE)
+
+subscriber: $(SAVANDISTDIR)\bin\samples\savan\subscriber.exe
 	
 dist: clean distdir intdir savan savan_client publisher listener subscription subscriber copy_include copy_samples copy_extra
 
