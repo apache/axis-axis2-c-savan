@@ -79,15 +79,15 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     const axis2_svc_t *svc = NULL;
     const axis2_char_t *svc_name = NULL;
     
-    AXIS2_ENV_CHECK( env, AXIS2_FAILURE);
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+        "[savan] Start:savan_in_handler_invoke");
+
     AXIS2_PARAM_CHECK(env->error, msg_ctx, AXIS2_FAILURE);
 
     svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
     if (svc)
         svc_name = axis2_svc_get_name(svc, env);
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_in_handler_invoke");
     
     /* create a subscription processor */
     processor = savan_sub_processor_create(env);
@@ -154,7 +154,7 @@ savan_in_handler_invoke(struct axis2_handler *handler,
         axis2_msg_recv_t* msg_recv = savan_msg_recv_create(env);
         axis2_op_set_msg_recv(op, env, msg_recv);
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
         "[savan] End:savan_in_handler_invoke");
     
     return AXIS2_SUCCESS;

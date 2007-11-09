@@ -958,7 +958,7 @@ savan_db_mgr_get_dbconn(
 {
     axis2_conf_ctx_t *conf_ctx = db_mgr->conf_ctx;
     axis2_conf_t *conf = NULL; 
-    axis2_char_t *path = NULL;
+    axis2_char_t *path = "./savan_db";
     int rc = -1;
     sqlite3 *dbconn = NULL;
 
