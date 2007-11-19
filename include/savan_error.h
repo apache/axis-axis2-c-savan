@@ -33,7 +33,6 @@ extern "C"
     * Since we use the same env->error from Axis2 we need to start from
     * a AXIS2_ERROR_LAST + some number to prevent ambiguity 
     */  
-    #define SAVAN_ERROR_CODES_START (AXIS2_ERROR_LAST + 2000)
 	/**
     * \brief Savan error codes
     *
