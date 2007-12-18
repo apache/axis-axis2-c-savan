@@ -500,8 +500,11 @@ savan_subs_mgr_get_subscriber_list(
             topic);
     db_mgr = savan_db_mgr_create(env, conf_ctx);
     if(db_mgr)
+    {
         subs_store = savan_db_mgr_retrieve_all(db_mgr, env, 
             savan_db_mgr_subs_find_callback, sql_retrieve);
+    }
+
     if(subs_store)
     {
         size = axutil_array_list_size(subs_store, env);

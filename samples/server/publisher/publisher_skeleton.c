@@ -238,7 +238,7 @@ publisher_worker_func(
     conf_ctx = axis2_conf_ctx_create(env, conf);
     while(1)
     {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] Inside while loop");
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan]Inside while loop");
         {
             savan_publishing_client_t *pub_client = NULL;
 

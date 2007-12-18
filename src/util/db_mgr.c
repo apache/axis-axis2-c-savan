@@ -141,6 +141,7 @@ savan_db_mgr_subs_find_callback(
     {
         subscriber = savan_subscriber_create(env);
     }
+
     for(i = 0; i < argc; i++)
     {
         if(0 == axutil_strcmp(col_name[i], "id"))
@@ -181,6 +182,7 @@ savan_db_mgr_subs_find_callback(
                 AXIS2_ATOI(argv[i]));
         }
     }
+
     if(subscriber)
         axutil_array_list_add(subscriber_list, env, subscriber);
     return 0;
@@ -843,8 +845,11 @@ savan_db_mgr_retrieve_all(
     rc = sqlite3_exec(dbconn, sql_stmt_find, find_func, args, 
         &error_msg);
     if(rc == SQLITE_BUSY)
+    {
         rc = savan_db_mgr_busy_handler(dbconn, sql_stmt_find, 
             find_func, args, &error_msg, rc);
+    }
+
     if(args->data)
         data_list = (axutil_array_list_t *) args->data;
     if(rc != SQLITE_OK )

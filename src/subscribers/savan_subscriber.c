@@ -390,6 +390,15 @@ savan_subscriber_publish(
     path = AXIS2_GETENV("AXIS2C_HOME");
     svc_client = axis2_svc_client_create(env, path);
 
+    if(!svc_client)
+    {
+        AXIS2_LOG_ERROR (env->log, AXIS2_LOG_SI, 
+                         "[savan]svc_client creation failed, unable to\
+continue");
+        return AXIS2_SUCCESS;
+    }
+
+
     /* Setup options */
     options = axis2_options_create(env);
     if(subscriber->notify_to)
@@ -406,21 +415,17 @@ savan_subscriber_publish(
 
 	/* Apply the filter, and check whether it evaluates to success */
 
-	#ifdef SAVAN_FILTERING
+#ifdef SAVAN_FILTERING
 	if (savan_util_apply_filter(subscriber, env, payload) == AXIS2_FAILURE)
 	{
 		return AXIS2_SUCCESS;
 	}
-	#endif
+#endif
 	
     /* Set service client options */
-    if(svc_client)
-    {
-        axis2_svc_client_set_options(svc_client, env, options);
-        status = axis2_svc_client_send_robust(svc_client, env, payload);
-
-        axis2_svc_client_free(svc_client, env);
-    }
+    axis2_svc_client_set_options(svc_client, env, options);
+    status = axis2_svc_client_send_robust(svc_client, env, payload);
+    axis2_svc_client_free(svc_client, env);
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] End:savan_subscriber_publish");

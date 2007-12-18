@@ -95,18 +95,29 @@ savan_publishing_client_publish(
 
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] "
-        "Start:savan_publishing_client_publish");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+                    "[savan]Start:savan_publishing_client_publish");
    
     conf_ctx = client->conf_ctx;
     pubs_svc = client->svc;
+
     topic_param = axis2_svc_get_param(pubs_svc, env, "TopicURL");
+    if (!topic_param)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                        "[savan]TopicURL param not available");
+        return AXIS2_SUCCESS;
+    }
     topic_url = axutil_param_get_value(topic_param, env);
+
+
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     qname = axutil_qname_create(env, "savan", NULL, NULL);
     module_desc = axis2_conf_get_module(conf, env, qname);
+
     param = axis2_module_desc_get_param(module_desc, env, "SubscriptionMgrURL");
     axutil_qname_free(qname, env);
+
     if(param)
     {
         axis2_char_t *subs_mgr_url = NULL;
@@ -117,7 +128,10 @@ savan_publishing_client_publish(
         subs_mgr_url = axutil_param_get_value(param, env);
         svc_client_param = axis2_svc_get_param(pubs_svc, env, "svc_client");
         if(svc_client_param)
+        {
             svc_client = axutil_param_get_value(svc_client_param, env);
+        }
+
         if(!svc_client)
         {
             svc_client = 
@@ -126,6 +140,7 @@ savan_publishing_client_publish(
                 svc_client);
             axis2_svc_add_param(pubs_svc, env, svc_client_param);
         }
+
         subs_store = 
             savan_util_get_subscriber_list_from_remote_subs_mgr(env, 
                 topic_url, subs_mgr_url, svc_client);
@@ -142,14 +157,21 @@ savan_publishing_client_publish(
             " where topic.topic_name=subscriber.topic_name and"\
             " topic.topic_name='%s';", topic_name);
         db_mgr = savan_db_mgr_create(env, conf_ctx);
-        if(db_mgr)
-            subs_store = savan_db_mgr_retrieve_all(db_mgr, env,
-                savan_db_mgr_subs_find_callback, sql_retrieve);
+        if(!db_mgr)
+        {
+            AXIS2_LOG_ERROR (env->log, AXIS2_LOG_SI,
+                             "[savan]database manager creation failed");
+        }
+
+        subs_store = savan_db_mgr_retrieve_all(db_mgr, env,
+                                               savan_db_mgr_subs_find_callback, 
+                                               sql_retrieve);
     }
+
     if (!subs_store)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Subscriber store is NULL"); 
+            "[savan] Subscriber store is NULL"); 
         return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
     }
 
@@ -161,23 +183,29 @@ savan_publishing_client_publish(
         if (sub)
         {
             axis2_char_t *id = savan_subscriber_get_id(sub, env);
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][out handler] "
-                "Publishing to %s", id);
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+                            "[savan][out handler]Publishing to %s", id);
+
             if(!savan_subscriber_publish(sub, env, payload))
             {
                 axis2_endpoint_ref_t *notifyto = 
                     savan_subscriber_get_notify_to(sub, env);
                 const axis2_char_t *address = NULL;
+
                 if(notifyto)
+                {
                     address = axis2_endpoint_ref_get_address(notifyto, env);
-                AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Publishing to the "\
-                    "Data Sink:%s proviced by subscriber:%s Failed. Check "\
-                    "whether the Data Sink url is correct", address, id);
+                }
+
+                AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                                "Publishing to the Data Sink:%s proviced by \
+subscriber:%s Failed. Check whether the Data Sink url is correct", 
+                                address, id);
             }
         }
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] "
-        "End:savan_publishing_client_publish");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+                    "[savan]End:savan_publishing_client_publish");
     
     return AXIS2_SUCCESS;
 }

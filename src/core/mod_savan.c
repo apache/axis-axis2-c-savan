@@ -86,6 +86,7 @@ mod_savan_init(
             "[SAVAN] Error creating db_mgr struct");
         return status;
     }
+
     if(!savan_db_mgr_create_db(db_mgr, env))
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[SAVAN] Could not create "\
@@ -93,9 +94,14 @@ mod_savan_init(
             "accessible. Exit loading the Savan module");
     }
     else
+    {
         status = AXIS2_SUCCESS;
+    }
+
     if(db_mgr)
+    {
         savan_db_mgr_free(db_mgr, env);
+    }
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] End:mod_savan_init");
     return status;
