@@ -380,7 +380,7 @@ savan_subscriber_publish(
     axis2_svc_client_t *svc_client = NULL;
     axis2_char_t *path = NULL;
     axis2_options_t *options = NULL;
-    axis2_status_t status = AXIS2_FAILURE;
+    axis2_status_t status = AXIS2_SUCCESS;
     axis2_endpoint_ref_t *to = NULL;
     const axis2_char_t *address = NULL;
 
@@ -415,20 +415,26 @@ continue");
 
 	/* Apply the filter, and check whether it evaluates to success */
 
-#ifdef SAVAN_FILTERING
+    #ifdef SAVAN_FILTERING
 	if (savan_util_apply_filter(subscriber, env, payload) == AXIS2_FAILURE)
 	{
 		return AXIS2_SUCCESS;
 	}
-#endif
+    #endif
 	
     /* Set service client options */
     axis2_svc_client_set_options(svc_client, env, options);
     status = axis2_svc_client_send_robust(svc_client, env, payload);
-    axis2_svc_client_free(svc_client, env);
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_subscriber_publish");
+    axiom_node_detach(payload, env); /*insert this to prevent payload corruption in subsequent 
+                                       "publish" calls with some payload.*/
+    if(svc_client)
+    {
+        axis2_svc_client_free(svc_client, env);
+    }
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_subscriber_publish");
+
     return status;
 }
 

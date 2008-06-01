@@ -45,7 +45,7 @@ dnl AC_FUNC_REALLOC
 abs_top_builddir=`pwd`
 AC_SUBST(abs_top_builddir)
 
-AC_MSG_CHECKING(path to use Axis2C . This is a compulsory to build Sandesha2C)
+AC_MSG_CHECKING(path to use Axis2C . This is a compulsory to build Savan/C)
 AC_ARG_WITH(axis2,
 [  --with-axis2[=PATH]      use axis2c.],
 [ case "$withval" in
