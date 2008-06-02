@@ -123,6 +123,7 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_SUBSCRIBER       "savan_subscriber"
 #define SAVAN_TOPIC_LIST       "savan_topic_list"
 #define SAVAN_DB "savan_db"
+#define SAVAN_MODULE  "savan"
 
 /** @} */
 #ifdef __cplusplus

@@ -296,6 +296,11 @@ extern "C"
     savan_util_get_svc_client(
         const axutil_env_t *env);
 
+    axis2_char_t *AXIS2_CALL
+    savan_util_get_dbname(
+        const axutil_env_t *env,
+        axis2_conf_ctx_t *conf_ctx);
+
 /** @} */
 #ifdef __cplusplus
 }

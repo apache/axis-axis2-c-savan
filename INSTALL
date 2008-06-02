@@ -35,7 +35,7 @@ and install.
 This will install the Savan/C as a module in Axis2/C in <AXIS2C_HOME>/modules folder. The module
 folder contains the Savan/C libraries and the module.xml file. In the module.xml file give a valid path 
 for database storage. The database name should be savan_db.
-<parameter name="savan_db" locked="false">/axis2c/deploy/savan_db</parameter>
+<parameter name="savan_db" locked="false">/tmp/savan_db</parameter>
 It will also install libsavan_client.so savan client
 library in <AXIS2C_HOME>/lib folder. This client library is needed for savan clients to be linked with.
 To test the installation you can run the subscriber sample by running 
@@ -62,7 +62,7 @@ Savan/C binary distribution for Linux has the following folder structure.
     To deploy Savan/C in Axis2/C running environment do the following
     1. Copy the modules/savan into <AXIS2C_HOME>/modules folder.
     2  In the module.xml file give a valid path for database storage. savan_db should be the database name.
-        <parameter name="savan_db" locked="false">/axis2c/deploy/savan_db</parameter>
+        <parameter name="savan_db" locked="false">/tmp/savan_db</parameter>
     3. Copy the libsavan_client.so into <AXIS2C_HOME>/lib folder. This client library is needed for savan clients 
         to be linked with.
     4. Copy the samples/server/axis2.xml into <AXIS2C_HOME> or do neccessary changes as described in README 
@@ -105,7 +105,7 @@ Savan/C binary distribution will have following directory structure.
 
     1 Copy Savan directory ( containing savan dll and module.xml ) to <AXIS2C_HOME>\modules directory.
     2  In the module.xml file give a valid path for database storage. savan_db should be the database name.
-        <parameter name="savan_db" locked="false">/axis2c/deploy/savan_db</parameter>
+        <parameter name="savan_db" locked="false">/tmp/savan_db</parameter>
     3. Copy the savan_client.dll into <AXIS2C_HOME>/lib folder. This client library is needed for savan clients 
         to be linked with.
     4. Copy the samples/server/axis2.xml into <AXIS2C_HOME> or do neccessary changes as described in README 

@@ -29,7 +29,6 @@
 #include <axutil_string.h>
 #include <axutil_utils.h>
 #include <axutil_array_list.h>
-#include <axis2_conf_ctx.h>
 #include <savan_subscriber.h>
 #include <sqlite3.h>
 
@@ -50,13 +49,13 @@ typedef AXIS2_DECLARE_DATA struct savan_db_mgr_args
  */
 typedef struct savan_db_mgr
 {
-    axis2_conf_ctx_t *conf_ctx;
+    axis2_char_t *dbname;
 }savan_db_mgr_t;
 
 AXIS2_EXTERN savan_db_mgr_t * AXIS2_CALL
 savan_db_mgr_create(
     const axutil_env_t *env,
-    axis2_conf_ctx_t *conf_ctx);
+    axis2_char_t *dbname);
 
 AXIS2_EXTERN void AXIS2_CALL
 savan_db_mgr_free(
@@ -134,17 +133,10 @@ savan_db_mgr_get_dbconn(
     savan_db_mgr_t *db_mgr, 
     const axutil_env_t *env);
 
-AXIS2_EXTERN axis2_char_t *AXIS2_CALL
-savan_db_mgr_create_insert_sql(
-    const axutil_env_t *env,
-    savan_subscriber_t *subscriber,
-    axis2_conf_ctx_t *conf_ctx);
-
 axis2_char_t *AXIS2_CALL
 savan_db_mgr_create_update_sql(
     const axutil_env_t *env,
-    savan_subscriber_t *subscriber,
-    axis2_conf_ctx_t *conf_ctx);
+    savan_subscriber_t *subscriber);
 
 /**
  * This function will create the savan_db database if it is not aleardy exists

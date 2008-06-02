@@ -179,7 +179,7 @@ savan_subs_mgr_add_subscriber(
     {
         savan_db_mgr_t *db_mgr = NULL;
 
-        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
         if(savan_db_mgr_insert_subscriber(db_mgr, env, subscriber))
             AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
                 "[savan] Subscriber %s added to the topic:%s", id, topic_url);
@@ -247,7 +247,7 @@ savan_subs_mgr_remove_subscriber(
     
     sprintf(sql_remove, "delete from subscriber where id='%s'",
         id);
-    db_mgr = savan_db_mgr_create(env, conf_ctx);
+    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
     if(db_mgr)
         savan_db_mgr_remove(db_mgr, env, sql_remove);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
@@ -339,7 +339,7 @@ savan_subs_mgr_get_subscriber(
     sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
         "expires, filter, renewed, topic_url from subscriber, topic"\
         " where id='%s' and topic.topic_name=subscriber.topic_name;", subs_id);
-    db_mgr = savan_db_mgr_create(env, conf_ctx);
+    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
     if(db_mgr)
         subscriber = savan_db_mgr_retrieve(db_mgr, env, 
         savan_db_mgr_subs_retrieve_callback, sql_retrieve);
@@ -498,7 +498,7 @@ savan_subs_mgr_get_subscriber_list(
         "expires, filter, topic_url, renewed from subscriber, topic where "\
         "subscriber.topic_name=topic.topic_name and topic.topic_name='%s';", 
             topic);
-    db_mgr = savan_db_mgr_create(env, conf_ctx);
+    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
     if(db_mgr)
     {
         subs_store = savan_db_mgr_retrieve_all(db_mgr, env, 
@@ -653,7 +653,7 @@ savan_subs_mgr_get_topic_list(
     topic_list_elem = axiom_element_create(env, NULL, ELEM_NAME_TOPICS, ns1, 
         &topic_list_node);
     sprintf(sql_retrieve, "select topic_url from topic;");
-    db_mgr = savan_db_mgr_create(env, conf_ctx);
+    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
     if(db_mgr)
         topic_store = savan_db_mgr_retrieve_all(db_mgr, env, 
             savan_db_mgr_topic_find_callback, sql_retrieve);

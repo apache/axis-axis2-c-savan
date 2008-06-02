@@ -450,7 +450,7 @@ savan_util_get_subscriber_from_msg(
         sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
             "expires, filter, renewed, topic_url from subscriber, topic"\
             " where id='%s' and topic.topic_name=subscriber.topic_name;", sub_id);
-        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
         if(db_mgr)
             subscriber = savan_db_mgr_retrieve(db_mgr, env, 
             savan_db_mgr_subs_retrieve_callback, sql_retrieve);
@@ -509,7 +509,7 @@ savan_util_add_subscriber(
     {
         savan_db_mgr_t *db_mgr = NULL;
         axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
         if(db_mgr)
             status = savan_db_mgr_insert_subscriber(db_mgr, env, subscriber);
     }
@@ -539,7 +539,7 @@ savan_util_update_subscriber(
     {
         savan_db_mgr_t *db_mgr = NULL;
         axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
         if(db_mgr)
             savan_db_mgr_update_subscriber(db_mgr, env, subscriber);
     } 
@@ -568,7 +568,7 @@ savan_util_remove_subscriber(
         /* Extract the store from the svc and remove the given subscriber */
         sprintf(sql_remove, "delete from subscriber where id='%s'",
             subs_id);
-        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
         if(db_mgr)
             savan_db_mgr_remove(db_mgr, env, sql_remove);
     }
@@ -1385,4 +1385,32 @@ savan_util_get_svc_client(
     axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
     return svc_client;
 }
+
+axis2_char_t *AXIS2_CALL
+savan_util_get_dbname(
+    const axutil_env_t *env,
+    axis2_conf_ctx_t *conf_ctx)
+{
+    axis2_conf_t *conf = NULL; 
+    axis2_char_t *path = "./savan_db";
+    axis2_module_desc_t *module_desc = NULL;
+    axutil_qname_t *qname = NULL;
+
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+    qname = axutil_qname_create(env, SAVAN_MODULE, NULL, NULL);
+    module_desc = axis2_conf_get_module(conf, env, qname);
+    if(module_desc)
+    {
+        axutil_param_t *db_param = NULL;
+        db_param = axis2_module_desc_get_param(module_desc, env, SAVAN_DB);
+        if(db_param)
+        {
+            path = (axis2_char_t *) axutil_param_get_value(db_param, env);
+        }
+    }
+    axutil_qname_free(qname, env);
+    
+    return path;
+}
+
 

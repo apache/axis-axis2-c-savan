@@ -156,7 +156,7 @@ savan_publishing_client_publish(
             "expires, filter, renewed, topic_url from subscriber, topic"\
             " where topic.topic_name=subscriber.topic_name and"\
             " topic.topic_name='%s';", topic_name);
-        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
         if(!db_mgr)
         {
             AXIS2_LOG_ERROR (env->log, AXIS2_LOG_SI,

@@ -33,6 +33,7 @@
 #include "savan_subs_mgr.h"
 #include <savan_constants.h>
 #include <savan_db_mgr.h>
+#include <savan_util.h>
 
 int AXIS2_CALL
 savan_subs_mgr_free(
@@ -145,7 +146,7 @@ savan_subs_mgr_init_with_conf(
         if(0 == axutil_strcmp(topic_name, "wsamapping"))
             continue;
 
-        db_mgr = savan_db_mgr_create(env, conf_ctx);
+        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
         if(savan_db_mgr_insert_topic(db_mgr, env, topic_name, topic_url_str))
             AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
                 "[SAVAN] Topic %s added", topic_url_str);

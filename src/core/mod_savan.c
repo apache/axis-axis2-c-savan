@@ -17,9 +17,11 @@
 #include <axis2_conf_ctx.h>
 
 #include <mod_savan.h>
-#include <sqlite3.h>
 #include <savan_db_mgr.h>
 #include <savan_constants.h>
+#include <savan_util.h>
+
+#include <sqlite3.h>
 
 /**************************** Function Prototypes *****************************/
 
@@ -44,8 +46,6 @@ static const axis2_module_ops_t savan_module_ops_var = {
 	mod_savan_fill_handler_create_func_map
 };
 
-/*************************** End of Function Prototypes ***********************/
-
 axis2_module_t *
 mod_savan_create(const axutil_env_t *env)
 {
@@ -65,8 +65,6 @@ mod_savan_create(const axutil_env_t *env)
     return module;
 }
 
-/******************************************************************************/
-
 axis2_status_t AXIS2_CALL
 mod_savan_init(
         axis2_module_t *module,
@@ -78,18 +76,17 @@ mod_savan_init(
 	savan_db_mgr_t *db_mgr = NULL; 
     axis2_status_t status = AXIS2_FAILURE;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] Start:mod_savan_init");
-    db_mgr = savan_db_mgr_create(env, conf_ctx);
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[SAVAN] Entry:mod_savan_init");
+    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
     if(!db_mgr)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Error creating db_mgr struct");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Error creating db_mgr struct");
         return status;
     }
 
     if(!savan_db_mgr_create_db(db_mgr, env))
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[SAVAN] Could not create "\
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create "\
             "the database. Check whether database path is correct and "\
             "accessible. Exit loading the Savan module");
     }
@@ -103,11 +100,10 @@ mod_savan_init(
         savan_db_mgr_free(db_mgr, env);
     }
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] End:mod_savan_init");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:mod_savan_init");
+
     return status;
 }
-
-/******************************************************************************/
 
 axis2_status_t AXIS2_CALL
 mod_savan_shutdown(axis2_module_t *module,
@@ -126,8 +122,6 @@ mod_savan_shutdown(axis2_module_t *module,
     }
     return AXIS2_SUCCESS; 
 }
-
-/******************************************************************************/
 
 axis2_status_t AXIS2_CALL
 mod_savan_fill_handler_create_func_map(axis2_module_t *module,
@@ -153,8 +147,6 @@ mod_savan_fill_handler_create_func_map(axis2_module_t *module,
     return AXIS2_SUCCESS;
 }
 
-/******************************************************************************/
-
 /**
  * Following block distinguish the exposed part of the dll.
  */
@@ -171,8 +163,6 @@ axis2_get_instance(axis2_module_t **inst,
 
     return AXIS2_SUCCESS;
 }
-
-/******************************************************************************/
 
 AXIS2_EXPORT int 
 axis2_remove_instance(axis2_module_t *inst,

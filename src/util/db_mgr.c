@@ -19,7 +19,6 @@
 #include <axutil_hash.h>
 #include <axutil_thread.h>
 #include <axutil_property.h>
-#include <axis2_conf_ctx.h>
 #include <axutil_types.h>
 #include <platforms/axutil_platform_auto_sense.h>
 #include <savan_constants.h>
@@ -57,13 +56,13 @@ savan_db_mgr_busy_handler(
 AXIS2_EXTERN savan_db_mgr_t * AXIS2_CALL
 savan_db_mgr_create(
     const axutil_env_t *env,
-    axis2_conf_ctx_t *conf_ctx)
+    axis2_char_t *dbname)
 {
     savan_db_mgr_t *db_mgr = NULL;
     
-    AXIS2_ENV_CHECK(env, NULL);
     db_mgr = AXIS2_MALLOC(env->allocator, sizeof(savan_db_mgr_t));
-    db_mgr->conf_ctx = conf_ctx;
+
+    db_mgr->dbname = axutil_strdup(env, dbname);
 
     return db_mgr;
 }
@@ -75,6 +74,13 @@ savan_db_mgr_free(
 {
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI,
         "[SAVAN] Start:savan_db_mgr_free");
+
+    if(db_mgr->dbname)
+    {
+        AXIS2_FREE(env->allocator, db_mgr->dbname);
+        db_mgr->dbname = NULL;
+    }
+
     if(db_mgr)
     {
         AXIS2_FREE(env->allocator, db_mgr);
@@ -895,6 +901,27 @@ savan_db_mgr_create_db(
     axis2_char_t *sql_stmt1 = NULL;
     axis2_char_t *sql_stmt2 = NULL;
     axis2_status_t status = AXIS2_FAILURE;
+    const axis2_char_t *dbname = NULL;
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_db_mgr_create_db");
+
+    dbname = db_mgr->dbname;
+
+    if(AXIS2_SUCCESS == axutil_file_handler_access(dbname, AXIS2_F_OK))
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Database %s already created.", dbname);
+        return AXIS2_SUCCESS;
+    }
+
+    dbconn = savan_db_mgr_get_dbconn(db_mgr, env);
+
+    #if !defined(WIN32)
+    {
+        axis2_char_t permission_str[256];
+        sprintf(permission_str, "chmod 777 %s", dbname);
+        system(permission_str);
+    }
+    #endif
 
     sql_stmt1 = "create table if not exists topic(topic_name varchar(100) "\
                  "primary key, topic_url varchar(200))";
@@ -903,25 +930,25 @@ savan_db_mgr_create_db(
                   "delivery_mode varchar(100), expires varchar(100), "\
                   "filter varchar(200), topic_name varchar(100), "\
                   "renewed boolean)";
-    if(db_mgr)
-        dbconn = savan_db_mgr_get_dbconn(db_mgr, env);
+
     if(dbconn)
     {
         rc = sqlite3_exec(dbconn, sql_stmt1, NULL, 0, &error_msg);
         if( rc != SQLITE_OK )
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "Error creating database table topic; SQL Error: %s", error_msg);
+                "[savan] Error creating database table topic; SQL Error: %s", error_msg);
             sqlite3_free(error_msg);
             sqlite3_close(dbconn);
             return AXIS2_FAILURE;
         }
+
         rc = sqlite3_exec(dbconn, sql_stmt2, NULL, 0, &error_msg);
         if( rc != SQLITE_OK )
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "Error creating database table subscriber; SQL Error: %s", 
-                error_msg);
+                    "[savan] Error creating database table subscriber; SQL Error: %s", error_msg);
+
             sqlite3_free(error_msg);
             sqlite3_close(dbconn);
             return AXIS2_FAILURE;
@@ -929,6 +956,14 @@ savan_db_mgr_create_db(
         sqlite3_close(dbconn);
         status = AXIS2_SUCCESS;
     }
+    else
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Database %s creation failed", dbname);
+        return AXIS2_FAILURE;
+    }
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_db_mgr_create_db");
+
     return status;
 }
 
@@ -961,49 +996,28 @@ savan_db_mgr_get_dbconn(
     savan_db_mgr_t *db_mgr, 
     const axutil_env_t *env)
 {
-    axis2_conf_ctx_t *conf_ctx = db_mgr->conf_ctx;
-    axis2_conf_t *conf = NULL; 
-    axis2_char_t *path = "./savan_db";
     int rc = -1;
     sqlite3 *dbconn = NULL;
 
-    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-    {
-        axis2_module_desc_t *module_desc = NULL;
-        axutil_qname_t *qname = NULL;
-        qname = axutil_qname_create(env, "savan", NULL, NULL);
-        module_desc = axis2_conf_get_module(conf, env, qname);
-        if(module_desc)
-        {
-            axutil_param_t *db_param = NULL;
-            db_param = axis2_module_desc_get_param(module_desc, env, SAVAN_DB);
-            if(db_param)
-            {
-                path = (axis2_char_t *) axutil_param_get_value(db_param, env);
-            }
-        }
-        axutil_qname_free(qname, env);
-    }
-    rc = sqlite3_open(path, &dbconn);
+    rc = sqlite3_open(db_mgr->dbname, &dbconn);
     if(rc != SQLITE_OK)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Can't open database: %s"
-            " sqlite error: %s\n", path, sqlite3_errmsg(dbconn));
+            " sqlite error: %s\n", db_mgr->dbname, sqlite3_errmsg(dbconn));
         sqlite3_close(dbconn);
         dbconn = NULL;
         return NULL;
     }
+
     return dbconn;
 }
 
 axis2_char_t *AXIS2_CALL
 savan_db_mgr_create_update_sql(
     const axutil_env_t *env,
-    savan_subscriber_t *subscriber,
-    axis2_conf_ctx_t *conf_ctx)
+    savan_subscriber_t *subscriber)
 {
     axis2_char_t *sql_update = NULL;
-    savan_db_mgr_t *db_mgr = NULL;
     axis2_char_t *id = NULL;
     axis2_char_t *endto = NULL;
     axis2_char_t *notifyto = NULL;
@@ -1033,11 +1047,12 @@ savan_db_mgr_create_update_sql(
         topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
     }
     renewed = savan_subscriber_get_renew_status(subscriber, env);
-    db_mgr = savan_db_mgr_create(env, conf_ctx);
+
     sprintf(sql_update, "update subscriber set end_to='%s', notify_to='%s',"\
         "delivery_mode='%s', expires='%s', filter='%s', topic_name='%s', renewed=%d"\
         " where id='%s'", endto, notifyto, delivery_mode, expires, filter, topic, 
         renewed, id);
+
     return sql_update;
 }
 
