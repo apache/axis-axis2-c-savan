@@ -1386,7 +1386,7 @@ savan_util_get_svc_client(
     return svc_client;
 }
 
-axis2_char_t *AXIS2_CALL
+AXIS2_EXTERN axis2_char_t *AXIS2_CALL
 savan_util_get_dbname(
     const axutil_env_t *env,
     axis2_conf_ctx_t *conf_ctx)

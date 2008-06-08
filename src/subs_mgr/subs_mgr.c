@@ -25,6 +25,7 @@
 
 #include "savan_subs_mgr.h"
 #include <savan_db_mgr.h>
+#include <savan_util.h>
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
 savan_subs_mgr_add_subscriber(

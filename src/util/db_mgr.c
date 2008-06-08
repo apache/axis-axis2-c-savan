@@ -20,6 +20,7 @@
 #include <axutil_thread.h>
 #include <axutil_property.h>
 #include <axutil_types.h>
+#include <axutil_file_handler.h>
 #include <platforms/axutil_platform_auto_sense.h>
 #include <savan_constants.h>
 #include <savan_util.h>
