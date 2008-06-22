@@ -17,13 +17,10 @@
 #include <axis2_conf_ctx.h>
 
 #include <mod_savan.h>
-#include <savan_db_mgr.h>
 #include <savan_constants.h>
 #include <savan_util.h>
 
 #include <sqlite3.h>
-
-/**************************** Function Prototypes *****************************/
 
 axis2_status_t AXIS2_CALL
 mod_savan_shutdown(axis2_module_t *module,
@@ -73,32 +70,9 @@ mod_savan_init(
         axis2_module_desc_t *module_desc)
 {
     /* Any initialization stuff of mod_savan goes here */
-	savan_db_mgr_t *db_mgr = NULL; 
-    axis2_status_t status = AXIS2_FAILURE;
+    axis2_status_t status = AXIS2_SUCCESS;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[SAVAN] Entry:mod_savan_init");
-    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-    if(!db_mgr)
-    {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Error creating db_mgr struct");
-        return status;
-    }
-
-    if(!savan_db_mgr_create_db(db_mgr, env))
-    {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create "\
-            "the database. Check whether database path is correct and "\
-            "accessible. Exit loading the Savan module");
-    }
-    else
-    {
-        status = AXIS2_SUCCESS;
-    }
-
-    if(db_mgr)
-    {
-        savan_db_mgr_free(db_mgr, env);
-    }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:mod_savan_init");
 

@@ -33,16 +33,13 @@
 #include <savan_sub_processor.h>
 #include <savan_util.h>
 #include <savan_msg_recv.h>
-
-/* Function Prototypes ********************************************************/
+#include <savan_db_mgr.h>
 
 axis2_status_t AXIS2_CALL
 savan_in_handler_invoke(struct axis2_handler *handler, 
                          const axutil_env_t *env,
                          struct axis2_msg_ctx *msg_ctx);
 
-
-/* End of Function Prototypes *************************************************/
 
 AXIS2_EXTERN axis2_handler_t* AXIS2_CALL
 savan_in_handler_create(const axutil_env_t *env, 
@@ -66,8 +63,6 @@ savan_in_handler_create(const axutil_env_t *env,
     return handler;
 }
 
-/******************************************************************************/
-
 axis2_status_t AXIS2_CALL
 savan_in_handler_invoke(struct axis2_handler *handler, 
                          const axutil_env_t *env,
@@ -79,10 +74,39 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     const axis2_svc_t *svc = NULL;
     const axis2_char_t *svc_name = NULL;
     
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_in_handler_invoke");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Start:savan_in_handler_invoke");
 
     AXIS2_PARAM_CHECK(env->error, msg_ctx, AXIS2_FAILURE);
+
+	savan_db_mgr_t *db_mgr = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+
+    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
+    if(!db_mgr)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Error creating db_mgr struct");
+        return AXIS2_FAILURE;
+    }
+
+    if(!savan_db_mgr_create_db(db_mgr, env))
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the database. Check \
+                whether database path is correct and accessible. Exit loading the Savan module");
+
+        if(db_mgr)
+        {
+            savan_db_mgr_free(db_mgr, env);
+        }
+
+        return AXIS2_FAILURE;
+    }
+    
+    if(db_mgr)
+    {
+        savan_db_mgr_free(db_mgr, env);
+    }
 
     svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
     if (svc)
@@ -154,8 +178,9 @@ savan_in_handler_invoke(struct axis2_handler *handler,
         axis2_msg_recv_t* msg_recv = savan_msg_recv_create(env);
         axis2_op_set_msg_recv(op, env, msg_recv);
     }
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_in_handler_invoke");
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] End:savan_in_handler_invoke");
     
     return AXIS2_SUCCESS;
 }
+
