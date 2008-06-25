@@ -276,7 +276,7 @@ extern "C"
     AXIS2_EXTERN axis2_char_t *AXIS2_CALL
     savan_util_get_dbname(
         const axutil_env_t *env,
-        axis2_conf_ctx_t *conf_ctx);
+        axis2_conf_t *conf);
 
     /**
     * Get the topics registered in a subscription manager

@@ -148,7 +148,6 @@ savan_publishing_client_publish(
     else
     {
         axis2_char_t sql_retrieve[256];
-        savan_db_mgr_t *db_mgr = NULL;
         axis2_char_t *topic_name = NULL;
 
         topic_name = savan_util_get_topic_name_from_topic_url(env, topic_url);
@@ -156,14 +155,8 @@ savan_publishing_client_publish(
             "expires, filter, renewed, topic_url from subscriber, topic"\
             " where topic.topic_name=subscriber.topic_name and"\
             " topic.topic_name='%s';", topic_name);
-        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-        if(!db_mgr)
-        {
-            AXIS2_LOG_ERROR (env->log, AXIS2_LOG_SI,
-                             "[savan]database manager creation failed");
-        }
 
-        subs_store = savan_db_mgr_retrieve_all(db_mgr, env,
+        subs_store = savan_db_mgr_retrieve_all(env, savan_util_get_dbname(env, conf),
                                                savan_db_mgr_subs_find_callback, 
                                                sql_retrieve);
     }

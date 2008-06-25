@@ -444,17 +444,17 @@ savan_util_get_subscriber_from_msg(
     }
     { 
         axis2_char_t sql_retrieve[256];
-        savan_db_mgr_t *db_mgr = NULL;
         axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+        axis2_conf_t *conf = axis2_conf_ctx_get_conf(conf_ctx, env);
 
         sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
             "expires, filter, renewed, topic_url from subscriber, topic"\
             " where id='%s' and topic.topic_name=subscriber.topic_name;", sub_id);
-        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-        if(db_mgr)
-            subscriber = savan_db_mgr_retrieve(db_mgr, env, 
-            savan_db_mgr_subs_retrieve_callback, sql_retrieve);
+
+        subscriber = savan_db_mgr_retrieve(env, savan_util_get_dbname(env, conf), 
+        savan_db_mgr_subs_retrieve_callback, sql_retrieve);
     }
+
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] End:savan_util_get_subscriber_from_msg");
     
@@ -507,11 +507,10 @@ savan_util_add_subscriber(
     }
     else
     {
-        savan_db_mgr_t *db_mgr = NULL;
         axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-        if(db_mgr)
-            status = savan_db_mgr_insert_subscriber(db_mgr, env, subscriber);
+        axis2_conf_t *conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+
+        status = savan_db_mgr_insert_subscriber(env, savan_util_get_dbname(env, conf), subscriber);
     }
     if(status)
     {
@@ -520,6 +519,7 @@ savan_util_add_subscriber(
             savan_subscriber_free_void_arg, subscriber);
         axis2_msg_ctx_set_property(msg_ctx, env, SAVAN_SUBSCRIBER, subs_prop);
     }
+
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] End:savan_util_add_subscriber"); 
     return status;
@@ -533,18 +533,17 @@ savan_util_update_subscriber(
 {
     axis2_conf_ctx_t *conf_ctx = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_util_update_subscriber");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_util_update_subscriber");
+
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     {
-        savan_db_mgr_t *db_mgr = NULL;
         axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-        if(db_mgr)
-            savan_db_mgr_update_subscriber(db_mgr, env, subscriber);
-    } 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_util_update_subscriber"); 
+        axis2_conf_t *conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+
+        savan_db_mgr_update_subscriber(env, savan_util_get_dbname(env, conf), subscriber);
+    }
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_util_update_subscriber"); 
     return AXIS2_SUCCESS;
 }
 
@@ -555,25 +554,24 @@ savan_util_remove_subscriber(
     savan_subscriber_t *subscriber)
 {
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_util_remove_subscriber");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_util_remove_subscriber");
 
     {
         axis2_char_t *subs_id = NULL;
         axis2_char_t sql_remove[256];
-        savan_db_mgr_t *db_mgr = NULL;
         axis2_conf_ctx_t *conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+        axis2_conf_t *conf = axis2_conf_ctx_get_conf(conf_ctx, env);
 
         subs_id = savan_subscriber_get_id(subscriber, env);
+
         /* Extract the store from the svc and remove the given subscriber */
-        sprintf(sql_remove, "delete from subscriber where id='%s'",
-            subs_id);
-        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-        if(db_mgr)
-            savan_db_mgr_remove(db_mgr, env, sql_remove);
+
+        sprintf(sql_remove, "delete from subscriber where id='%s'", subs_id);
+
+        savan_db_mgr_remove(env, savan_util_get_dbname(env, conf), sql_remove);
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_util_remove_subscriber");
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_util_remove_subscriber");
     return AXIS2_SUCCESS;
 }
 
@@ -1389,14 +1387,12 @@ savan_util_get_svc_client(
 AXIS2_EXTERN axis2_char_t *AXIS2_CALL
 savan_util_get_dbname(
     const axutil_env_t *env,
-    axis2_conf_ctx_t *conf_ctx)
+    axis2_conf_t *conf)
 {
-    axis2_conf_t *conf = NULL; 
     axis2_char_t *path = "./savan_db";
     axis2_module_desc_t *module_desc = NULL;
     axutil_qname_t *qname = NULL;
 
-    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     qname = axutil_qname_create(env, SAVAN_MODULE, NULL, NULL);
     module_desc = axis2_conf_get_module(conf, env, qname);
     if(module_desc)

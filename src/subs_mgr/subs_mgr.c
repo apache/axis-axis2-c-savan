@@ -34,6 +34,7 @@ savan_subs_mgr_add_subscriber(
     axis2_msg_ctx_t *msg_ctx)
 {
     axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
     savan_subscriber_t *subscriber = NULL;
     axis2_char_t *topic_url = NULL;
     axis2_char_t *topic = NULL;
@@ -68,6 +69,7 @@ savan_subs_mgr_add_subscriber(
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] Start:savan_subs_mgr_add_subscriber");
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     subscriber = savan_subscriber_create(env);
     if(add_sub_node)
         add_sub_elem = (axiom_element_t*)axiom_node_get_data_element(
@@ -153,44 +155,48 @@ savan_subs_mgr_add_subscriber(
         }
     
         /* Expires */
-        qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, 
-            NULL);
-        expires_elem = axiom_element_get_first_child_with_qname(sub_elem, env, 
-            qname, sub_node, &expires_node);
+        qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, NULL);
+        expires_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname, sub_node, 
+                &expires_node);
+
         axutil_qname_free(qname, env);
         if(expires_elem)
         {
             expires = axiom_element_get_text(expires_elem, env, expires_node);
             if(expires)
+            {
                 savan_subscriber_set_expires(subscriber, env, expires);
+            }
         }
     
         /* Filter */
         qname = axutil_qname_create(env, ELEM_NAME_FILTER, EVENTING_NAMESPACE, NULL);
-        filter_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
-            sub_node, &filter_node);
+        filter_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname, sub_node, 
+                &filter_node);
+
         axutil_qname_free(qname, env);
         if(filter_elem)
         {
             filter = axiom_element_get_text(filter_elem, env, filter_node);
             if(filter)
+            {
                 savan_subscriber_set_filter(subscriber, env, filter);
+            }
         }
-    } 
-    {
-        savan_db_mgr_t *db_mgr = NULL;
-
-        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-        if(savan_db_mgr_insert_subscriber(db_mgr, env, subscriber))
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                "[savan] Subscriber %s added to the topic:%s", id, topic_url);
-        else
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                "[savan] Subscriber %s could not be added to the topic:%s", id, 
-                    topic_url);
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_subs_mgr_add_subscriber");
+
+    if(savan_db_mgr_insert_subscriber(env, savan_util_get_dbname(env, conf), subscriber))
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[savan] Subscriber %s added to the topic:%s", id, topic_url);
+    }
+    else
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+                "[savan] Subscriber %s could not be added to the topic:%s", id, topic_url);
+    }
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_subs_mgr_add_subscriber");
     return NULL;   
 }
 
@@ -215,11 +221,12 @@ savan_subs_mgr_remove_subscriber(
     axis2_char_t *id = NULL;
     axis2_char_t sql_remove[256];
     axis2_conf_ctx_t *conf_ctx = NULL;
-    savan_db_mgr_t *db_mgr = NULL;
+    axis2_conf_t *conf = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_subs_mgr_remove_subscriber");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_remove_subscriber");
+
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     remove_sub_elem = (axiom_element_t*)axiom_node_get_data_element(
         remove_sub_node, env);
     
@@ -246,15 +253,16 @@ savan_subs_mgr_remove_subscriber(
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] Removing subscriber with id %s from topic %s", id, topic_url);
     
-    sprintf(sql_remove, "delete from subscriber where id='%s'",
-        id);
-    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-    if(db_mgr)
-        savan_db_mgr_remove(db_mgr, env, sql_remove);
+    sprintf(sql_remove, "delete from subscriber where id='%s'", id);
+
+    savan_db_mgr_remove(env, savan_util_get_dbname(env, conf), sql_remove);
+
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] Subscriber %s removed from the topic:%s", id, topic_url);
+
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] End:savan_subs_mgr_remove_subscriber");
+
     return NULL;   
 }
 
@@ -273,7 +281,7 @@ savan_subs_mgr_get_subscriber(
     axiom_node_t *subs_node = NULL;
     axiom_element_t *subs_elem = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
-    savan_db_mgr_t *db_mgr = NULL;
+    axis2_conf_t *conf = NULL;
     axis2_char_t sql_retrieve[256];
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
@@ -285,6 +293,7 @@ savan_subs_mgr_get_subscriber(
      * </ns1:get_subscriber>
      */
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     if (!node) /* 'get_subscriber' node */
     {
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_SVC_SKEL_INPUT_OM_NODE_NULL, 
@@ -340,10 +349,10 @@ savan_subs_mgr_get_subscriber(
     sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
         "expires, filter, renewed, topic_url from subscriber, topic"\
         " where id='%s' and topic.topic_name=subscriber.topic_name;", subs_id);
-    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-    if(db_mgr)
-        subscriber = savan_db_mgr_retrieve(db_mgr, env, 
-        savan_db_mgr_subs_retrieve_callback, sql_retrieve);
+
+    subscriber = savan_db_mgr_retrieve(env, savan_util_get_dbname(env, conf), 
+                savan_db_mgr_subs_retrieve_callback, sql_retrieve);
+
     if (subscriber)
     {
         axiom_node_t *sub_node = NULL;
@@ -430,7 +439,7 @@ savan_subs_mgr_get_subscriber_list(
     axiom_node_t *topic_node = NULL;
     axiom_element_t* subs_list_elem = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
-    savan_db_mgr_t *db_mgr = NULL;
+    axis2_conf_t *conf = NULL;
     axis2_char_t sql_retrieve[256];
     int i = 0, size = 0;
 
@@ -448,6 +457,7 @@ savan_subs_mgr_get_subscriber_list(
      * </ns1:Subscribers>
      */
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     if (!node) /* 'get_subscriber_list' node */
     {
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_SVC_SKEL_INPUT_OM_NODE_NULL, 
@@ -499,12 +509,9 @@ savan_subs_mgr_get_subscriber_list(
         "expires, filter, topic_url, renewed from subscriber, topic where "\
         "subscriber.topic_name=topic.topic_name and topic.topic_name='%s';", 
             topic);
-    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-    if(db_mgr)
-    {
-        subs_store = savan_db_mgr_retrieve_all(db_mgr, env, 
+
+    subs_store = savan_db_mgr_retrieve_all(env, savan_util_get_dbname(env, conf),
             savan_db_mgr_subs_find_callback, sql_retrieve);
-    }
 
     if(subs_store)
     {
@@ -629,7 +636,7 @@ savan_subs_mgr_get_topic_list(
     axiom_node_t *topic_list_node = NULL;
     axiom_element_t* topic_list_elem = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
-    savan_db_mgr_t *db_mgr = NULL;
+    axis2_conf_t *conf = NULL;
     axis2_char_t sql_retrieve[256];
     int i = 0, size = 0;
 
@@ -641,6 +648,7 @@ savan_subs_mgr_get_topic_list(
      * </ns1:get_topic_list>
      */
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     if (!node) /* 'get_topic_list' node */
     {
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_SVC_SKEL_INPUT_OM_NODE_NULL, 
@@ -654,10 +662,10 @@ savan_subs_mgr_get_topic_list(
     topic_list_elem = axiom_element_create(env, NULL, ELEM_NAME_TOPICS, ns1, 
         &topic_list_node);
     sprintf(sql_retrieve, "select topic_url from topic;");
-    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-    if(db_mgr)
-        topic_store = savan_db_mgr_retrieve_all(db_mgr, env, 
+
+    topic_store = savan_db_mgr_retrieve_all(env, savan_util_get_dbname(env, conf),
             savan_db_mgr_topic_find_callback, sql_retrieve);
+
     size = axutil_array_list_size(topic_store, env);
     for(i = 0; i < size; i++)
     {

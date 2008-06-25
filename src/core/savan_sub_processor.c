@@ -204,8 +204,8 @@ savan_sub_processor_renew_subscription(
     axis2_bool_t renewable = AXIS2_TRUE;
     axis2_char_t *expires = NULL;
     axis2_char_t *renewed_expires = NULL;
-    savan_db_mgr_t *db_mgr = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
     axis2_status_t status = AXIS2_FAILURE;
 
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
@@ -249,9 +249,9 @@ savan_sub_processor_renew_subscription(
     savan_subscriber_set_expires(subscriber, env, renewed_expires);
     savan_subscriber_set_renew_status(subscriber, env, AXIS2_TRUE);
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-    if(db_mgr)
-        status = savan_db_mgr_update_subscriber(db_mgr, env, subscriber);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+    status = savan_db_mgr_update_subscriber(env, savan_util_get_dbname(env, conf), subscriber);
+
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
                     "[SAVAN] End:savan_sub_processor_renew_subscription");
 

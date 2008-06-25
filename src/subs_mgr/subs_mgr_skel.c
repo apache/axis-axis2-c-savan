@@ -123,39 +123,56 @@ savan_subs_mgr_init_with_conf(
     axis2_op_t *op = NULL;
     int i = 0, size = 0;
     axis2_conf_ctx_t *conf_ctx = NULL;
+    const axis2_char_t *dbname = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_subs_mgr_init_with_conf");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_init_with_conf");
+
+    dbname = savan_util_get_dbname(env, conf);
+
+    if(!savan_db_mgr_create_db(env, dbname))
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[savan] Could not create the database for name %s. Check whether database path "\
+                "is correct and accessible. Exit loading the Savan module", dbname);
+        
+        return AXIS2_FAILURE;
+    }
+
     savan_subs_mgr_init(svc_skeleton, env);
     conf_ctx = axis2_conf_ctx_create(env, conf);
     subs_svc = axis2_conf_get_svc(conf, env, "subscription");
     op = axis2_svc_get_op_with_name(subs_svc, env, "get_topic_list");
     topic_param_list = axis2_op_get_all_params(op, env);
     if(topic_param_list)
+    {
         size = axutil_array_list_size(topic_param_list, env);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "dam_size:%d", size);
+    }
+
     for(i = 0; i < size; i++)
     {
-        savan_db_mgr_t *db_mgr = NULL;
         axutil_param_t *topic_param = NULL;
         axis2_char_t *topic_url_str = NULL;
         axis2_char_t *topic_name = NULL;
         topic_param = axutil_array_list_get(topic_param_list, env, i);
         topic_url_str = axutil_param_get_value(topic_param, env);
         topic_name = axutil_param_get_name(topic_param, env);
-        if(0 == axutil_strcmp(topic_name, "wsamapping"))
+        if(!axutil_strcmp(topic_name, "wsamapping"))
+        {
             continue;
+        }
 
-        db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-        if(savan_db_mgr_insert_topic(db_mgr, env, topic_name, topic_url_str))
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                "[SAVAN] Topic %s added", topic_url_str);
+        if(savan_db_mgr_insert_topic(env, dbname, topic_name, topic_url_str))
+        {
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Topic %s added", topic_url_str);
+        }
         else
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                "[SAVAN] Topic %s could not be added", topic_url_str);
+        {
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Topic %s could not be added", topic_url_str);
+        }
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_subs_mgr_init_with_conf");
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_subs_mgr_init_with_conf");
+
     return AXIS2_SUCCESS;
 }
 

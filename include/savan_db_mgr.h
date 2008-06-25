@@ -85,53 +85,53 @@ savan_db_mgr_subs_retrieve_callback(
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_insert_subscriber(
-    savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
+    const axis2_char_t *dbname,
     savan_subscriber_t *subscriber);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_update_subscriber(
-    savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
+    const axis2_char_t *dbname,
     savan_subscriber_t *subscriber);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_insert_topic(
-    savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
+    const axis2_char_t *dbname,
     axis2_char_t *topic_name,
     axis2_char_t *topic_url);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_remove(
-    savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
+    const axis2_char_t *dbname,
     axis2_char_t *sql_stmt_remove);
 
 AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
 savan_db_mgr_retrieve(
-    savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
+    const axis2_char_t *dbname,
     int (*retrieve_func)(void *, int, char **, char **),
     axis2_char_t *sql_stmt_retrieve);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_update(
-    savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
+    const axis2_char_t *dbname,
     axis2_char_t *sql_stmt_update);
 
 AXIS2_EXTERN axutil_array_list_t * AXIS2_CALL
 savan_db_mgr_retrieve_all(
-    savan_db_mgr_t *db_mgr,
     const axutil_env_t *env,
+    const axis2_char_t *dbname,
     int (*find_func)(void *, int, char **, char **),
     axis2_char_t *sql_stmt_find);
 
 AXIS2_EXTERN void * AXIS2_CALL
 savan_db_mgr_get_dbconn(
-    savan_db_mgr_t *db_mgr, 
-    const axutil_env_t *env);
+    const axutil_env_t *env,
+    const axis2_char_t *dbname);
 
 axis2_char_t *AXIS2_CALL
 savan_db_mgr_create_update_sql(
@@ -146,8 +146,8 @@ savan_db_mgr_create_update_sql(
  */
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_db_mgr_create_db(
-    savan_db_mgr_t *db_mgr,
-    const axutil_env_t *env);
+    const axutil_env_t *env,
+    const axis2_char_t *dbname);
 
 /** @} */
 #ifdef __cplusplus

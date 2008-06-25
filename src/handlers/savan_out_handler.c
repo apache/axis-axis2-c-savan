@@ -74,37 +74,21 @@ savan_out_handler_invoke(
     const axutil_env_t *env,
     struct axis2_msg_ctx *msg_ctx)
 {
-	savan_db_mgr_t *db_mgr = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
     axis2_status_t status = AXIS2_SUCCESS;
 
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
 
-    db_mgr = savan_db_mgr_create(env, savan_util_get_dbname(env, conf_ctx));
-    if(!db_mgr)
-    {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Error creating db_mgr struct");
-        return AXIS2_FAILURE;
-    }
-
-    if(!savan_db_mgr_create_db(db_mgr, env))
+    if(!savan_db_mgr_create_db(env, savan_util_get_dbname(env, conf)))
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the database. Check \
                 whether database path is correct and accessible. Exit loading the Savan module");
         
-        if(db_mgr)
-        {
-            savan_db_mgr_free(db_mgr, env);
-        }
-
         return AXIS2_FAILURE;
     }
     
-    if(db_mgr)
-    {
-        savan_db_mgr_free(db_mgr, env);
-    }
-
     return status;
 }
 
