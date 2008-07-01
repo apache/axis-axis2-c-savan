@@ -222,7 +222,6 @@ publisher_worker_func(
     axiom_node_t *test_node3 = NULL;
     axis2_conf_t *conf = NULL;
     axis2_svc_t *svc = NULL;
-    axis2_conf_ctx_t *conf_ctx = NULL;
 	axiom_attribute_t *test_data = NULL;
     
     publisher_data_t *mydata = (publisher_data_t*)data;
@@ -233,16 +232,14 @@ publisher_worker_func(
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "Start:publisher_worker_func");
 
-
     svc = axis2_conf_get_svc(conf, env, "publisher");
-    conf_ctx = axis2_conf_ctx_create(env, conf);
     while(1)
     {
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan]Inside while loop");
         {
             savan_publishing_client_t *pub_client = NULL;
 
-            pub_client = savan_publishing_client_create(env, conf_ctx, svc);
+            pub_client = savan_publishing_client_create(env, conf, svc);
             /* Build a payload and pass it to the savan publishing client */ 
             test_ns = axiom_namespace_create (env, 
                 "http://www.wso2.com/savan/c/publisher", "test");

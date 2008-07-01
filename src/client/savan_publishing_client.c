@@ -19,7 +19,7 @@
 #include <axiom_soap_body.h>
 #include <axis2_options.h>
 #include <axutil_array_list.h>
-#include <axis2_conf_ctx.h>
+#include <axis2_conf.h>
 #include <axis2_svc.h>
 #include <axis2_svc_client.h>
 #include <axis2_endpoint_ref.h>
@@ -33,7 +33,7 @@
 
 struct savan_publishing_client_t
 {
-    axis2_conf_ctx_t *conf_ctx;
+    axis2_conf_t *conf;
     axis2_svc_t *svc;
 };
 
@@ -45,7 +45,7 @@ struct savan_publishing_client_t
 AXIS2_EXTERN savan_publishing_client_t * AXIS2_CALL
 savan_publishing_client_create(
     const axutil_env_t *env,
-    axis2_conf_ctx_t *conf_ctx,
+    axis2_conf_t *conf,
     axis2_svc_t *svc)
 {
     savan_publishing_client_t *client = NULL;
@@ -60,7 +60,7 @@ savan_publishing_client_create(
         return NULL;
     }
 
-    client->conf_ctx = conf_ctx;
+    client->conf = conf;
     client->svc = svc;
 
     return client;
@@ -85,7 +85,6 @@ savan_publishing_client_publish(
     axutil_param_t *param = NULL;
     axis2_svc_t *pubs_svc = NULL;
     axutil_array_list_t *subs_store = NULL;
-    axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     axis2_module_desc_t *module_desc = NULL;
     int i = 0, size = 0;
@@ -98,7 +97,7 @@ savan_publishing_client_publish(
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
                     "[savan]Start:savan_publishing_client_publish");
    
-    conf_ctx = client->conf_ctx;
+    conf = client->conf;
     pubs_svc = client->svc;
 
     topic_param = axis2_svc_get_param(pubs_svc, env, "TopicURL");
@@ -110,8 +109,6 @@ savan_publishing_client_publish(
     }
     topic_url = axutil_param_get_value(topic_param, env);
 
-
-    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     qname = axutil_qname_create(env, "savan", NULL, NULL);
     module_desc = axis2_conf_get_module(conf, env, qname);
 

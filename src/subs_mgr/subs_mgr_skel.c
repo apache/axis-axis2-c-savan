@@ -122,7 +122,6 @@ savan_subs_mgr_init_with_conf(
     axis2_svc_t *subs_svc = NULL;
     axis2_op_t *op = NULL;
     int i = 0, size = 0;
-    axis2_conf_ctx_t *conf_ctx = NULL;
     const axis2_char_t *dbname = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_init_with_conf");
@@ -139,7 +138,6 @@ savan_subs_mgr_init_with_conf(
     }
 
     savan_subs_mgr_init(svc_skeleton, env);
-    conf_ctx = axis2_conf_ctx_create(env, conf);
     subs_svc = axis2_conf_get_svc(conf, env, "subscription");
     op = axis2_svc_get_op_with_name(subs_svc, env, "get_topic_list");
     topic_param_list = axis2_op_get_all_params(op, env);
