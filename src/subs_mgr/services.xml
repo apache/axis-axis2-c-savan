@@ -6,7 +6,7 @@
     <parameter name="ServiceClass" locked="xsd:false">subscription</parameter>
     <parameter name="loadServiceAtStartup" locked="xsd:false">true</parameter>
 
-   <operation name="add_subscriber">
+    <operation name="add_subscriber" mep="http://www.w3.org/2004/08/wsdl/in-only">
            <parameter name="wsamapping" >http://ws.apache.org/axis2/c/subscription/add_subscriber</parameter>
    </operation>
    <operation name="remove_subscriber">
