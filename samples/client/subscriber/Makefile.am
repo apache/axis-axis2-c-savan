@@ -16,6 +16,6 @@ subscriber_LDADD   = $(LDFLAGS) \
                     $(LIBXML2_LIBS)\
 					-lsavan_client
 
-INCLUDES =  -I$(AXIS2C_HOME)/include/axis2-1.1 \
+INCLUDES =  -I@AXIS2INC@ \
 			@AXIS2INC@ \
 			@SAVANINC@

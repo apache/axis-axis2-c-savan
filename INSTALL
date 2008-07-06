@@ -28,7 +28,7 @@ and install.
     Download Savan source distribution
     Extract the source distribution and go to extracted directory
     Run configure with AXIS2 include path.
-    ./configure --prefix=<AXIS2C_HOME> --enable-static=no --with-axis2=<AXIS2C_HOME>/include/axis2-1.1 --enable-filtering=no/yes
+    ./configure --prefix=<AXIS2C_HOME> --enable-static=no --with-axis2=<AXIS2C_HOME>/include/axis2-<version> --enable-filtering=no/yes
     make
     make install
     

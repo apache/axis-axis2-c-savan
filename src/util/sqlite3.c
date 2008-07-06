@@ -6821,7 +6821,7 @@ SQLITE_PRIVATE   void sqlite3AuthContextPop(AuthContext*);
 #endif
 SQLITE_PRIVATE void sqlite3Attach(Parse*, Expr*, Expr*, Expr*);
 SQLITE_PRIVATE void sqlite3Detach(Parse*, Expr*);
-SQLITE_PRIVATE int sqlite3BtreeFactory(const sqlite3 *db, const char *zFilename,
+SQLITE_PRIVATE int sqlite3BtreeFactory(sqlite3 *db, const char *zFilename,
                        int omitJournal, int nCache, int flags, Btree **ppBtree);
 SQLITE_PRIVATE int sqlite3FixInit(DbFixer*, Parse*, int, const char*, const Token*);
 SQLITE_PRIVATE int sqlite3FixSrcList(DbFixer*, SrcList*);
@@ -70587,7 +70587,7 @@ SQLITE_API void *sqlite3_rollback_hook(
 **           3               any             memory
 */
 SQLITE_PRIVATE int sqlite3BtreeFactory(
-  const sqlite3 *db,        /* Main database when opening aux otherwise 0 */
+  sqlite3 *db,        /* Main database when opening aux otherwise 0 */
   const char *zFilename,    /* Name of the file containing the BTree database */
   int omitJournal,          /* if TRUE then do not journal this file */
   int nCache,               /* How many pages in the page cache */
@@ -70625,9 +70625,9 @@ SQLITE_PRIVATE int sqlite3BtreeFactory(
   if( (vfsFlags & SQLITE_OPEN_MAIN_DB)!=0 && (zFilename==0 || *zFilename==0) ){
     vfsFlags = (vfsFlags & ~SQLITE_OPEN_MAIN_DB) | SQLITE_OPEN_TEMP_DB;
   }
-  rc = sqlite3BtreeOpen(zFilename, (sqlite3 *)db, ppBtree, btFlags, vfsFlags);
+  rc = sqlite3BtreeOpen(zFilename, (sqlite3 *) db, ppBtree, btFlags, vfsFlags);
   if( rc==SQLITE_OK ){
-    sqlite3BtreeSetBusyHandler(*ppBtree, (void*)&db->busyHandler);
+    sqlite3BtreeSetBusyHandler(*ppBtree, (BusyHandler *) &(db->busyHandler));
     sqlite3BtreeSetCacheSize(*ppBtree, nCache);
   }
   return rc;
