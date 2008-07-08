@@ -40,7 +40,7 @@ extern "C"
 {
 #endif
     
-    typedef struct savan_sub_processor_t savan_sub_processor_t;
+    typedef struct savan_sub_processor savan_sub_processor_t;
 
     /**
     * This method creates a subcription object from the incoming message
@@ -109,7 +109,17 @@ extern "C"
     AXIS2_EXTERN savan_sub_processor_t * AXIS2_CALL
     savan_sub_processor_create(
         const axutil_env_t *env);
-
+    
+    /**
+    * Freesf a subscription manager instance.
+    * @param env pointer to the environment struct
+    * @param sub_processor pointer to the sub_processor struct
+    */
+    AXIS2_EXTERN void AXIS2_CALL 
+    savan_sub_processor_free(
+        savan_sub_processor_t * sub_processor,
+        const axutil_env_t * env);
+    
 /** @} */
 #ifdef __cplusplus
 }

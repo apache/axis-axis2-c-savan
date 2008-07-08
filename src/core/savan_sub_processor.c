@@ -29,7 +29,7 @@
 #include <savan_util.h>
 #include <savan_db_mgr.h>
 
-struct savan_sub_processor_t
+struct savan_sub_processor
 {
     int dummy;
 };
@@ -74,7 +74,8 @@ savan_sub_processor_create(
     
     AXIS2_ENV_CHECK(env, NULL);
     
-    sub_processor = AXIS2_MALLOC( env->allocator, sizeof(savan_sub_processor_t));
+    sub_processor = AXIS2_MALLOC(env->allocator, 
+                                 sizeof(savan_sub_processor_t));
      
     if (!sub_processor)
     { 
@@ -115,6 +116,7 @@ savan_sub_processor_subscribe(
     /* Set the expiry time on the subscription */
     /* TODO : For now we are ignoring the Expiry sent by the client. Add support
      * to consider this when setting the expiry time */
+
     expires = savan_util_get_expiry_time(env);
     savan_subscriber_set_expires(subscriber, env, expires);
 
@@ -130,7 +132,7 @@ savan_sub_processor_subscribe(
      */
 
 	if (savan_sub_processor_validate_subscription(subscriber, env, msg_ctx)
-        == AXIS2_FAILURE)
+                                                  == AXIS2_FAILURE)
 	{	
     	AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[SAVAN] End:"
                         "savan_sub_processor_subscribe"
@@ -236,7 +238,9 @@ savan_sub_processor_renew_subscription(
     if (!renewable)
     {
         savan_util_create_fault_envelope(msg_ctx, env, SAVAN_FAULT_UTR_CODE,
-                                         SAVAN_FAULT_UTR_SUB_CODE, "Subscription can not be renewed.", NULL);
+                                         SAVAN_FAULT_UTR_SUB_CODE, 
+                                         "Subscription can not be renewed.", 
+                                         NULL);
 
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                         "[SAVAN] Subscription can not be renewed");
@@ -250,7 +254,9 @@ savan_sub_processor_renew_subscription(
     savan_subscriber_set_renew_status(subscriber, env, AXIS2_TRUE);
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-    status = savan_db_mgr_update_subscriber(env, savan_util_get_dbname(env, conf), subscriber);
+    status = savan_db_mgr_update_subscriber(env, 
+                                            savan_util_get_dbname(env, conf), 
+                                            subscriber);
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
                     "[SAVAN] End:savan_sub_processor_renew_subscription");
@@ -282,8 +288,6 @@ savan_sub_processor_get_status(
                     "[SAVAN] End:savan_sub_processor_get_status");
     return AXIS2_SUCCESS;
 }
-
-/******************************************************************************/
 
 /******************************************************************************/
 
@@ -506,7 +510,6 @@ savan_sub_processor_is_subscription_renewable(
 
 /******************************************************************************/
 
-
 axis2_bool_t AXIS2_CALL
 savan_sub_processor_validate_delivery_mode(
 	savan_subscriber_t *subscriber,
@@ -535,7 +538,6 @@ savan_sub_processor_validate_delivery_mode(
 
 		return AXIS2_FAILURE;
 	}
-	
 	return AXIS2_SUCCESS;
 }
 
@@ -611,7 +613,6 @@ savan_sub_processor_validate_filter(
                                          "Server does not support the dialect.");
 		return AXIS2_FAILURE;
 	}
-    
 }
 
 /****************************************************************************/
@@ -640,6 +641,17 @@ savan_sub_processor_validate_subscription(
 	}
 		
 	return AXIS2_SUCCESS;
+}
+
+/******************************************************************************/
+
+AXIS2_EXTERN void AXIS2_CALL 
+savan_sub_processor_free(
+    savan_sub_processor_t * sub_processor,
+    const axutil_env_t * env)
+{
+    if (sub_processor)
+        AXIS2_FREE(env->allocator, sub_processor);
 }
 
 /******************************************************************************/

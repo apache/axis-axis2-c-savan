@@ -163,6 +163,7 @@ savan_in_handler_invoke(struct axis2_handler *handler,
         axis2_op_set_msg_recv(op, env, msg_recv);
     }
 
+    savan_sub_processor_free(processor, env);
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] End:savan_in_handler_invoke");
     
     return AXIS2_SUCCESS;
