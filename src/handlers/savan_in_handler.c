@@ -37,17 +37,15 @@
 
 axis2_status_t AXIS2_CALL
 savan_in_handler_invoke(struct axis2_handler *handler, 
-                         const axutil_env_t *env,
-                         struct axis2_msg_ctx *msg_ctx);
+                        const axutil_env_t *env,
+                        struct axis2_msg_ctx *msg_ctx);
 
 
 AXIS2_EXTERN axis2_handler_t* AXIS2_CALL
 savan_in_handler_create(const axutil_env_t *env, 
-                         axutil_qname_t *qname) 
+                        axutil_qname_t *qname) 
 {
     axis2_handler_t *handler = NULL;
-    
-    AXIS2_ENV_CHECK(env, NULL);
     
     handler = axis2_handler_create(env);
     if (!handler)
@@ -65,14 +63,13 @@ savan_in_handler_create(const axutil_env_t *env,
 
 axis2_status_t AXIS2_CALL
 savan_in_handler_invoke(struct axis2_handler *handler, 
-                         const axutil_env_t *env,
-                         struct axis2_msg_ctx *msg_ctx)
+                        const axutil_env_t *env,
+                        struct axis2_msg_ctx *msg_ctx)
 {
     savan_message_types_t msg_type = SAVAN_MSG_TYPE_UNKNOWN;
     savan_sub_processor_t *processor = NULL;
-    axis2_bool_t from_client = AXIS2_FALSE;
-    const axis2_svc_t *svc = NULL;
-    const axis2_char_t *svc_name = NULL;
+    axis2_status_t status = AXIS2_SUCCESS;
+    axis2_bool_t to_msg_recv = AXIS2_FALSE;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Start:savan_in_handler_invoke");
 
@@ -87,85 +84,86 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     if(!savan_db_mgr_create_db(env, savan_util_get_dbname(env, conf)))
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the database. Check \
-                whether database path is correct and accessible. Exit loading the Savan module");
+            whether database path is correct and accessible. Exit loading the Savan module");
 
         return AXIS2_FAILURE;
     }
-    
-    svc =  axis2_msg_ctx_get_svc(msg_ctx, env);
-    if (svc)
-        svc_name = axis2_svc_get_name(svc, env);
-    
     
     /* create a subscription processor */
     processor = savan_sub_processor_create(env);
     if (!processor)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create "
-            "subscription processor"); 
-        /*AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_CREATE_SUB_PROCESSOR,
-            AXIS2_FAILURE);
-        return AXIS2_FAILURE;*/
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create subscription processor");
         return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
     }
     
     /* determine the eventing msg type */
     msg_type = savan_util_get_message_type(msg_ctx, env);
-    if (msg_type == SAVAN_MSG_TYPE_UNKNOWN)
+    int type = (int)msg_type;
+
+    switch (type)
     {
-          /* not an error. just log it */
-        AXIS2_LOG_INFO(env->log, "[savan][in handler] Unhandled message type"); 
-        return AXIS2_SUCCESS;
-    }
+        case SAVAN_MSG_TYPE_SUB:
+        {
+            if(savan_sub_processor_subscribe(processor, 
+                env, msg_ctx) == AXIS2_FAILURE)
+            {
+                status = AXIS2_FAILURE;
+            }
+            else
+            {
+                to_msg_recv = AXIS2_TRUE;
+            }
+            break;
+        }
+
+        case SAVAN_MSG_TYPE_UNSUB:
+        {
+            status = savan_sub_processor_unsubscribe(processor, env, msg_ctx);
+            to_msg_recv = AXIS2_TRUE;
+            break;
+        }
+
+        case SAVAN_MSG_TYPE_RENEW:
+        {
+            if(savan_sub_processor_renew_subscription(processor, env, msg_ctx) == AXIS2_FAILURE)
+            {
+                to_msg_recv = AXIS2_FALSE;
+                status = AXIS2_FAILURE;
+            }
+            else
+            {
+                to_msg_recv = AXIS2_TRUE;
+            }
+            break;
+        }
+
+        case SAVAN_MSG_TYPE_GET_STATUS:
+        {
+            status = savan_sub_processor_get_status(processor, env, msg_ctx);
+            to_msg_recv = AXIS2_TRUE;
+            break;
+        }
+
+        case SAVAN_MSG_TYPE_UNKNOWN:
+        {
+            /* not an error. just log it */
+            AXIS2_LOG_INFO(env->log, "[savan][in handler] Unhandled message type"); 
+            status = AXIS2_SUCCESS;
+            break;
+        }
+    }    
     
-    /* now call the appropriate method of the subscription processor */
-    if (msg_type == SAVAN_MSG_TYPE_SUB)
-    {
-        if(savan_sub_processor_subscribe(processor, env, msg_ctx) 
-			== AXIS2_FAILURE)
-		{
-        	from_client = AXIS2_FAILURE;
-            return AXIS2_FAILURE;
-		}
-		else
-		{
-        	from_client = AXIS2_TRUE;
-		}
-    }
-    else if (msg_type == SAVAN_MSG_TYPE_UNSUB)
-    {
-        from_client = AXIS2_TRUE;
-        savan_sub_processor_unsubscribe(processor, env, msg_ctx);
-    }
-    else if (msg_type == SAVAN_MSG_TYPE_RENEW)
-    {
-        if(savan_sub_processor_renew_subscription(processor, 
-			env, msg_ctx) == AXIS2_FAILURE)
-		{
-        	from_client = AXIS2_FAILURE;
-            return AXIS2_FAILURE;
-		}
-		else
-		{
-        	from_client = AXIS2_TRUE;
-		}
-    }
-    else if (msg_type == SAVAN_MSG_TYPE_GET_STATUS)
-    {
-        from_client = AXIS2_TRUE;
-        savan_sub_processor_get_status(processor, env, msg_ctx);
-    }
-     
-    if (from_client) /* send reply to client */
+    if (to_msg_recv)
     {
         axis2_op_t *op =  axis2_msg_ctx_get_op(msg_ctx, env);
         axis2_msg_recv_t* msg_recv = savan_msg_recv_create(env);
         axis2_op_set_msg_recv(op, env, msg_recv);
     }
-
+    
     savan_sub_processor_free(processor, env);
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] End:savan_in_handler_invoke");
     
-    return AXIS2_SUCCESS;
+    return status;
 }
 
