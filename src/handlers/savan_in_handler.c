@@ -70,13 +70,13 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     savan_sub_processor_t *processor = NULL;
     axis2_status_t status = AXIS2_SUCCESS;
     axis2_bool_t to_msg_recv = AXIS2_FALSE;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
+    int type;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Start:savan_in_handler_invoke");
 
     AXIS2_PARAM_CHECK(env->error, msg_ctx, AXIS2_FAILURE);
-
-    axis2_conf_ctx_t *conf_ctx = NULL;
-    axis2_conf_t *conf = NULL;
 
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
@@ -99,7 +99,7 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     
     /* determine the eventing msg type */
     msg_type = savan_util_get_message_type(msg_ctx, env);
-    int type = (int)msg_type;
+    type = (int)msg_type;
 
     switch (type)
     {
