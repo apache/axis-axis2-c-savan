@@ -1,5 +1,5 @@
 <module name="savan" class="mod_savan">
-   <parameter name="SubscriptionMgrURL" locked="xsd:false">http://localhost:9092/axis2/services/subscription</parameter>
+   <!--parameter name="SubscriptionMgrURL" locked="xsd:false">http://localhost:9092/axis2/services/subscription</parameter-->
    <!-- Database connection parameters -->
    <parameter name="savan_db" locked="false">/tmp/savan_db</parameter>
     <inflow>
