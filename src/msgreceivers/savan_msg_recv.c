@@ -29,9 +29,6 @@
 #include <savan_error.h>
 #include <savan_subscriber.h>
 
-/* Function Prototypes ********************************************************/
-
-
 axis2_status_t AXIS2_CALL
 savan_msg_recv_invoke_business_logic_sync(
     axis2_msg_recv_t *msg_recv,
@@ -68,10 +65,6 @@ savan_msg_recv_build_soap_envelope(
     const axutil_env_t *env,
     axiom_node_t **body_node);
 
-/* End of Function Prototypes *************************************************/
-
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_msg_recv_t *AXIS2_CALL
 savan_msg_recv_create(
     const axutil_env_t *env)
@@ -79,13 +72,11 @@ savan_msg_recv_create(
     axis2_msg_recv_t *msg_recv = NULL;
     axis2_status_t status = AXIS2_FAILURE;
 
-    AXIS2_ENV_CHECK(env, NULL);
-    
     msg_recv = axis2_msg_recv_create(env);
     if (!msg_recv)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create "
-            "axis2 message receiver"); 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[savan] Failed to create axis2 message receiver"); 
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
         return NULL;
     }
@@ -93,18 +84,16 @@ savan_msg_recv_create(
     status = axis2_msg_recv_set_scope(msg_recv, env, AXIS2_APPLICATION_SCOPE);
     if (status != AXIS2_TRUE)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to set "
-            "message receiver scope"); 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to set message receiver scope"); 
         axis2_msg_recv_free(msg_recv, env);
         return NULL;
     }
 
 	axis2_msg_recv_set_invoke_business_logic(msg_recv, env, 
-		savan_msg_recv_invoke_business_logic_sync);
+            savan_msg_recv_invoke_business_logic_sync);
+
     return msg_recv;
 }
-
-/******************************************************************************/
 
 axis2_status_t AXIS2_CALL
 savan_msg_recv_invoke_business_logic_sync(
@@ -115,42 +104,39 @@ savan_msg_recv_invoke_business_logic_sync(
 {
     savan_message_types_t msg_type = SAVAN_MSG_TYPE_UNKNOWN;
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] invoke called");
-
-    /* this call will load and create the service object. */
-    /*axis2_svc_skeleton_t* svc_obj = axis2_msg_recv_get_impl_obj(msg_recv, env,
-        msg_ctx);
-    if (!svc_obj)
-    {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] service obj"
-        " creation failed");         
-    }*/
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+            "[savan] Entry:savan_msg_recv_invoke_business_logic_sync");
     
-    /*AXIS2_SVC_SKELETON_SET_USER_DATA(svc_obj, env, (void*) axis2_msg_ctx_get_svc(msg_ctx, env));*/
-        
     /* find the msg type and call the appropriate response function */
     msg_type = savan_util_get_message_type(msg_ctx, env);
     if (msg_type == SAVAN_MSG_TYPE_SUB)
+    {
         savan_msg_recv_handle_sub_request(env, msg_ctx, new_msg_ctx);
+    }
     else if (msg_type == SAVAN_MSG_TYPE_UNSUB)
+    {
         savan_msg_recv_handle_unsub_request(env, msg_ctx, new_msg_ctx);
+    }
     else if (msg_type == SAVAN_MSG_TYPE_RENEW)
+    {
         savan_msg_recv_handle_renew_request(env, msg_ctx, new_msg_ctx);
+    }
     else if (msg_type == SAVAN_MSG_TYPE_GET_STATUS)
+    {
         savan_msg_recv_handle_get_status_request(env, msg_ctx, new_msg_ctx);
+    }
     else
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][msg recv] Unhandled "
-            "message type"); 
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_UNHANDLED_MSG_TYPE,
-            AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Unhandled message type"); 
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_UNHANDLED_MSG_TYPE, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
     
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+            "[savan] Entry:savan_msg_recv_invoke_business_logic_sync");
+
     return AXIS2_SUCCESS;    
 }
-
-/******************************************************************************/
 
 axis2_status_t AXIS2_CALL
 savan_msg_recv_handle_sub_request(
@@ -189,8 +175,7 @@ savan_msg_recv_handle_sub_request(
     axutil_property_t *subs_prop = NULL;
     savan_subscriber_t *subscriber = NULL;
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] "
-        "handle sub request...");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_sub_request");
     
     /* set wsa action as SubscribeResponse. */
     info_header =  axis2_msg_ctx_get_msg_info_headers(new_msg_ctx, env);
@@ -199,8 +184,8 @@ savan_msg_recv_handle_sub_request(
     default_envelope = savan_msg_recv_build_soap_envelope(env, &body_node);
     if (!default_envelope)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to build "
-            "soap envelope for response message"); 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[savan] Failed to build soap envelope for response message"); 
         AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
@@ -221,7 +206,7 @@ savan_msg_recv_handle_sub_request(
         &addr_node);
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-    qname = axutil_qname_create(env, "savan", NULL, NULL);
+    qname = axutil_qname_create(env, SAVAN_MODULE, NULL, NULL);
     module_desc = axis2_conf_get_module(conf, env, qname);
     axutil_qname_free(qname, env);
     subs_mgr_url_param = axis2_module_desc_get_param(module_desc, env, 
@@ -252,13 +237,16 @@ savan_msg_recv_handle_sub_request(
     /*subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, id);*/
     subs_prop = axis2_msg_ctx_get_property(msg_ctx, env, SAVAN_SUBSCRIBER);
     if(subs_prop)
+    {
         subscriber = axutil_property_get_value(subs_prop, env);
+    }
     if(subscriber)
+    {
         expires = savan_subscriber_get_expires(subscriber, env);
+    }
     else
     {
-        printf("Subscriber not found \n");
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Subscriber not found");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscriber not found");
         return AXIS2_FAILURE;
     }
     
@@ -269,11 +257,10 @@ savan_msg_recv_handle_sub_request(
     axiom_node_add_child(body_node , env, response_node);
      axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
     
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_sub_request");
     return AXIS2_SUCCESS;
 }
 
-/*****************************************************************************/
- 
 axis2_status_t AXIS2_CALL
 savan_msg_recv_handle_unsub_request(
     const axutil_env_t *env,
@@ -288,9 +275,7 @@ savan_msg_recv_handle_unsub_request(
     axiom_element_t *response_elem = NULL;
     savan_subscriber_t *subscriber = NULL;
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_msg_recv_handle_unsub_request");
-
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_unsub_request");
     
     /* Send a UnsubscribeResponse. This has an empty body. Before sending the
      * reply we will need to check whether the subscriber has been removed from
@@ -299,8 +284,8 @@ savan_msg_recv_handle_unsub_request(
     subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
     if (subscriber)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to remove "
-            "the subscriber from local store");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[savan] Failed to remove the subscriber from local store");
         return AXIS2_FAILURE;
     }
 
@@ -311,8 +296,8 @@ savan_msg_recv_handle_unsub_request(
     default_envelope = savan_msg_recv_build_soap_envelope(env, &body_node);
     if (!default_envelope)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to build "
-            "soap envelope for response message"); 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[savan] Failed to build soap envelope for response message"); 
         AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
@@ -328,14 +313,10 @@ savan_msg_recv_handle_unsub_request(
     axiom_node_add_child(body_node , env, response_node);
      axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_msg_recv_handle_unsub_request");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_unsub_request");
     return AXIS2_SUCCESS;
 }
 
-
-/*****************************************************************************/
- 
 axis2_status_t AXIS2_CALL
 savan_msg_recv_handle_renew_request(
     const axutil_env_t *env,
@@ -354,14 +335,13 @@ savan_msg_recv_handle_renew_request(
     savan_subscriber_t *subscriber = NULL;
     axis2_bool_t renewed = AXIS2_FALSE;
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[SAVAN] Start:savan_msg_recv_handle_renew_request");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_renew_request");
 
     subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
     if (!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Failed to find the subscriber from local store");
+            "[savan] Failed to find the subscriber from local store");
         return AXIS2_FAILURE;
     }
 
@@ -369,7 +349,7 @@ savan_msg_recv_handle_renew_request(
     if (!renewed)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Subscription is not renewed");
+            "[savan] Subscription is not renewed");
         /*return AXIS2_FAILURE;*/
     }
 
@@ -382,9 +362,8 @@ savan_msg_recv_handle_renew_request(
     if (!default_envelope)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[SAVAN] Failed to build soap envelope for response message"); 
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, 
-            AXIS2_FAILURE);
+            "[savan] Failed to build soap envelope for response message"); 
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
 
@@ -406,12 +385,9 @@ savan_msg_recv_handle_renew_request(
     axiom_node_add_child(body_node , env, response_node);
      axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[SAVAN] End:savan_msg_recv_handle_renew_request");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_renew_request");
     return AXIS2_SUCCESS;
 }
-
-/*****************************************************************************/
  
 axis2_status_t AXIS2_CALL
 savan_msg_recv_handle_get_status_request(
@@ -430,8 +406,8 @@ savan_msg_recv_handle_get_status_request(
     axis2_char_t *expires = NULL;
     savan_subscriber_t *subscriber = NULL;
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][msg recv] "
-        "handle get status request...");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+            "[savan] Entry:savan_msg_recv_handle_get_status_request");
 
     /* set wsa action as GetStatusResponse. */
     info_header =  axis2_msg_ctx_get_msg_info_headers(new_msg_ctx, env);
@@ -440,8 +416,8 @@ savan_msg_recv_handle_get_status_request(
     default_envelope = savan_msg_recv_build_soap_envelope(env, &body_node);
     if (!default_envelope)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to build "
-            "soap envelope for response message"); 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[savan] Failed to build soap envelope for response message"); 
         AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
@@ -465,10 +441,11 @@ savan_msg_recv_handle_get_status_request(
     axiom_node_add_child(body_node , env, response_node);
      axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
     
+     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+            "[savan] Exit:savan_msg_recv_handle_get_status_request");
+    
     return AXIS2_SUCCESS;
 }
-
-/******************************************************************************/
 
 axiom_soap_envelope_t *AXIS2_CALL
 savan_msg_recv_build_soap_envelope(
@@ -481,8 +458,7 @@ savan_msg_recv_build_soap_envelope(
     axiom_soap_header_t *header = NULL;
 
     /* create the soap envelope here */
-    soap_ns = axiom_namespace_create(env, AXIOM_SOAP12_SOAP_ENVELOPE_NAMESPACE_URI,
-        "s12");
+    soap_ns = axiom_namespace_create(env, AXIOM_SOAP12_SOAP_ENVELOPE_NAMESPACE_URI, "s12");
     if (!soap_ns)
     {
         return NULL;
@@ -515,33 +491,3 @@ savan_msg_recv_build_soap_envelope(
     return default_envelope;
 }
 
-/******************************************************************************/
-/*
-AXIS2_EXPORT int axis2_get_instance(
-    struct axis2_msg_recv **inst,
-    const axutil_env_t *env)
-{
-    *inst = savan_msg_recv_create(env);
-    if (!(*inst))
-    {
-        return AXIS2_FAILURE;
-    }
-
-    return AXIS2_SUCCESS;
-}
-*/
-/******************************************************************************/
-/*
-AXIS2_EXPORT int axis2_remove_instance(
-    struct axis2_msg_recv *inst,
-    const axutil_env_t *env)
-{
-    axis2_status_t status = AXIS2_FAILURE;
-    if (inst)
-    {
-        status = axis2_msg_recv_free(inst, env);
-    }
-    
-    return status;
-}
-*/
