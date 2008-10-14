@@ -272,7 +272,7 @@ savan_db_mgr_insert_subscriber(
     const axis2_char_t *dbname,
     savan_subscriber_t *subscriber)
 {
-    axis2_char_t *sql_insert = NULL;
+    axis2_char_t sql_insert[1028];
     sqlite3 *dbconn = NULL;
     axis2_char_t *id = NULL;
     axis2_char_t *endto = NULL;
@@ -287,19 +287,20 @@ savan_db_mgr_insert_subscriber(
     axis2_endpoint_ref_t *notifyto_epr = NULL;
     int counter = 1;
     struct sqlite3_stmt* insertqry;
-    sql_insert = AXIS2_MALLOC(env->allocator, 1028);
+
     sprintf(sql_insert, "%s", "insert into subscriber(id");
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
+    
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
 
     if(subscriber)
     {
         int i = 0;
+
         id = savan_subscriber_get_id(subscriber, env);
         endto_epr = savan_subscriber_get_end_to(subscriber, env);
         if(endto_epr)
         {
-            endto = (axis2_char_t *) axis2_endpoint_ref_get_address(endto_epr, 
-                env);
+            endto = (axis2_char_t *) axis2_endpoint_ref_get_address(endto_epr, env);
             if(endto)
             {
                 sprintf(sql_insert, "%s%s", sql_insert, ",end_to");
@@ -307,11 +308,11 @@ savan_db_mgr_insert_subscriber(
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
             }
         }
+
         notifyto_epr = savan_subscriber_get_notify_to(subscriber, env);
         if(notifyto_epr)
         {
-            notifyto = (axis2_char_t *) axis2_endpoint_ref_get_address(
-                notifyto_epr, env);
+            notifyto = (axis2_char_t *) axis2_endpoint_ref_get_address(notifyto_epr, env);
             if(notifyto)
             {
                 sprintf(sql_insert, "%s%s", sql_insert, ",notify_to");   
@@ -319,6 +320,7 @@ savan_db_mgr_insert_subscriber(
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
             }
         }
+
         delivery_mode = savan_subscriber_get_delivery_mode(subscriber, env);
         if(delivery_mode)
         {
@@ -435,7 +437,6 @@ savan_db_mgr_insert_subscriber(
             "[SAVAN] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
     }
    
-    AXIS2_FREE(env->allocator, sql_insert);
     sqlite3_finalize(insertqry);
     sqlite3_close(dbconn);
     return AXIS2_SUCCESS;

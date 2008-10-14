@@ -217,11 +217,10 @@ savan_util_apply_filter(
         savan_util_set_filter_template_for_subscriber(subscriber, env);
 	#endif
 
-    xslt_template_filter = 
-		(xsltStylesheetPtr)savan_subscriber_get_filter_template(subscriber,
+    xslt_template_filter = (xsltStylesheetPtr)savan_subscriber_get_filter_template(subscriber,
         env);
-    xmlDocPtr result_doc = (xmlDocPtr)xsltApplyStylesheet(xslt_template_filter,
-        payload_doc, NULL);
+
+    xmlDocPtr result_doc = (xmlDocPtr)xsltApplyStylesheet(xslt_template_filter, payload_doc, NULL);
 
     if(result_doc)
     {
@@ -231,29 +230,36 @@ savan_util_apply_filter(
     if(buffer)
     {
         reader = axiom_xml_reader_create_for_memory(env, 
-		    (char*)buffer,axutil_strlen((char*)buffer), 
-		    NULL, AXIS2_XML_PARSER_TYPE_BUFFER);
+                (char*)buffer,axutil_strlen((char*)buffer), NULL, AXIS2_XML_PARSER_TYPE_BUFFER);
     }
+
     if(reader)
     {
         om_builder = axiom_stax_builder_create(env, reader);
     }
+
     if(om_builder)
     {
         document = axiom_stax_builder_get_document(om_builder, env);
     }
+
     if(document)
     {
         node = axiom_document_build_all(document, env);
     }
 
     if(om_builder)
+    {
         axiom_stax_builder_free_self(om_builder, env);
-    free(payload_string);
-    if(result_doc)
-	    xmlFreeDoc(result_doc);
+    }
 
-	if(node == NULL)
+    /*free(payload_string);*/ /* In apache freeing this give seg fault:damitha */
+    if(result_doc)
+    {
+	    xmlFreeDoc(result_doc);
+    }
+
+	if(!node)
 	{
 		return AXIS2_FAILURE;
 	}
