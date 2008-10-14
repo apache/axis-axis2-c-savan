@@ -45,8 +45,6 @@ struct savan_subscriber_t
 	#endif
 };
 
-/*****************************************************************************/
-
 AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
 savan_subscriber_create(
     const axutil_env_t *env)
@@ -93,27 +91,50 @@ savan_subscriber_free(
     const axutil_env_t *env)
 {
     if(subscriber->id)
+    {
         AXIS2_FREE(env->allocator, subscriber->id);
+    }
+
     if(subscriber->delivery_mode)
+    {
         AXIS2_FREE(env->allocator, subscriber->delivery_mode);
+    }
+
     if(subscriber->expires)
+    {
         AXIS2_FREE(env->allocator, subscriber->expires);
+    }
+
     if(subscriber->filter)
+    {
         AXIS2_FREE(env->allocator, subscriber->filter);
+    }
+
     if(subscriber->topic)
+    {
         AXIS2_FREE(env->allocator, subscriber->topic);
+    }
+
 	#ifdef SAVAN_FILTERING
     if(subscriber->xslt_filter)
+    {
         AXIS2_FREE(env->allocator, subscriber->xslt_filter);
+    }
+
     if(subscriber->filter_template_path)
+    {
         AXIS2_FREE(env->allocator, subscriber->filter_template_path);
+    }
+
 	#endif
+
     if(subscriber->filter_dialect)
+    {
         AXIS2_FREE(env->allocator, subscriber->filter_dialect);
+    }
+
     AXIS2_FREE(env->allocator, subscriber);
 }
-
-/******************************************************************************/
 
 void* AXIS2_CALL
 savan_subscriber_get_filter_template(
@@ -127,21 +148,19 @@ savan_subscriber_get_filter_template(
 	#endif
 }
 
-/******************************************************************************/
-
 axis2_status_t AXIS2_CALL
 savan_subscriber_set_filter_template(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
     void *xslt_filter_template)
 {
-	if (subscriber->filter == NULL)
+	if (!subscriber->filter)
 	{
 		return AXIS2_SUCCESS;
 	}
 
 	#ifdef SAVAN_FILTERING
-    if (subscriber->xslt_filter != NULL)
+    if (subscriber->xslt_filter)
     {
         AXIS2_FREE(env->allocator, subscriber->filter);
         subscriber->xslt_filter = NULL;
@@ -178,9 +197,6 @@ savan_subscriber_get_filter_template_path(
 	#endif
 }
 
-
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 savan_subscriber_get_id(
     savan_subscriber_t *subscriber,
@@ -189,8 +205,6 @@ savan_subscriber_get_id(
     return subscriber->id;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_set_id(
     savan_subscriber_t *subscriber,
@@ -198,7 +212,7 @@ savan_subscriber_set_id(
     const axis2_char_t *id)
 {
     /* If id is already set, free it */
-    if (subscriber->id != NULL)
+    if (subscriber->id)
     {
         AXIS2_FREE(env->allocator, subscriber->id);
         subscriber->id = NULL;
@@ -210,15 +224,13 @@ savan_subscriber_set_id(
     return AXIS2_SUCCESS;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_set_filter_dialect
 	(savan_subscriber_t *subscriber,
 	const axutil_env_t *env,
 	const axis2_char_t *filter_dialect)
 {
-	if(subscriber->filter_dialect != NULL)
+	if(subscriber->filter_dialect)
 	{
 		AXIS2_FREE(env->allocator, subscriber->filter_dialect);
 		subscriber->filter_dialect = NULL;
@@ -228,8 +240,6 @@ savan_subscriber_set_filter_dialect
 	return AXIS2_SUCCESS;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 savan_subscriber_get_filter_dialect(
 	savan_subscriber_t *subscriber,
@@ -237,8 +247,6 @@ savan_subscriber_get_filter_dialect(
 {
 	return subscriber->filter_dialect;
 }
-
-/******************************************************************************/
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_set_end_to(
@@ -251,8 +259,6 @@ savan_subscriber_set_end_to(
     return AXIS2_SUCCESS;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_endpoint_ref_t *AXIS2_CALL
 savan_subscriber_get_end_to(
     savan_subscriber_t *subscriber,
@@ -260,8 +266,6 @@ savan_subscriber_get_end_to(
 {
     return subscriber->end_to;
 }
-
-/******************************************************************************/
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_set_notify_to(
@@ -274,8 +278,6 @@ savan_subscriber_set_notify_to(
     return AXIS2_SUCCESS;
 }    
             
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_endpoint_ref_t *AXIS2_CALL
 savan_subscriber_get_notify_to(
     savan_subscriber_t *subscriber,
@@ -284,8 +286,6 @@ savan_subscriber_get_notify_to(
     return subscriber->notify_to;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_set_delivery_mode(
     savan_subscriber_t *subscriber,
@@ -293,7 +293,7 @@ savan_subscriber_set_delivery_mode(
     const axis2_char_t *mode)
 {
     /* if already set, free it */
-    if (subscriber->delivery_mode != NULL)
+    if (subscriber->delivery_mode)
     {
         AXIS2_FREE(env->allocator, subscriber->delivery_mode);
         subscriber->delivery_mode = NULL;
@@ -305,8 +305,6 @@ savan_subscriber_set_delivery_mode(
     return AXIS2_SUCCESS;
 }    
             
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 savan_subscriber_get_delivery_mode(
 	savan_subscriber_t *subscriber,
@@ -315,8 +313,6 @@ savan_subscriber_get_delivery_mode(
 	return subscriber->delivery_mode;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_set_expires(
     savan_subscriber_t *subscriber,
@@ -324,7 +320,7 @@ savan_subscriber_set_expires(
     const axis2_char_t *expires)
 {
     /* if already set, free it */
-    if (subscriber->expires != NULL)
+    if (subscriber->expires)
     {
         AXIS2_FREE(env->allocator, subscriber->expires);
         subscriber->expires = NULL;
@@ -336,8 +332,6 @@ savan_subscriber_set_expires(
     return AXIS2_SUCCESS;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 savan_subscriber_get_expires(
     savan_subscriber_t *subscriber,
@@ -346,8 +340,6 @@ savan_subscriber_get_expires(
     return subscriber->expires;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_set_filter(
     savan_subscriber_t *subscriber,
@@ -355,7 +347,7 @@ savan_subscriber_set_filter(
     const axis2_char_t *filter)
 {
     /* if already set, free it */
-    if (subscriber->filter != NULL)
+    if (subscriber->filter)
     {
         AXIS2_FREE(env->allocator, subscriber->filter);
         subscriber->filter = NULL;
@@ -375,8 +367,6 @@ savan_subscriber_get_filter(
     return subscriber->filter;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_publish(
     savan_subscriber_t *subscriber,
@@ -390,8 +380,7 @@ savan_subscriber_publish(
     axis2_endpoint_ref_t *to = NULL;
     const axis2_char_t *address = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_subscriber_publish");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subscriber_publish");
 	
     path = AXIS2_GETENV("AXIS2C_HOME");
     svc_client = axis2_svc_client_create(env, path);
@@ -399,8 +388,7 @@ savan_subscriber_publish(
     if(!svc_client)
     {
         AXIS2_LOG_ERROR (env->log, AXIS2_LOG_SI, 
-                         "[savan]svc_client creation failed, unable to\
-continue");
+            "[savan]svc_client creation failed, unable to continue");
         return AXIS2_SUCCESS;
     }
 
@@ -444,8 +432,6 @@ continue");
     return status;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_set_renew_status(
     savan_subscriber_t *subscriber,
@@ -456,8 +442,6 @@ savan_subscriber_set_renew_status(
 
     return AXIS2_SUCCESS;
 }
-
-/******************************************************************************/
 
 AXIS2_EXTERN axis2_bool_t AXIS2_CALL
 savan_subscriber_get_renew_status(

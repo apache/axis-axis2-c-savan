@@ -512,7 +512,7 @@ savan_util_add_subscriber(
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     qname = axutil_qname_create(env, "savan", NULL, NULL);
     module_desc = axis2_conf_get_module(conf, env, qname);
-    param = axis2_module_desc_get_param(module_desc, env, "SubscriptionMgrURL");
+    param = axis2_module_desc_get_param(module_desc, env, SAVAN_SUBSCRIPTION_MGR_URL);
     axutil_qname_free(qname, env);
     if(param)
     {

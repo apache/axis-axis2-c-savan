@@ -37,11 +37,6 @@ struct savan_publishing_client_t
     axis2_svc_t *svc;
 };
 
-/******************************************************************************/
-
-
-/******************************************************************************/
-
 AXIS2_EXTERN savan_publishing_client_t * AXIS2_CALL
 savan_publishing_client_create(
     const axutil_env_t *env,
@@ -49,8 +44,6 @@ savan_publishing_client_create(
     axis2_svc_t *svc)
 {
     savan_publishing_client_t *client = NULL;
-
-    AXIS2_ENV_CHECK(env, NULL);
 
     client = AXIS2_MALLOC(env->allocator, sizeof(savan_publishing_client_t));
 
@@ -65,8 +58,6 @@ savan_publishing_client_create(
 
     return client;
 }
-
-/******************************************************************************/
 
 AXIS2_EXTERN void AXIS2_CALL
 savan_publishing_client_free(
@@ -97,18 +88,19 @@ savan_publishing_client_publish(
     conf = client->conf;
     pubs_svc = client->svc;
 
-    topic_param = axis2_svc_get_param(pubs_svc, env, "TopicURL");
+    topic_param = axis2_svc_get_param(pubs_svc, env, SAVAN_TOPIC_URL);
     if (!topic_param)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] TopicURL param not available");
         return AXIS2_SUCCESS;
     }
+
     topic_url = axutil_param_get_value(topic_param, env);
 
-    qname = axutil_qname_create(env, "savan", NULL, NULL);
+    qname = axutil_qname_create(env, SAVAN_MODULE, NULL, NULL);
     module_desc = axis2_conf_get_module(conf, env, qname);
 
-    param = axis2_module_desc_get_param(module_desc, env, "SubscriptionMgrURL");
+    param = axis2_module_desc_get_param(module_desc, env, SAVAN_SUBSCRIPTION_MGR_URL);
     axutil_qname_free(qname, env);
 
     if(param)
@@ -119,7 +111,7 @@ savan_publishing_client_publish(
         axutil_param_t *svc_client_param = NULL;
 
         subs_mgr_url = axutil_param_get_value(param, env);
-        svc_client_param = axis2_svc_get_param(pubs_svc, env, "svc_client");
+        svc_client_param = axis2_svc_get_param(pubs_svc, env, SAVAN_SVC_CLIENT);
         if(svc_client_param)
         {
             svc_client = axutil_param_get_value(svc_client_param, env);
@@ -127,16 +119,13 @@ savan_publishing_client_publish(
 
         if(!svc_client)
         {
-            svc_client = 
-                (axis2_svc_client_t *) savan_util_get_svc_client(env);
-            svc_client_param = axutil_param_create(env, "svc_client", 
-                svc_client);
+            svc_client = (axis2_svc_client_t *) savan_util_get_svc_client(env);
+            svc_client_param = axutil_param_create(env, SAVAN_SVC_CLIENT, svc_client);
             axis2_svc_add_param(pubs_svc, env, svc_client_param);
         }
 
-        subs_store = 
-            savan_util_get_subscriber_list_from_remote_subs_mgr(env, 
-                topic_url, subs_mgr_url, svc_client);
+        subs_store = savan_util_get_subscriber_list_from_remote_subs_mgr(env, topic_url, 
+                subs_mgr_url, svc_client);
     }
     else
     {
@@ -169,16 +158,14 @@ savan_publishing_client_publish(
         {
             axis2_char_t *filter_template_path = NULL;
             axis2_char_t *id = savan_subscriber_get_id(sub, env);
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                            "[savan] Publishing to %s", id);
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Publishing to %s", id);
 
             filter_template_path = savan_util_get_module_param(env, conf, 
                     SAVAN_FILTER_TEMPLATE_PATH);
             savan_subscriber_set_filter_template_path(sub, env, filter_template_path);
             if(!savan_subscriber_publish(sub, env, payload))
             {
-                axis2_endpoint_ref_t *notifyto = 
-                    savan_subscriber_get_notify_to(sub, env);
+                axis2_endpoint_ref_t *notifyto = savan_subscriber_get_notify_to(sub, env);
                 const axis2_char_t *address = NULL;
 
                 if(notifyto)

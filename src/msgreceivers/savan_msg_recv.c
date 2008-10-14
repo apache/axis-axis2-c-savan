@@ -225,7 +225,7 @@ savan_msg_recv_handle_sub_request(
     module_desc = axis2_conf_get_module(conf, env, qname);
     axutil_qname_free(qname, env);
     subs_mgr_url_param = axis2_module_desc_get_param(module_desc, env, 
-        "SubscriptionMgrURL");
+        SAVAN_SUBSCRIPTION_MGR_URL);
     if(subs_mgr_url_param)
     {
         submgr_addr = axutil_param_get_value(subs_mgr_url_param, env);
