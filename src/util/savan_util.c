@@ -579,8 +579,6 @@ savan_util_set_store(
     axutil_hash_t *store = NULL;
     axutil_param_t *param = NULL;
     
-    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
-    
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:set_sub_store");
     
     /* Create a hash map */
@@ -679,11 +677,11 @@ savan_util_get_subscriber_from_remote_subs_mgr(
     axiom_node_t *ret_node = NULL;
     savan_subscriber_t *subscriber = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_util_get_subscriber_from_remote_subs_mgr");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+        "[savan] Entry:savan_util_get_subscriber_from_remote_subs_mgr");
+
     svc_client = (axis2_svc_client_t *) s_client;
-    options = (axis2_options_t *)axis2_svc_client_get_options(svc_client, 
-        env);
+    options = (axis2_options_t *)axis2_svc_client_get_options(svc_client, env);
     endpoint_ref = axis2_endpoint_ref_create(env, subs_mgr_url);
     axis2_options_set_to(options, env, endpoint_ref);
     
@@ -695,13 +693,12 @@ savan_util_get_subscriber_from_remote_subs_mgr(
     }
     else
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[savan] Stub invoke FAILED: Error code:"
-            " %d :: %s", env->error->error_number,
-            AXIS2_ERROR_GET_MESSAGE(env->error));
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Stub invoke FAILED: Error code:"
+            " %d :: %s", env->error->error_number, AXIS2_ERROR_GET_MESSAGE(env->error));
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_util_get_subscriber_from_remote_subs_mgr");
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+            "[savan] Exit:savan_util_get_subscriber_from_remote_subs_mgr");
     return subscriber;
 }
 
@@ -745,8 +742,7 @@ process_subscriber_node(
     savan_subscriber_t *subscriber = NULL;
 
     sub_node = axiom_node_get_first_child(node, env);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:process_subscriber_node");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:process_subscriber_node");
     sub_elem = axiom_node_get_data_element(sub_node, env); 
          
     if(sub_node)
@@ -846,8 +842,8 @@ process_subscriber_node(
 
         savan_subscriber_set_filter(subscriber, env, filter);
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:process_subscriber_node");
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:process_subscriber_node");
     return subscriber;
 }
 
@@ -865,8 +861,9 @@ savan_util_get_subscriber_list_from_remote_subs_mgr(
     axiom_node_t *ret_node = NULL;
     axutil_array_list_t *subscriber_list = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan]Start:savan_util_get_subscriber_list_from_remote_subs_mgr");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+        "[savan] Entry:savan_util_get_subscriber_list_from_remote_subs_mgr");
+
     svc_client = (axis2_svc_client_t *) s_client;
     options = (axis2_options_t *)axis2_svc_client_get_options(svc_client, 
         env);
@@ -886,8 +883,8 @@ savan_util_get_subscriber_list_from_remote_subs_mgr(
             " %d :: %s", env->error->error_number,
             AXIS2_ERROR_GET_MESSAGE(env->error));
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan]End:savan_util_get_subscriber_list_from_remote_subs_mgr");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+        "[savan] Exit:savan_util_get_subscriber_list_from_remote_subs_mgr");
     return subscriber_list;
 }
 
@@ -932,8 +929,8 @@ process_subscriber_list_node(
     axis2_char_t *topic_url = NULL;
     axutil_array_list_t *subscriber_list = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:process_subscriber_list_node");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+        "[savan] Entry:process_subscriber_list_node");
     subs_list_element = axiom_node_get_data_element(subs_list_node, env); 
          
     /* Topic */
@@ -951,10 +948,10 @@ process_subscriber_list_node(
     axutil_qname_free(qname, env);
     if(!subs_iter)
     {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "[savan] Subscribers list is empty");
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Subscribers list is empty");
         return NULL;
     }
+
     if(axiom_children_qname_iterator_has_next(subs_iter, env))
     {
         subscriber_list = axutil_array_list_create(env, 0);
@@ -994,8 +991,8 @@ process_subscriber_list_node(
             subscriber = savan_subscriber_create(env);
             if (!subscriber)
             {
-                AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create a"
-                    "subscriber instance");
+                AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                        "[savan] Failed to create a subscriber instance");
                 return NULL;
             }
             /* Now read each sub element of Subscribe element */
@@ -1061,8 +1058,7 @@ process_subscriber_list_node(
             axutil_array_list_add(subscriber_list, env, subscriber);
         }
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:process_subscriber_list_node");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:process_subscriber_list_node");
     return subscriber_list;
 }
 
@@ -1099,11 +1095,18 @@ build_add_subscriber_om_payload(
     axis2_char_t *id = NULL;
 	axis2_endpoint_ref_t *notify_ref = NULL;
     axis2_endpoint_ref_t *endto_ref = savan_subscriber_get_end_to(subscriber, env);
+
     if(endto_ref)
+    {
         endto = axis2_endpoint_ref_get_address(endto_ref, env);
+    }
+
     notify_ref = savan_subscriber_get_notify_to(subscriber, env);
     if(notify_ref)
+    {
         notify = axis2_endpoint_ref_get_address(notify_ref, env);
+    }
+
     filter = savan_subscriber_get_filter(subscriber, env); 
     expires = savan_subscriber_get_expires(subscriber, env); 
     id = savan_subscriber_get_id(subscriber, env);
@@ -1122,30 +1125,29 @@ build_add_subscriber_om_payload(
     topic_elem = axiom_element_create(env, add_node, ELEM_NAME_TOPIC, ns1, &topic_node);
     topic = savan_subscriber_get_topic(subscriber, env);
     if(topic)
+    {
         axiom_element_set_text(topic_elem, env, topic, topic_node);
+    }
+
     /* create the subscriber element */
     sub_elem = axiom_element_create(env, add_node, ELEM_NAME_SUBSCRIBE, ns, &sub_node);
     
     /* EndTo element */
-    endto_elem = axiom_element_create(env, sub_node, ELEM_NAME_ENDTO, ns,
-        &endto_node);
+    endto_elem = axiom_element_create(env, sub_node, ELEM_NAME_ENDTO, ns, &endto_node);
     axiom_element_set_text(endto_elem, env, endto, endto_node);
     
     /* Delivery element */
-    delivery_elem = axiom_element_create(env, sub_node, ELEM_NAME_DELIVERY, ns,
-        &delivery_node);
+    delivery_elem = axiom_element_create(env, sub_node, ELEM_NAME_DELIVERY, ns, &delivery_node);
         
-    notify_elem = axiom_element_create(env, delivery_node, ELEM_NAME_NOTIFYTO, ns,
-        &notify_node);
+    notify_elem = axiom_element_create(env, delivery_node, ELEM_NAME_NOTIFYTO, ns, &notify_node);
     axiom_element_set_text(notify_elem, env, notify, notify_node);
     
     /* Expires element */
-    expires_elem = axiom_element_create(env, sub_node, ELEM_NAME_EXPIRES, ns,
-        &expires_node);
+    expires_elem = axiom_element_create(env, sub_node, ELEM_NAME_EXPIRES, ns, &expires_node);
     axiom_element_set_text(expires_elem, env, expires, expires_node);
+
     /* Filter element */
-    filter_elem = axiom_element_create(env, sub_node, ELEM_NAME_FILTER, ns,
-        &endto_node);
+    filter_elem = axiom_element_create(env, sub_node, ELEM_NAME_FILTER, ns, &endto_node);
     axiom_element_set_text(filter_elem, env, filter, filter_node);
     
     return add_node;
@@ -1189,8 +1191,6 @@ build_remove_subscriber_om_payload(
     return remove_node;
 }*/
 
-/******************************************************************************/
-
 axis2_char_t * AXIS2_CALL
 savan_util_get_expiry_time(
     const axutil_env_t *env)
@@ -1199,8 +1199,6 @@ savan_util_get_expiry_time(
     
     return NULL;
 }
-
-/******************************************************************************/
 
 axis2_char_t * AXIS2_CALL
 savan_util_get_renewed_expiry_time(
@@ -1219,9 +1217,13 @@ savan_util_get_topic_name_from_topic_url(
 {
     axis2_char_t *topic = NULL;
     axis2_char_t *temp = NULL;
+
     temp = axutil_rindex(topic_url, '/') + 1;
     if(temp)
+    {
         topic  = axutil_strdup(env, temp);
+    }
+
     return topic;
 }
 
@@ -1238,8 +1240,9 @@ savan_util_get_topic_list_from_remote_subs_mgr(
     axiom_node_t *ret_node = NULL;
     axutil_array_list_t *topic_list = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_util_get_topic_list_from_remote_subs_mgr");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+        "[savan] Entry:savan_util_get_topic_list_from_remote_subs_mgr");
+
     if(!s_client)
     {
         svc_client = (axis2_svc_client_t *) savan_util_get_svc_client(env);
@@ -1269,8 +1272,8 @@ savan_util_get_topic_list_from_remote_subs_mgr(
     {
         /*axis2_svc_client_free(svc_client, env);*/
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_util_get_topic_list_from_remote_subs_mgr");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+        "[savan] Exit:savan_util_get_topic_list_from_remote_subs_mgr");
     return topic_list;
 }
 
@@ -1289,7 +1292,7 @@ build_topics_request_om_payload(
     if (om_str)
     {
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "Sending topics_request_om_payload: %s", om_str);
+            "[savan] Sending topics_request_om_payload: %s", om_str);
         AXIS2_FREE(env->allocator, om_str);
         om_str =  NULL;
     }
@@ -1306,22 +1309,22 @@ process_topic_list_node(
     axutil_qname_t *qname = NULL;
     axutil_array_list_t *topic_list = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:process_topic_list_node");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:process_topic_list_node");
+
     topic_list_element = axiom_node_get_data_element(topic_list_node, env); 
          
     /* Get topic elements from topic list */
-    qname = axutil_qname_create(env, ELEM_NAME_TOPIC, SAVAN_NAMESPACE, 
-        NULL);
-    topic_iter = axiom_element_get_children_with_qname(topic_list_element, env,
-        qname, topic_list_node);
+    qname = axutil_qname_create(env, ELEM_NAME_TOPIC, SAVAN_NAMESPACE, NULL);
+    topic_iter = axiom_element_get_children_with_qname(topic_list_element, env, qname, 
+            topic_list_node);
+
     axutil_qname_free(qname, env);
     if(!topic_iter)
     {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "[savan] Topic list is empty");
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Topic list is empty");
         return NULL;
     }
+
     if(axiom_children_qname_iterator_has_next(topic_iter, env))
     {
         topic_list = axutil_array_list_create(env, 0);
@@ -1338,14 +1341,12 @@ process_topic_list_node(
         {
             topic_elem = axiom_node_get_data_element(topic_node, env);
             topic_url_str = axiom_element_get_text(topic_elem, env, topic_node);
-            axutil_array_list_add(topic_list, env, axutil_strdup(env, 
-                topic_url_str));
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "topic_url_str:%s", 
-                topic_url_str);
+            axutil_array_list_add(topic_list, env, axutil_strdup(env, topic_url_str));
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "topic_url_str:%s", topic_url_str);
         }
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:process_topic_list_node");
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:process_topic_list_node");
     return topic_list;
 }
 
@@ -1359,7 +1360,10 @@ savan_util_get_svc_client(
 
     client_home = AXIS2_GETENV("AXIS2C_HOME");
     if (!client_home)
+    {
         client_home = "../../deploy";
+    }
+
     options = axis2_options_create(env);
     axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
     svc_client = axis2_svc_client_create(env, client_home);
