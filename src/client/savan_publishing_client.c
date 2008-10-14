@@ -92,10 +92,7 @@ savan_publishing_client_publish(
     axis2_char_t *topic_url = NULL;
     axutil_qname_t *qname = NULL;
 
-    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
-
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                    "[savan]Start:savan_publishing_client_publish");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_publishing_client_publish");
    
     conf = client->conf;
     pubs_svc = client->svc;
@@ -103,8 +100,7 @@ savan_publishing_client_publish(
     topic_param = axis2_svc_get_param(pubs_svc, env, "TopicURL");
     if (!topic_param)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                        "[savan]TopicURL param not available");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] TopicURL param not available");
         return AXIS2_SUCCESS;
     }
     topic_url = axutil_param_get_value(topic_param, env);
@@ -160,8 +156,7 @@ savan_publishing_client_publish(
 
     if (!subs_store)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[savan] Subscriber store is NULL"); 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscriber store is NULL"); 
         return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
     }
 
@@ -172,10 +167,14 @@ savan_publishing_client_publish(
         sub = (savan_subscriber_t *)axutil_array_list_get(subs_store, env, i);
         if (sub)
         {
+            axis2_char_t *filter_template_path = NULL;
             axis2_char_t *id = savan_subscriber_get_id(sub, env);
             AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                            "[savan][out handler]Publishing to %s", id);
+                            "[savan] Publishing to %s", id);
 
+            filter_template_path = savan_util_get_module_param(env, conf, 
+                    SAVAN_FILTER_TEMPLATE_PATH);
+            savan_subscriber_set_filter_template_path(sub, env, filter_template_path);
             if(!savan_subscriber_publish(sub, env, payload))
             {
                 axis2_endpoint_ref_t *notifyto = 
@@ -188,14 +187,13 @@ savan_publishing_client_publish(
                 }
 
                 AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                                "Publishing to the Data Sink:%s proviced by \
-subscriber:%s Failed. Check whether the Data Sink url is correct", 
-                                address, id);
+                        "Publishing to the Data Sink:%s proviced by subscriber:%s Failed. Check "\
+                        "whether the Data Sink url is correct", address, id);
             }
         }
     }
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                    "[savan]End:savan_publishing_client_publish");
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_publishing_client_publish");
     
     return AXIS2_SUCCESS;
 }

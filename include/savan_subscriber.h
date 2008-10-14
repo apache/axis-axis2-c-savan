@@ -292,6 +292,17 @@ extern "C"
     savan_subscriber_get_topic(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env);
+    
+    axis2_status_t AXIS2_CALL
+    savan_subscriber_set_filter_template_path(
+        savan_subscriber_t *subscriber,
+        const axutil_env_t *env,
+        axis2_char_t *path);
+
+    axis2_char_t *AXIS2_CALL
+    savan_subscriber_get_filter_template_path(
+        savan_subscriber_t *subscriber,
+        const axutil_env_t *env);
 
 /** @} */
 #ifdef __cplusplus

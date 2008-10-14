@@ -279,6 +279,19 @@ extern "C"
         axis2_conf_t *conf);
 
     /**
+    * Get the module parameter value by passing the module parameter name.
+    * @param env pointer to environment struct
+    * @param conf Axis2/C configuration structure
+    * @param name module parameter name
+    * @return module parameter value
+    */
+    AXIS2_EXTERN axis2_char_t *AXIS2_CALL
+    savan_util_get_module_param(
+        const axutil_env_t *env,
+        axis2_conf_t *conf,
+        axis2_char_t *name);
+
+    /**
     * Get the topics registered in a subscription manager
     * @param env pointer to environment struct
     * @param subs_mgr_url url of the subscription manager

@@ -124,6 +124,7 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_TOPIC_LIST       "savan_topic_list"
 #define SAVAN_DB "savan_db"
 #define SAVAN_MODULE  "savan"
+#define SAVAN_FILTER_TEMPLATE_PATH  "savan_filter_template_path"
 
 /** @} */
 #ifdef __cplusplus

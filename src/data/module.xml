@@ -2,6 +2,7 @@
    <!--parameter name="SubscriptionMgrURL" locked="xsd:false">http://localhost:9092/axis2/services/subscription</parameter-->
    <!-- Database connection parameters -->
    <parameter name="savan_db" locked="false">/tmp/savan_db</parameter>
+   <parameter name="savan_filter_template_path" locked="false">/axis2c/deploy/modules/savan/template.xsl</parameter>
     <inflow>
         <handler name="SavanInHandler" class="mod_savan">
             <order phase="SavanPhase"/>

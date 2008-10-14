@@ -150,16 +150,25 @@ savan_util_set_filter_template_for_subscriber(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env)
 {
-    AXIS2_ENV_CHECK(env, NULL);
     xsltStylesheetPtr xslt_template_xslt = NULL;
     xmlDocPtr xslt_template_xml = NULL;
+    axis2_char_t *filter_template_path = NULL;
 
 	if(savan_subscriber_get_filter(subscriber, env) == NULL)
 	{
 		return AXIS2_SUCCESS;
 	}
 
-    xslt_template_xml = xmlParseFile("../modules/savan/template.xsl");
+    filter_template_path = savan_subscriber_get_filter_template_path(subscriber, env);
+    if(!filter_template_path)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Filter template path not set");
+        return AXIS2_FAILURE;
+    }
+
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] filter_template_path:%s", filter_template_path);
+
+    xslt_template_xml = xmlParseFile(filter_template_path);
     xmlChar* xpathExpr = (xmlChar*)"//@select";
     xmlChar* value = (xmlChar*)savan_subscriber_get_filter(subscriber,env);
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(xslt_template_xml);
@@ -1409,4 +1418,29 @@ savan_util_get_dbname(
     return path;
 }
 
+AXIS2_EXTERN axis2_char_t *AXIS2_CALL
+savan_util_get_module_param(
+    const axutil_env_t *env,
+    axis2_conf_t *conf,
+    axis2_char_t *name)
+{
+    axis2_char_t *value = NULL;
+    axis2_module_desc_t *module_desc = NULL;
+    axutil_qname_t *qname = NULL;
+
+    qname = axutil_qname_create(env, SAVAN_MODULE, NULL, NULL);
+    module_desc = axis2_conf_get_module(conf, env, qname);
+    if(module_desc)
+    {
+        axutil_param_t *param = NULL;
+        param = axis2_module_desc_get_param(module_desc, env, name);
+        if(param)
+        {
+            value = (axis2_char_t *) axutil_param_get_value(param, env);
+        }
+    }
+    axutil_qname_free(qname, env);
+    
+    return value;
+}
 
