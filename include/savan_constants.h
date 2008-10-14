@@ -128,6 +128,7 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_SUBSCRIPTION_MGR_URL  "SubscriptionMgrURL"
 #define SAVAN_SVC_CLIENT  "svc_client"
 #define SAVAN_FILTER_TEMPLATE_PATH  "savan_filter_template_path"
+#define SAVAN_FILTER_DIALECT "Dialect"
 
 /** @} */
 #ifdef __cplusplus
