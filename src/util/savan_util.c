@@ -33,8 +33,6 @@
 #include <libxslt/xsltutils.h>
 #endif
 
-/******************************************************************************/
-
 #ifdef SAVAN_FILTERING
 axis2_status_t
 savan_util_update_filter_template(
@@ -154,7 +152,7 @@ savan_util_set_filter_template_for_subscriber(
     xmlDocPtr xslt_template_xml = NULL;
     axis2_char_t *filter_template_path = NULL;
 
-	if(savan_subscriber_get_filter(subscriber, env) == NULL)
+	if(!savan_subscriber_get_filter(subscriber, env))
 	{
 		return AXIS2_SUCCESS;
 	}
@@ -346,16 +344,14 @@ savan_util_get_message_type(
     info_header =  axis2_msg_ctx_get_msg_info_headers(msg_ctx, env);
     if (!info_header)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[savan] Cannot extract message info headers"); 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Cannot extract message info headers"); 
         return SAVAN_MSG_TYPE_UNKNOWN;
     }
     
     action = axis2_msg_info_headers_get_action(info_header, env);
     if( ! action)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[savan] Cannot extract soap action"); 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Cannot extract soap action"); 
         AXIS2_ERROR_SET(env->error, SAVAN_ERROR_SOAP_ACTION_NULL, AXIS2_FAILURE);
         return SAVAN_MSG_TYPE_UNKNOWN;
     }
@@ -380,8 +376,6 @@ savan_util_get_message_type(
     return SAVAN_MSG_TYPE_UNKNOWN;
 }
 
-/******************************************************************************/
-
 axis2_char_t * AXIS2_CALL
 savan_util_get_subscription_id_from_msg(
     const axutil_env_t *env,
@@ -396,18 +390,15 @@ savan_util_get_subscription_id_from_msg(
     axiom_element_t *header_elem = NULL;
     axiom_element_t *id_elem = NULL;
     
-    AXIS2_ENV_CHECK(env, NULL);
-    
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_util_get_subscription_id_from_msg");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+        "[savan] Entry:savan_util_get_subscription_id_from_msg");
     
     /* Get soap envelop and extract the subscription id */
 
     envelope =  axis2_msg_ctx_get_soap_envelope(msg_ctx, env);
     if (!envelope)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[savan] Failed to extract the soap envelop");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to extract the soap envelop");
         return NULL;
     }
     
@@ -432,12 +423,10 @@ savan_util_get_subscription_id_from_msg(
     /* Now read the id */
     sub_id = axiom_element_get_text(id_elem, env, id_node);
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_util_get_subscription_id_from_msg");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+        "[savan] Exit:savan_util_get_subscription_id_from_msg");
     return sub_id;    
 }
-
-/******************************************************************************/
 
 savan_subscriber_t * AXIS2_CALL
 savan_util_get_subscriber_from_msg(
@@ -447,10 +436,7 @@ savan_util_get_subscriber_from_msg(
 {
     savan_subscriber_t *subscriber = NULL;
 
-    AXIS2_ENV_CHECK(env, NULL);
-
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_util_get_subscriber_from_msg");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_get_subscriber_from_msg");
 
     /* Extract subscription id from msg if not already given */
     if (!sub_id)
@@ -470,13 +456,10 @@ savan_util_get_subscriber_from_msg(
         savan_db_mgr_subs_retrieve_callback, sql_retrieve);
     }
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_util_get_subscriber_from_msg");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_get_subscriber_from_msg");
     
     return subscriber;
 }
-
-/******************************************************************************/
 
 axis2_status_t AXIS2_CALL
 savan_util_add_subscriber(
@@ -495,8 +478,7 @@ savan_util_add_subscriber(
     axis2_status_t status = AXIS2_FAILURE;
     axutil_qname_t *qname = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_util_add_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_add_subscriber");
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
     topic_url = (axis2_char_t *) axis2_endpoint_ref_get_address(topic_epr, 
@@ -510,7 +492,7 @@ savan_util_add_subscriber(
         return AXIS2_FAILURE;
     }
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-    qname = axutil_qname_create(env, "savan", NULL, NULL);
+    qname = axutil_qname_create(env, SAVAN_MODULE, NULL, NULL);
     module_desc = axis2_conf_get_module(conf, env, qname);
     param = axis2_module_desc_get_param(module_desc, env, SAVAN_SUBSCRIPTION_MGR_URL);
     axutil_qname_free(qname, env);
@@ -535,8 +517,7 @@ savan_util_add_subscriber(
         axis2_msg_ctx_set_property(msg_ctx, env, SAVAN_SUBSCRIBER, subs_prop);
     }
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_util_add_subscriber"); 
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_add_subscriber"); 
     return status;
 }
 
@@ -548,7 +529,7 @@ savan_util_update_subscriber(
 {
     axis2_conf_ctx_t *conf_ctx = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_util_update_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_update_subscriber");
 
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     {
@@ -558,7 +539,7 @@ savan_util_update_subscriber(
         savan_db_mgr_update_subscriber(env, savan_util_get_dbname(env, conf), subscriber);
     }
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_util_update_subscriber"); 
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_update_subscriber"); 
     return AXIS2_SUCCESS;
 }
 
@@ -568,8 +549,7 @@ savan_util_remove_subscriber(
     axis2_msg_ctx_t *msg_ctx,
     savan_subscriber_t *subscriber)
 {
-    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_util_remove_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_remove_subscriber");
 
     {
         axis2_char_t *subs_id = NULL;
@@ -586,7 +566,7 @@ savan_util_remove_subscriber(
         savan_db_mgr_remove(env, savan_util_get_dbname(env, conf), sql_remove);
     }
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_util_remove_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_remove_subscriber");
     return AXIS2_SUCCESS;
 }
 
@@ -601,16 +581,14 @@ savan_util_set_store(
     
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][sub processor] "
-        "Start:set_sub_store");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:set_sub_store");
     
     /* Create a hash map */
     store = axutil_hash_make(env);
     if (!store)
     {
         /* TODO : error reporting */
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][sub processor] "
-        "Could not create subscriber store");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create subscriber store");
         return AXIS2_FAILURE;
     }
     
@@ -619,13 +597,12 @@ savan_util_set_store(
     if (!param)
     {
         /* TODO : error reporting */
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan][sub processor] "
-        "Could not create subscriber store param");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create subscriber store param");
         return AXIS2_FAILURE;
     }
     
     axis2_svc_add_param(svc, env, param);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:set_sub_store");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:set_sub_store");
     
     return AXIS2_SUCCESS;       
 }

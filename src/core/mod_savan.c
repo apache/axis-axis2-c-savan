@@ -47,8 +47,7 @@ axis2_module_t *
 mod_savan_create(const axutil_env_t *env)
 {
     axis2_module_t *module = NULL;
-    module = AXIS2_MALLOC(env->allocator, 
-        sizeof(axis2_module_t));
+    module = AXIS2_MALLOC(env->allocator, sizeof(axis2_module_t));
     if(!module)
     {
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
@@ -72,7 +71,7 @@ mod_savan_init(
     /* Any initialization stuff of mod_savan goes here */
     axis2_status_t status = AXIS2_SUCCESS;
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[SAVAN] Entry:mod_savan_init");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:mod_savan_init");
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:mod_savan_init");
 
@@ -106,8 +105,7 @@ mod_savan_fill_handler_create_func_map(axis2_module_t *module,
     module->handler_create_func_map = axutil_hash_make(env);
     if(!module->handler_create_func_map)
     {
-        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, 
-            AXIS2_FAILURE);
+        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
     /* Remove the hard coded strings. Instead use macros */
