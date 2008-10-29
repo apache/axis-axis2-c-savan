@@ -22,7 +22,6 @@
  * @brief Savan Database Manager Interface
  */
 
-#include <platforms/axutil_platform_auto_sense.h>
 #include <axutil_allocator.h>
 #include <axutil_env.h>
 #include <axutil_error.h>
