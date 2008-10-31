@@ -1,4 +1,4 @@
-SUBS_MGR_HOME="/axis2/deploy2"
+SUBS_MGR_HOME="/axis2c/deploy2"
 
 rm -rf $SUBS_MGR_HOME
 cp -rf $AXIS2C_HOME $SUBS_MGR_HOME
