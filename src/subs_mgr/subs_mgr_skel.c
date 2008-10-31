@@ -197,7 +197,6 @@ savan_subs_mgr_invoke(
         op_qname = (axutil_qname_t *)axis2_op_get_qname(op, env);
         if(op_qname)
             op_name = axutil_qname_get_localpart(op_qname, env);
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "dam_op_name:%s", op_name);
         if(op_name)
         {
             if (axutil_strcmp(op_name, "add_subscriber") == 0)

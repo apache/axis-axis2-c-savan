@@ -325,7 +325,7 @@ savan_sub_processor_create_subscriber_from_msg(
     axutil_qname_free(qname, env);
     
     /* Now read each sub element of Subscribe element */
-    status = savan_util_process_subscriber_node(env, sub_node, sub_elem, subscriber, conf);
+    status = savan_util_process_subscriber_node(env, sub_node, sub_elem, subscriber);
     if(AXIS2_SUCCESS != status)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Parsing subscriber node failed");

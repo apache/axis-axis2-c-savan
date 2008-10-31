@@ -321,12 +321,17 @@ extern "C"
         const axutil_env_t *env,
         axiom_node_t *sub_node,
         axiom_element_t *sub_elem,
-        savan_subscriber_t *subscriber,
-        axis2_conf_t *conf);
+        savan_subscriber_t *subscriber);
 
     AXIS2_EXTERN axiom_node_t * AXIS2_CALL
     savan_util_create_subscriber_node(
         const axutil_env_t *env,
+        savan_subscriber_t *subscriber,
+        axiom_node_t *parent_node);
+
+    AXIS2_EXTERN axiom_node_t * AXIS2_CALL
+    savan_util_create_savan_specific_subscriber_node(
+        const axutil_env_t *env, 
         savan_subscriber_t *subscriber,
         axiom_node_t *parent_node);
 

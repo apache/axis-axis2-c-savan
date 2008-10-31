@@ -398,7 +398,6 @@ savan_subscriber_publish(
     if(subscriber->notify_to)
     {
         address = axis2_endpoint_ref_get_address(subscriber->notify_to, env);
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "address:%s", address);
         if(address)
         {
             to = axis2_endpoint_ref_create(env, address);
