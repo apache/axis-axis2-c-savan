@@ -24,6 +24,8 @@
 #include <axiom_soap.h>
 #include <axiom_soap_const.h>
 #include <axiom_soap_envelope.h>
+#include <axiom_element.h>
+#include <axiom_node.h>
 
 #include <savan_util.h>
 #include <savan_msg_recv.h>
@@ -1429,5 +1431,221 @@ savan_util_get_module_param(
     axutil_qname_free(qname, env);
     
     return value;
+}
+
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_util_process_subscriber_node(
+    const axutil_env_t *env,
+    axiom_node_t *sub_node,
+    axiom_element_t *sub_elem,
+    savan_subscriber_t *subscriber,
+    axis2_conf_t *conf)
+{
+    axutil_qname_t *qname = NULL;
+    axiom_node_t *endto_node = NULL;
+    axiom_node_t *delivery_node = NULL;
+    axiom_node_t *notify_node = NULL;
+    axiom_node_t *filter_node = NULL;
+    axiom_node_t *expires_node = NULL;
+    
+    axiom_element_t *endto_elem = NULL;
+    axiom_element_t *delivery_elem = NULL;
+    axiom_element_t *notify_elem = NULL;
+    axiom_element_t *expires_elem = NULL;
+    axiom_element_t *filter_elem = NULL;
+    
+    axis2_char_t *endto = NULL;
+    axis2_char_t *notify = NULL;
+    axis2_char_t *expires = NULL;
+    axis2_char_t *filter = NULL;
+    axis2_char_t *filter_dialect = NULL;
+    
+    axis2_endpoint_ref_t *endto_epr = NULL;
+    axis2_endpoint_ref_t *topic_epr = NULL;
+    axis2_endpoint_ref_t *notify_epr = NULL;
+
+    axis2_status_t status = AXIS2_SUCCESS;
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_process_subscriber_node");
+
+    if(sub_elem)
+    {
+        /* EndTo */
+        qname = axutil_qname_create(env, ELEM_NAME_ENDTO, EVENTING_NAMESPACE, NULL);
+        endto_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname, sub_node, 
+                &endto_node);
+        axutil_qname_free(qname, env);
+       
+        if(endto_elem)
+        {
+            endto = axiom_element_get_text(endto_elem, env, endto_node);
+            if(endto)
+            {
+                endto_epr = axis2_endpoint_ref_create(env, endto);
+                savan_subscriber_set_end_to(subscriber, env, endto_epr);
+            }
+        }
+        
+        /* Get Delivery element and read NotifyTo */
+        qname = axutil_qname_create(env, ELEM_NAME_DELIVERY, EVENTING_NAMESPACE, NULL);
+        delivery_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname, sub_node, 
+                &delivery_node);
+
+        axutil_qname_free(qname, env);
+        if(delivery_elem)
+        {
+            qname = axutil_qname_create(env, ELEM_NAME_NOTIFYTO, EVENTING_NAMESPACE, NULL);
+            notify_elem = axiom_element_get_first_child_with_qname(delivery_elem, env, qname,
+                                                                   delivery_node, &notify_node);
+            axutil_qname_free(qname, env);
+            if(notify_elem)
+            {
+                notify = axiom_element_get_text(notify_elem, env, notify_node);
+                if(notify)
+                {
+                    notify_epr = axis2_endpoint_ref_create(env, notify);
+                    savan_subscriber_set_notify_to(subscriber, env, notify_epr);
+                }
+            }
+        }
+
+        /* Expires */
+        qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, NULL);
+        expires_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
+                                                                sub_node, &expires_node);
+        axutil_qname_free(qname, env);
+        if(expires_elem)
+        {
+            expires = axiom_element_get_text(expires_elem, env, expires_node);
+            if(expires)
+            {
+                savan_subscriber_set_expires(subscriber, env, expires);
+            }
+        }
+        
+        /* Filter */
+        qname = axutil_qname_create(env, ELEM_NAME_FILTER, EVENTING_NAMESPACE, NULL);
+        filter_elem = axiom_element_get_first_child_with_qname(sub_elem, env, 
+                                                               qname,
+                                                               sub_node, 
+                                                               &filter_node);
+        axutil_qname_free(qname, env);
+        if(filter_elem)
+        {
+            qname = axutil_qname_create(env, SAVAN_FILTER_DIALECT, NULL, NULL);
+            filter = axiom_element_get_text(filter_elem, env, filter_node);
+            filter_dialect = axiom_element_get_attribute_value(filter_elem,
+                                                               env, qname);
+            axutil_qname_free(qname, env);
+            if(filter_dialect)
+            {
+                savan_subscriber_set_filter_dialect(subscriber, env, 
+                                                    filter_dialect);
+            }
+
+            if(filter)
+            {
+                savan_subscriber_set_filter(subscriber, env, filter);
+            }
+        }
+
+        if(endto)
+        {
+            topic_epr = axis2_endpoint_ref_create(env, endto);
+        }
+
+        if(topic_epr)
+        {
+            axis2_char_t *topic = NULL;
+            topic = (axis2_char_t *) axis2_endpoint_ref_get_address(topic_epr, env);
+            printf("topic:%s\n",  topic);
+            if(topic)
+            {
+                savan_subscriber_set_topic(subscriber, env, topic);
+            }
+        }
+    }
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_process_subscriber_node");
+    return status;
+}
+
+AXIS2_EXTERN axiom_node_t * AXIS2_CALL
+savan_util_create_subscriber_node(
+    const axutil_env_t *env,
+    savan_subscriber_t *subscriber,
+    axiom_node_t *parent_node)
+{
+	axiom_attribute_t *dialect = NULL;
+    axiom_namespace_t *ns = NULL;
+    axiom_node_t *sub_node = NULL;
+    axiom_node_t *endto_node = NULL;
+    axiom_node_t *delivery_node = NULL;
+    axiom_node_t *notify_node = NULL;
+    axiom_node_t *filter_node = NULL;
+    axiom_node_t *expires_node = NULL;
+    axiom_element_t* sub_elem = NULL;
+    axiom_element_t* endto_elem = NULL;
+    axiom_element_t* delivery_elem = NULL;
+    axiom_element_t* notify_elem = NULL;
+    axiom_element_t* filter_elem = NULL;
+    axiom_element_t* expires_elem = NULL;
+    axis2_char_t *endto = NULL;
+    axis2_char_t *notify = NULL;
+    axis2_char_t *filter = NULL;
+    axis2_char_t *filter_dialect = NULL;
+    axis2_char_t *expires = NULL;
+    axis2_endpoint_ref_t *endpoint_ref = NULL;
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_create_subscriber_node");
+    if(!subscriber)
+    {
+        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscriber structure passed is NULL");
+        return NULL;
+    }
+
+    endpoint_ref = savan_subscriber_get_end_to(subscriber, env);
+    endto = (axis2_char_t *) axis2_endpoint_ref_get_address(endpoint_ref, env);
+    endpoint_ref = savan_subscriber_get_notify_to(subscriber, env);
+    notify = (axis2_char_t *) axis2_endpoint_ref_get_address(endpoint_ref, env);
+    filter = savan_subscriber_get_filter(subscriber, env);
+    filter_dialect = savan_subscriber_get_filter_dialect(subscriber, env);
+    expires = savan_subscriber_get_expires(subscriber, env);
+
+    /* create the body of the Subscribe request */
+    ns = axiom_namespace_create (env, EVENTING_NAMESPACE, EVENTING_NS_PREFIX);
+    sub_elem = axiom_element_create(env, parent_node, ELEM_NAME_SUBSCRIBE, ns, &sub_node);
+    
+    /* EndTo element */
+    endto_elem = axiom_element_create(env, sub_node, ELEM_NAME_ENDTO, ns, &endto_node);
+    axiom_element_set_text(endto_elem, env, endto, endto_node);
+    
+    /* Delivery element */
+    delivery_elem = axiom_element_create(env, sub_node, ELEM_NAME_DELIVERY, ns, &delivery_node);
+        
+    notify_elem = axiom_element_create(env, delivery_node, ELEM_NAME_NOTIFYTO, ns, &notify_node);
+    axiom_element_set_text(notify_elem, env, notify, notify_node);
+    
+    /* Expires element */
+    expires_elem = axiom_element_create(env, sub_node, ELEM_NAME_EXPIRES, ns, &expires_node);
+    axiom_element_set_text(expires_elem, env, expires, expires_node);
+    /* Filter element */
+    filter_elem = axiom_element_create(env, sub_node, ELEM_NAME_FILTER, ns, &filter_node);
+    axiom_element_set_text(filter_elem, env, filter, filter_node);
+
+	if(!filter_dialect) 
+	{
+		dialect = axiom_attribute_create(env, "Dialect", DEFAULT_FILTER_DIALECT, NULL);
+	}
+	else
+	{
+		dialect = axiom_attribute_create(env, "Dialect", filter_dialect, NULL);
+	}
+
+	axiom_element_add_attribute(filter_elem, env, dialect ,filter_node);
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_create_subscriber_node");
+    return sub_node;
 }
 

@@ -21,7 +21,9 @@
 #include <axis2_addr.h>
 
 #include <savan_client.h>
+#include <savan_util.h>
 #include <savan_constants.h>
+#include <savan_subscriber.h>
 
 struct savan_client_t
 {
@@ -49,8 +51,6 @@ savan_client_get_sub_url_from_response(
     axiom_node_t *response_node,
     const axutil_env_t *env);
 
-/******************************************************************************/
-
 AXIS2_EXTERN savan_client_t * AXIS2_CALL
 savan_client_create(
     const axutil_env_t *env)
@@ -72,8 +72,6 @@ savan_client_create(
     return client;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_client_subscribe(
     savan_client_t *client,
@@ -83,33 +81,22 @@ savan_client_subscribe(
 {
     axis2_options_t *wsa_options = NULL;
     const axis2_char_t *old_action = NULL;
-    axiom_namespace_t *ns = NULL;
     axiom_node_t *reply = NULL;
     axiom_node_t *sub_node = NULL;
-    axiom_node_t *endto_node = NULL;
-    axiom_node_t *delivery_node = NULL;
-    axiom_node_t *notify_node = NULL;
-    axiom_node_t *filter_node = NULL;
-    axiom_node_t *expires_node = NULL;
-    axiom_element_t* sub_elem = NULL;
-    axiom_element_t* endto_elem = NULL;
-    axiom_element_t* delivery_elem = NULL;
-    axiom_element_t* notify_elem = NULL;
-    axiom_element_t* filter_elem = NULL;
-    axiom_element_t* expires_elem = NULL;
+    axiom_element_t *body_elem = NULL;
+    axis2_char_t *sub_id = NULL;
+    axis2_char_t *sub_url = NULL;
+    axis2_char_t *sub_elem_local_name = NULL;
+    savan_subscriber_t *subscriber = NULL;
     axis2_char_t *endto = NULL;
     axis2_char_t *notify = NULL;
     axis2_char_t *filter = NULL;
     axis2_char_t *filter_dialect = NULL;
     axis2_char_t *expires = NULL;
-    axiom_element_t *body_elem = NULL;
-    axis2_char_t *sub_id = NULL;
-    axis2_char_t *sub_url = NULL;
-    axis2_char_t *sub_elem_local_name = NULL;
-	axiom_attribute_t *dialect = NULL;
+    axis2_status_t status = AXIS2_SUCCESS;
+    axis2_endpoint_ref_t *endpoint_ref = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_client_subscribe");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_client_subscribe");
     
     /* set wsa action as Subscribe. remember the old action */
     wsa_options = (axis2_options_t*)axis2_svc_client_get_options(svc_client, env);
@@ -122,46 +109,25 @@ savan_client_subscribe(
     filter = axutil_hash_get(options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING);
     filter_dialect = axutil_hash_get(options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING);
     expires = axutil_hash_get(options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING);
-    
-    /* create the body of the Subscribe request */
-    ns = axiom_namespace_create (env, EVENTING_NAMESPACE, EVENTING_NS_PREFIX);
-    sub_elem = axiom_element_create(env, NULL, ELEM_NAME_SUBSCRIBE, ns, &sub_node);
-    
-    /* EndTo element */
-    endto_elem = axiom_element_create(env, sub_node, ELEM_NAME_ENDTO, ns,
-        &endto_node);
-    axiom_element_set_text(endto_elem, env, endto, endto_node);
-    
-    /* Delivery element */
-    delivery_elem = axiom_element_create(env, sub_node, ELEM_NAME_DELIVERY, ns,
-        &delivery_node);
-        
-    notify_elem = axiom_element_create(env, delivery_node, ELEM_NAME_NOTIFYTO, ns,
-        &notify_node);
-    axiom_element_set_text(notify_elem, env, notify, notify_node);
-    
-    /* Expires element */
-    expires_elem = axiom_element_create(env, sub_node, ELEM_NAME_EXPIRES, ns,
-        &expires_node);
-    axiom_element_set_text(expires_elem, env, expires, expires_node);
-    /* Filter element */
-    filter_elem = axiom_element_create(env, sub_node, ELEM_NAME_FILTER, ns,
-        &filter_node);
-    axiom_element_set_text(filter_elem, env, filter, filter_node);
 
-	if(filter_dialect == NULL) 
-	{
-		dialect = axiom_attribute_create(env, 
-			"Dialect", DEFAULT_FILTER_DIALECT, NULL);
-	}
-	else
-	{
-		dialect = axiom_attribute_create(env,
-			"Dialect", filter_dialect, NULL);
-	}
+    subscriber = savan_subscriber_create(env);
+    endpoint_ref = axis2_endpoint_ref_create(env, endto);
+    savan_subscriber_set_end_to(subscriber, env, endpoint_ref);
+    endpoint_ref = axis2_endpoint_ref_create(env, notify);
+    savan_subscriber_set_notify_to(subscriber, env, endpoint_ref);
+    savan_subscriber_set_filter(subscriber, env, filter);
+    savan_subscriber_set_filter_dialect(subscriber, env, filter_dialect);
+    savan_subscriber_set_expires(subscriber, env, expires);
+    /* Create the Subscriber node */
+    sub_node = savan_util_create_subscriber_node(env, subscriber, NULL);
+    if(!sub_node)
+    {
+        status = axutil_error_get_status_code(env->error);
+        savan_subscriber_free(subscriber, env);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the subscriber node");
+        return status;
+    }
 
-	axiom_element_add_attribute(filter_elem, env, dialect ,filter_node);
-    
     /* send the Subscription and wait for the response */
     reply = axis2_svc_client_send_receive(svc_client, env, sub_node);
     
@@ -170,9 +136,10 @@ savan_client_subscribe(
     
     if (!reply)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to send subscription "
-            "request. Error: %d Reason: %s", env->error->error_number,
-            AXIS2_ERROR_GET_MESSAGE(env->error));
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[savan] Failed to send subscription request. Error: %d Reason: %s", 
+                env->error->error_number,
+        AXIS2_ERROR_GET_MESSAGE(env->error));
         return AXIS2_FAILURE;
     }
 
@@ -185,7 +152,7 @@ savan_client_subscribe(
     /* Check whether we have received a SubscribeResponse */
     sub_elem_local_name = axiom_element_get_localname(body_elem, env);
 
-    if (axutil_strcmp(ELEM_NAME_SUB_RESPONSE, sub_elem_local_name) != 0)
+    if (axutil_strcmp(ELEM_NAME_SUB_RESPONSE, sub_elem_local_name))
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscription failed");
         return AXIS2_FAILURE;
@@ -197,13 +164,9 @@ savan_client_subscribe(
     sub_url = savan_client_get_sub_url_from_response(body_elem, reply, env);
     client->sub_url = axutil_strdup(env, sub_url);
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_client_subscribe");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_client_subscribe");
     return AXIS2_SUCCESS;
 }
-
-
-/******************************************************************************/
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_client_renew(
@@ -263,8 +226,6 @@ savan_client_renew(
     return status;
 }
 
-/******************************************************************************/
-
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_client_unsubscribe(
     savan_client_t *client,
@@ -312,8 +273,6 @@ savan_client_unsubscribe(
         "[savan] End:savan_client_unsubscribe");
     return status;
 }
-
-/******************************************************************************/
 
 AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 savan_client_get_status(
@@ -388,7 +347,6 @@ savan_client_get_status(
     return expires;
 }
 
-/*****************************************************************************/
 AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 savan_client_get_sub_id(
     savan_client_t *client)
@@ -403,8 +361,6 @@ savan_client_get_sub_url(
     return client->sub_url;
 }
 
-/*****************************************************************************/
-
 axis2_status_t AXIS2_CALL
 savan_client_add_sub_id_to_soap_header(
     savan_client_t *client,
@@ -414,8 +370,6 @@ savan_client_add_sub_id_to_soap_header(
     axiom_namespace_t *ns = NULL;
     axiom_node_t *id_node = NULL;
     axiom_element_t *id_elem = NULL;
-
-    AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
 
     /* Create a node with the subscription id and attach it as a soap header
      * to the service client */
@@ -437,8 +391,6 @@ savan_client_add_sub_id_to_soap_header(
     return AXIS2_SUCCESS;
 
 }
-
-/******************************************************************************/
 
 axis2_char_t * AXIS2_CALL
 savan_client_get_sub_id_from_response(

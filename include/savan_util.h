@@ -29,6 +29,8 @@
 #include <savan_constants.h>
 #include <savan_subscriber.h>
 #include <savan_sub_processor.h>
+#include <axiom_node.h>
+#include <axiom_element.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -313,6 +315,20 @@ extern "C"
     void *AXIS2_CALL
     savan_util_get_svc_client(
         const axutil_env_t *env);
+
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
+    savan_util_process_subscriber_node(
+        const axutil_env_t *env,
+        axiom_node_t *sub_node,
+        axiom_element_t *sub_elem,
+        savan_subscriber_t *subscriber,
+        axis2_conf_t *conf);
+
+    AXIS2_EXTERN axiom_node_t * AXIS2_CALL
+    savan_util_create_subscriber_node(
+        const axutil_env_t *env,
+        savan_subscriber_t *subscriber,
+        axiom_node_t *parent_node);
 
 /** @} */
 #ifdef __cplusplus
