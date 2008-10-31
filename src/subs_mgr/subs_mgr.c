@@ -38,33 +38,20 @@ savan_subs_mgr_add_subscriber(
     savan_subscriber_t *subscriber = NULL;
     axis2_char_t *topic_url = NULL;
     axis2_char_t *topic = NULL;
+    axis2_status_t status = AXIS2_SUCCESS;
 
     axutil_qname_t *qname = NULL;
     
     axiom_node_t *sub_node = NULL;
     axiom_node_t *id_node = NULL;
     axiom_node_t *topic_node = NULL;
-    axiom_node_t *endto_node = NULL;
-    axiom_node_t *delivery_node = NULL;
-    axiom_node_t *notify_node = NULL;
-    axiom_node_t *filter_node = NULL;
-    axiom_node_t *expires_node = NULL;
     
     axiom_element_t *sub_elem = NULL;
     axiom_element_t *id_elem = NULL;
     axiom_element_t *topic_elem = NULL;
     axiom_element_t *add_sub_elem = NULL;
-    axiom_element_t *endto_elem = NULL;
-    axiom_element_t *delivery_elem = NULL;
-    axiom_element_t *notify_elem = NULL;
-    axiom_element_t *expires_elem = NULL;
-    axiom_element_t *filter_elem = NULL;
     
     axis2_char_t *id = NULL;
-    axis2_char_t *endto = NULL;
-    axis2_char_t *notifyto = NULL;
-    axis2_char_t *expires = NULL;
-    axis2_char_t *filter = NULL;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_add_subscriber");
 
@@ -103,86 +90,21 @@ savan_subs_mgr_add_subscriber(
         id = axiom_element_get_text(id_elem, env, id_node);
         savan_subscriber_set_id(subscriber, env, id);
     }
+
     /* Get subscriber element from Body */
     qname = axutil_qname_create(env, ELEM_NAME_SUBSCRIBE, EVENTING_NAMESPACE, NULL);
     sub_elem = axiom_element_get_first_child_with_qname(add_sub_elem, env, qname,
         add_sub_node, &sub_node);
     axutil_qname_free(qname, env);
     
-    /* Now read each sub element of Subscribe element */
-        
-    /* EndTo */
     if(sub_elem)
     {
-        qname = axutil_qname_create(env, ELEM_NAME_ENDTO, EVENTING_NAMESPACE, NULL);
-        endto_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname,
-            sub_node, &endto_node);
-        axutil_qname_free(qname, env);
-        if(endto_elem)
+        status = savan_util_process_subscriber_node(env, sub_node, sub_elem, subscriber);
+        if(AXIS2_SUCCESS != status)
         {
-            axis2_endpoint_ref_t *endto_ref = NULL;
-            endto = axiom_element_get_text(endto_elem, env, endto_node);
-            if(endto)
-            {
-                endto_ref = axis2_endpoint_ref_create(env, endto);
-                savan_subscriber_set_end_to(subscriber, env, endto_ref);
-            }
-        }
-    
-        /* Get Delivery element and read NotifyTo */
-        qname = axutil_qname_create(env, ELEM_NAME_DELIVERY, EVENTING_NAMESPACE, 
-            NULL);
-        delivery_elem = axiom_element_get_first_child_with_qname(sub_elem, env, 
-            qname, sub_node, &delivery_node);
-        axutil_qname_free(qname, env);
-   
-        if(delivery_elem)
-        {
-            qname = axutil_qname_create(env, ELEM_NAME_NOTIFYTO, 
-                EVENTING_NAMESPACE, NULL);
-            notify_elem = axiom_element_get_first_child_with_qname(
-                delivery_elem, env, qname, delivery_node, &notify_node);
-            axutil_qname_free(qname, env);
-            if(notify_elem)
-            {
-                axis2_endpoint_ref_t *notifyto_ref = NULL;
-                notifyto = axiom_element_get_text(notify_elem, env, notify_node);
-                if(notifyto)
-                {
-                    notifyto_ref = axis2_endpoint_ref_create(env, notifyto);
-                    savan_subscriber_set_notify_to(subscriber, env, notifyto_ref);
-                }
-            }
-        }
-    
-        /* Expires */
-        qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, NULL);
-        expires_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname, sub_node, 
-                &expires_node);
-
-        axutil_qname_free(qname, env);
-        if(expires_elem)
-        {
-            expires = axiom_element_get_text(expires_elem, env, expires_node);
-            if(expires)
-            {
-                savan_subscriber_set_expires(subscriber, env, expires);
-            }
-        }
-    
-        /* Filter */
-        qname = axutil_qname_create(env, ELEM_NAME_FILTER, EVENTING_NAMESPACE, NULL);
-        filter_elem = axiom_element_get_first_child_with_qname(sub_elem, env, qname, sub_node, 
-                &filter_node);
-
-        axutil_qname_free(qname, env);
-        if(filter_elem)
-        {
-            filter = axiom_element_get_text(filter_elem, env, filter_node);
-            if(filter)
-            {
-                savan_subscriber_set_filter(subscriber, env, filter);
-            }
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Parsing subscriber node failed");
+            axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+            return NULL;
         }
     }
 
