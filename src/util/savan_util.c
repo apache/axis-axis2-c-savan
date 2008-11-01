@@ -1063,6 +1063,12 @@ savan_util_get_topic_name_from_topic_url(
     temp = axutil_rindex(topic_url, '/') + 1;
     if(temp)
     {
+        if(axutil_strchr(temp, '"'))
+        {
+            int len = axutil_strlen(temp) -1;
+            temp[len] = '\0';
+        }
+
         topic  = axutil_strdup(env, temp);
     }
 
