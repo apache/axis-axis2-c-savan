@@ -107,12 +107,12 @@ extern "C"
  	* @param subscriber, pointer to the subscriber
  	* @param env, pointer to the environment
  	* @param payload, pointer to the payload.
- 	* returns true, if it evaluates to success. 
- 	* If so, send the entire msg into the sink.
+ 	* returns filtered payload. 
+ 	* If filtered payload is not NULL send it to the sink.
  	* Else nothing is sent.
  	*/ 
 
-	axis2_status_t AXIS2_CALL
+	axiom_node_t *AXIS2_CALL
 	savan_util_apply_filter(
     	savan_subscriber_t *subscriber,
     	const axutil_env_t *env,

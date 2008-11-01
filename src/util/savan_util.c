@@ -168,7 +168,7 @@ savan_util_set_filter_template_for_subscriber(
 #endif
 
 #ifdef SAVAN_FILTERING
-axis2_status_t AXIS2_CALL
+axiom_node_t *AXIS2_CALL
 savan_util_apply_filter(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
@@ -186,7 +186,7 @@ savan_util_apply_filter(
 
 	if(!savan_subscriber_get_filter(subscriber, env))
 	{
-		return AXIS2_SUCCESS;
+		return payload;
 	}
 
     payload_string = axiom_node_to_string(payload, env);
@@ -211,6 +211,8 @@ savan_util_apply_filter(
 
     if(buffer)
     {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[savan] payload_string after applying filter:%s", buffer);
         reader = axiom_xml_reader_create_for_memory(env, 
                 (char*)buffer,axutil_strlen((char*)buffer), NULL, AXIS2_XML_PARSER_TYPE_BUFFER);
     }
@@ -243,11 +245,13 @@ savan_util_apply_filter(
 
 	if(!node)
 	{
-		return AXIS2_FAILURE;
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Applying filter for payload failed");
+        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+		return NULL;
 	}
 	else
 	{
-		return AXIS2_SUCCESS;
+		return node;
 	}
 }
 #endif
