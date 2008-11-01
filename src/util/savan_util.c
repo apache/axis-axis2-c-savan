@@ -1395,12 +1395,11 @@ savan_util_process_subscriber_node(
 
         if(topic_epr)
         {
-            axis2_char_t *topic = NULL;
-            topic = (axis2_char_t *) axis2_endpoint_ref_get_address(topic_epr, env);
-            printf("topic:%s\n",  topic);
-            if(topic)
+            axis2_char_t *endto = NULL;
+            endto = (axis2_char_t *) axis2_endpoint_ref_get_address(topic_epr, env);
+            if(endto)
             {
-                savan_subscriber_set_topic(subscriber, env, topic);
+                printf("endto:%s\n",  endto);
             }
         }
     }
