@@ -189,7 +189,7 @@ savan_db_mgr_subs_find_callback(
 
         if(0 == axutil_strcmp(col_name[i], "topic_url") )
         {
-            savan_subscriber_set_topic(subscriber, env, argv[i]);
+            savan_subscriber_set_topic_url(subscriber, env, argv[i]);
         }
 
         if(0 == axutil_strcmp(col_name[i], "renewed") )
@@ -273,7 +273,7 @@ savan_db_mgr_subs_retrieve_callback(
 
         if(0 == axutil_strcmp(col_name[i], "topic_url"))
         {
-            savan_subscriber_set_topic(subscriber, env, argv[i]);
+            savan_subscriber_set_topic_url(subscriber, env, argv[i]);
         }
 
         if(0 == axutil_strcmp(col_name[i], "renewed"))
@@ -301,7 +301,7 @@ savan_db_mgr_insert_subscriber(
     axis2_char_t *delivery_mode = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *filter = NULL;
-    axis2_char_t *topic = NULL;
+    axis2_char_t *topic_name = NULL;
     int renewed = 0;
     axis2_endpoint_ref_t *endto_epr = NULL;
     axis2_endpoint_ref_t *notifyto_epr = NULL;
@@ -359,10 +359,9 @@ savan_db_mgr_insert_subscriber(
             sprintf(sql_insert, "%s%s", sql_insert, ",filter");   
             counter++;
         }
-        topic = savan_subscriber_get_topic(subscriber, env);
-        if(topic)
+        topic_name = savan_subscriber_get_topic_name(subscriber, env);
+        if(topic_name)
         {
-            /*topic = savan_util_get_topic_name_from_topic_url(env, topic_url);*/
             sprintf(sql_insert, "%s%s", sql_insert, ",topic_name");   
             counter++;
         }
@@ -446,11 +445,11 @@ savan_db_mgr_insert_subscriber(
                 "[savan] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
         }
     }
-    if(topic)
+    if(topic_name)
     {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] topic:%s", topic);
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] topic_name:%s", topic_name);
         counter++;
-        if (sqlite3_bind_text(insertqry, counter, topic, strlen(topic), SQLITE_STATIC))
+        if (sqlite3_bind_text(insertqry, counter, topic_name, strlen(topic_name), SQLITE_STATIC))
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Sql Insert Error: %s", sqlite3_errmsg(dbconn));
@@ -496,8 +495,7 @@ savan_db_mgr_update_subscriber(
     axis2_char_t *delivery_mode = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *filter = NULL;
-    axis2_char_t *topic = NULL;
-    axis2_char_t *topic_url = NULL;
+    axis2_char_t *topic_name = NULL;
     int renewed = 0;
     axis2_endpoint_ref_t *endto_epr = NULL;
     axis2_endpoint_ref_t *notifyto_epr = NULL;
@@ -556,10 +554,9 @@ savan_db_mgr_update_subscriber(
             counter++;
         }
 
-        topic_url = savan_subscriber_get_topic(subscriber, env);
-        if(topic_url)
+        topic_name = savan_subscriber_get_topic_name(subscriber, env);
+        if(topic_name)
         {
-            topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
             sprintf(sql_update, "%s%s", sql_update, "topic_name=?, ");   
             counter++;
         }
@@ -637,11 +634,11 @@ savan_db_mgr_update_subscriber(
         }
     }
 
-    if(topic)
+    if(topic_name)
     {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] topic:%s", topic);
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] topic_name:%s", topic_name);
         counter++;
-        if (sqlite3_bind_text(updateqry, counter, topic, strlen(topic), SQLITE_STATIC))
+        if (sqlite3_bind_text(updateqry, counter, topic_name, strlen(topic_name), SQLITE_STATIC))
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Sql Update Error: %s", sqlite3_errmsg(dbconn));
@@ -1133,8 +1130,7 @@ savan_db_mgr_create_update_sql(
     axis2_char_t *delivery_mode = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *filter = NULL;
-    axis2_char_t *topic = NULL;
-    axis2_char_t *topic_url = NULL;
+    axis2_char_t *topic_name = NULL;
     axis2_bool_t renewed = AXIS2_FALSE;
     axis2_endpoint_ref_t *endto_epr = NULL;
     axis2_endpoint_ref_t *notifyto_epr = NULL;
@@ -1148,18 +1144,17 @@ savan_db_mgr_create_update_sql(
     delivery_mode = savan_subscriber_get_delivery_mode(subscriber, env);
     expires = savan_subscriber_get_expires(subscriber, env);
     filter = savan_subscriber_get_filter(subscriber, env);
-    topic_url = savan_subscriber_get_topic(subscriber, env);
-    if(topic_url)
+    topic_name = savan_subscriber_get_topic_name(subscriber, env);
+    if(topic_name)
     {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "topic_url:%s", topic_url);
-        topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "topic_url:%s", topic_name);
     }
 
     renewed = savan_subscriber_get_renew_status(subscriber, env);
 
     sprintf(sql_update, "update subscriber set end_to='%s', notify_to='%s',"\
         "delivery_mode='%s', expires='%s', filter='%s', topic_name='%s', renewed=%d"\
-        " where id='%s'", endto, notifyto, delivery_mode, expires, filter, topic, 
+        " where id='%s'", endto, notifyto, delivery_mode, expires, filter, topic_name, 
         renewed, id);
 
     return sql_update;

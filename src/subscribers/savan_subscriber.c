@@ -35,7 +35,8 @@ struct savan_subscriber_t
     axis2_char_t *delivery_mode;
     axis2_char_t *expires;
     axis2_char_t *filter;
-    axis2_char_t *topic;
+    axis2_char_t *topic_name;
+    axis2_char_t *topic_url;
     axis2_bool_t renewed;
 	axis2_char_t *filter_dialect;
 
@@ -66,7 +67,8 @@ savan_subscriber_create(
     subscriber->expires = NULL;
     subscriber->filter = NULL;
     subscriber->filter_dialect = NULL;
-    subscriber->topic = NULL;
+    subscriber->topic_name = NULL;
+    subscriber->topic_url = NULL;
     subscriber->renewed = AXIS2_FALSE;
 	#ifdef SAVAN_FILTERING
 	subscriber->xslt_filter = NULL;
@@ -110,9 +112,14 @@ savan_subscriber_free(
         AXIS2_FREE(env->allocator, subscriber->filter);
     }
 
-    if(subscriber->topic)
+    if(subscriber->topic_name)
     {
-        AXIS2_FREE(env->allocator, subscriber->topic);
+        AXIS2_FREE(env->allocator, subscriber->topic_name);
+    }
+    
+    if(subscriber->topic_url)
+    {
+        AXIS2_FREE(env->allocator, subscriber->topic_url);
     }
 
 	#ifdef SAVAN_FILTERING
@@ -192,9 +199,13 @@ savan_subscriber_get_filter_template_path(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env)
 {
+    axis2_char_t *filter_template_path = NULL;
+
 	#ifdef SAVAN_FILTERING
-    return subscriber->filter_template_path;
+    filter_template_path = subscriber->filter_template_path;
 	#endif
+
+    return filter_template_path;
 }
 
 AXIS2_EXTERN axis2_char_t * AXIS2_CALL
@@ -465,22 +476,44 @@ savan_subscriber_get_renew_status(
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_subscriber_set_topic(
+savan_subscriber_set_topic_name(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
-    axis2_char_t *topic)
+    axis2_char_t *topic_name)
 {
-    subscriber->topic = axutil_strdup(env, topic);
+    subscriber->topic_name = axutil_strdup(env, topic_name);
 
     return AXIS2_SUCCESS;
 }
 
 AXIS2_EXTERN axis2_char_t *AXIS2_CALL
-savan_subscriber_get_topic(
+savan_subscriber_get_topic_name(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env)
 {
-    return subscriber->topic;
+    return subscriber->topic_name;
 }
 
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_subscriber_set_topic_url(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env,
+    axis2_char_t *topic_url)
+{
+    subscriber->topic_url = axutil_strdup(env, topic_url);
+    if(!subscriber->topic_name)
+    {
+        subscriber->topic_name = savan_util_get_topic_name_from_topic_url(env, topic_url);
+    }
+
+    return AXIS2_SUCCESS;
+}
+
+AXIS2_EXTERN axis2_char_t *AXIS2_CALL
+savan_subscriber_get_topic_url(
+    savan_subscriber_t *subscriber,
+    const axutil_env_t *env)
+{
+    return subscriber->topic_url;
+}
 

@@ -272,7 +272,7 @@ savan_sub_processor_create_subscriber_from_msg(
     axiom_node_t *sub_node = NULL;
     axiom_element_t *body_elem = NULL;
     axiom_element_t *sub_elem = NULL;
-    axis2_char_t *topic = NULL;
+    axis2_char_t *topic_url = NULL;
     axis2_endpoint_ref_t *topic_epr = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
@@ -336,13 +336,12 @@ savan_sub_processor_create_subscriber_from_msg(
     topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
     if(topic_epr)
     {
-        topic = (axis2_char_t *)axis2_endpoint_ref_get_address(topic_epr,
-                                                               env);
+        topic_url = (axis2_char_t *)axis2_endpoint_ref_get_address(topic_epr, env);
     }
 
-    if(topic)
+    if(topic_url)
     {
-        savan_subscriber_set_topic(subscriber, env, topic);
+        savan_subscriber_set_topic_url(subscriber, env, topic_url);
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 

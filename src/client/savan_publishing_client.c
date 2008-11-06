@@ -83,7 +83,7 @@ savan_publishing_client_publish(
     axis2_char_t *topic_url = NULL;
     axutil_qname_t *qname = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_publishing_client_publish");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_publishing_client_publish");
    
     conf = client->conf;
     pubs_svc = client->svc;
@@ -110,6 +110,8 @@ savan_publishing_client_publish(
         axis2_svc_client_t* svc_client = NULL;
         axutil_param_t *svc_client_param = NULL;
 
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[savan] Using remote subscription manager to retrieve subscribers for %s", topic_url);
         subs_mgr_url = axutil_param_get_value(param, env);
         svc_client_param = axis2_svc_get_param(pubs_svc, env, SAVAN_SVC_CLIENT);
         if(svc_client_param)
@@ -132,12 +134,16 @@ savan_publishing_client_publish(
         axis2_char_t sql_retrieve[256];
         axis2_char_t *topic_name = NULL;
 
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[savan] Using local subscription manager to retrieve subscribers for %s", topic_url);
+
         topic_name = savan_util_get_topic_name_from_topic_url(env, topic_url);
         sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
             "expires, filter, renewed, topic_url from subscriber, topic"\
             " where topic.topic_name=subscriber.topic_name and"\
             " topic.topic_name='%s';", topic_name);
 
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql_retrieve:%s", sql_retrieve);
         subs_store = savan_db_mgr_retrieve_all(env, savan_util_get_dbname(env, conf),
                                                savan_db_mgr_subs_find_callback, 
                                                sql_retrieve);
@@ -180,7 +186,7 @@ savan_publishing_client_publish(
         }
     }
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_publishing_client_publish");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_publishing_client_publish");
     
     return AXIS2_SUCCESS;
 }
