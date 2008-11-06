@@ -724,7 +724,6 @@ savan_util_process_savan_specific_subscriber_node(
     axis2_char_t *id = NULL;
     axiom_node_t *topic_node = NULL;
     axiom_element_t *topic_elem = NULL;
-    axis2_char_t *topic_url = NULL;
     savan_subscriber_t *subscriber = NULL;
     axis2_status_t status = AXIS2_SUCCESS;
 
@@ -755,10 +754,15 @@ savan_util_process_savan_specific_subscriber_node(
     qname = axutil_qname_create(env, ELEM_NAME_TOPIC, SAVAN_NAMESPACE, NULL);
     topic_elem = axiom_element_get_first_child_with_qname(subs_elem, env, qname, subs_node, &topic_node);
     axutil_qname_free(qname, env);
-    topic_url = axiom_element_get_text(topic_elem, env, topic_node);
-    savan_subscriber_set_topic_url(subscriber, env, topic_url);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Received subscriber topic:%s", topic_url);
-    
+    if(topic_elem)
+    {
+        axis2_char_t *topic_url = NULL;
+
+        topic_url = axiom_element_get_text(topic_elem, env, topic_node);
+        savan_subscriber_set_topic_url(subscriber, env, topic_url);
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Received subscriber topic:%s", topic_url);
+    }
+
     qname = axutil_qname_create(env, ELEM_NAME_SUBSCRIBE, EVENTING_NAMESPACE, NULL);
     sub_elem = axiom_element_get_first_child_with_qname(subs_elem, env, qname, subs_node, &sub_node);
     axutil_qname_free(qname, env);
