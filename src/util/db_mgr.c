@@ -302,7 +302,6 @@ savan_db_mgr_insert_subscriber(
     axis2_char_t *expires = NULL;
     axis2_char_t *filter = NULL;
     axis2_char_t *topic = NULL;
-    axis2_char_t *topic_url = NULL;
     int renewed = 0;
     axis2_endpoint_ref_t *endto_epr = NULL;
     axis2_endpoint_ref_t *notifyto_epr = NULL;
@@ -360,10 +359,10 @@ savan_db_mgr_insert_subscriber(
             sprintf(sql_insert, "%s%s", sql_insert, ",filter");   
             counter++;
         }
-        topic_url = savan_subscriber_get_topic(subscriber, env);
-        if(topic_url)
+        topic = savan_subscriber_get_topic(subscriber, env);
+        if(topic)
         {
-            topic = savan_util_get_topic_name_from_topic_url(env, topic_url);
+            /*topic = savan_util_get_topic_name_from_topic_url(env, topic_url);*/
             sprintf(sql_insert, "%s%s", sql_insert, ",topic_name");   
             counter++;
         }
@@ -712,11 +711,16 @@ savan_db_mgr_insert_topic(
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Sql Insert Error: %s", 
                 sqlite3_errmsg(dbconn));
     }
-    if (sqlite3_bind_text(insertqry, 2, topic_url, strlen(topic_url), SQLITE_STATIC))
+
+    if(topic_url)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Sql Insert Error: %s", 
+        if (sqlite3_bind_text(insertqry, 2, topic_url, strlen(topic_url), SQLITE_STATIC))
+        {
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Sql Insert Error: %s", 
                 sqlite3_errmsg(dbconn));
+        }
     }
+
     if (sqlite3_step(insertqry) == SQLITE_DONE)
     {
         sqlite3_reset(insertqry);

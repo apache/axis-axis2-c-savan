@@ -245,7 +245,7 @@ savan_sub_processor_get_status(
 {
     axis2_char_t *id = NULL;
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_sub_processor_get_status");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sub_processor_get_status");
 
     /* Extract the sub id and store it in msg ctx to be used by the msg receiver */
     id = savan_util_get_subscription_id_from_msg(env, msg_ctx);

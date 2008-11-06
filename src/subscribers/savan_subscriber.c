@@ -379,10 +379,7 @@ savan_subscriber_publish(
     axis2_status_t status = AXIS2_SUCCESS;
     axis2_endpoint_ref_t *to = NULL;
     const axis2_char_t *address = NULL;
-    #ifdef SAVAN_FILTERING
     axiom_node_t *filtered_payload = NULL;
-    #endif
-    axis2_bool_t is_filtered = AXIS2_TRUE;
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subscriber_publish");
 	
@@ -404,6 +401,7 @@ savan_subscriber_publish(
         address = axis2_endpoint_ref_get_address(subscriber->notify_to, env);
         if(address)
         {
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Publishing to:%s", address);
             to = axis2_endpoint_ref_create(env, address);
             axis2_options_set_to(options, env, to);
         }
@@ -414,21 +412,26 @@ savan_subscriber_publish(
 
     #ifdef SAVAN_FILTERING
 	filtered_payload = savan_util_apply_filter(subscriber, env, payload);
-    if(filtered_payload)
-    {
-        is_filtered = AXIS2_TRUE;
-    }
-    else
+    if(!filtered_payload)
     {
         status = axutil_error_get_status_code(env->error);
-        return status;
+        if(AXIS2_SUCCESS != status)
+        {
+            return status;
+        }
     }
-
     #endif
 	
     /* Set service client options */
     axis2_svc_client_set_options(svc_client, env, options);
-    axis2_svc_client_fire_and_forget(svc_client, env, filtered_payload);
+    if(filtered_payload)
+    {
+        axis2_svc_client_fire_and_forget(svc_client, env, filtered_payload);
+    }
+    else
+    {
+        axis2_svc_client_fire_and_forget(svc_client, env, payload);
+    }
 
     axiom_node_detach(payload, env); /*insert this to prevent payload corruption in subsequent 
                                        "publish" calls with some payload.*/

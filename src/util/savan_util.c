@@ -67,11 +67,6 @@ static axiom_node_t *
 build_topics_request_om_payload(
     const axutil_env_t *env);
 
-static savan_subscriber_t *
-savan_util_process_savan_specific_subscriber_node(
-    const axutil_env_t *env,
-    axiom_node_t *sub_node);
-
 static axutil_array_list_t *
 process_subscriber_list_node(
     const axutil_env_t *env,
@@ -183,21 +178,21 @@ savan_util_apply_filter(
     axiom_stax_builder_t *om_builder = NULL;
     axiom_document_t *document = NULL;
     axiom_node_t *node = NULL;
+    axis2_char_t *filter = NULL;
 
-	if(!savan_subscriber_get_filter(subscriber, env))
+	filter = savan_subscriber_get_filter(subscriber, env);
+	if(!filter)
 	{
 		return payload;
 	}
 
     payload_string = axiom_node_to_string(payload, env);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] payload_string before applying filter:%s", payload_string);
+        "[savan] payload_string before applying filter %s:%s", filter, payload_string);
 
     payload_doc = (xmlDocPtr)xmlParseDoc((xmlChar*)payload_string);
 
-    #ifdef SAVAN_FILTERING
-        savan_util_set_filter_template_for_subscriber(subscriber, env);
-	#endif
+    savan_util_set_filter_template_for_subscriber(subscriber, env);
 
     xslt_template_filter = (xsltStylesheetPtr)savan_subscriber_get_filter_template(subscriber,
         env);
@@ -718,7 +713,7 @@ build_subscriber_request_om_payload(
     return om_node;
 }
 
-static savan_subscriber_t *
+savan_subscriber_t *AXIS2_CALL
 savan_util_process_savan_specific_subscriber_node(
     const axutil_env_t *env,
     axiom_node_t *subs_node)
@@ -730,6 +725,9 @@ savan_util_process_savan_specific_subscriber_node(
     axiom_node_t *id_node = NULL;
     axiom_element_t *id_elem = NULL;
     axis2_char_t *id = NULL;
+    axiom_node_t *topic_node = NULL;
+    axiom_element_t *topic_elem = NULL;
+    axis2_char_t *topic = NULL;
     savan_subscriber_t *subscriber = NULL;
     axis2_status_t status = AXIS2_SUCCESS;
 
@@ -742,6 +740,7 @@ savan_util_process_savan_specific_subscriber_node(
     if (!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create a subscriber instance");
+        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
         return NULL;
     }
 
@@ -754,6 +753,14 @@ savan_util_process_savan_specific_subscriber_node(
     id = axiom_element_get_text(id_elem, env, id_node);
     savan_subscriber_set_id(subscriber, env, id);
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Received subscriber id:%s", id);
+    
+    /* Topic */
+    qname = axutil_qname_create(env, ELEM_NAME_TOPIC, SAVAN_NAMESPACE, NULL);
+    topic_elem = axiom_element_get_first_child_with_qname(subs_elem, env, qname, subs_node, &topic_node);
+    axutil_qname_free(qname, env);
+    topic = axiom_element_get_text(topic_elem, env, topic_node);
+    savan_subscriber_set_topic(subscriber, env, topic);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Received subscriber topic:%s", topic);
     
     qname = axutil_qname_create(env, ELEM_NAME_SUBSCRIBE, EVENTING_NAMESPACE, NULL);
     sub_elem = axiom_element_get_first_child_with_qname(subs_elem, env, qname, subs_node, &sub_node);
@@ -1306,7 +1313,6 @@ savan_util_process_subscriber_node(
     axis2_char_t *filter_dialect = NULL;
     
     axis2_endpoint_ref_t *endto_epr = NULL;
-    axis2_endpoint_ref_t *topic_epr = NULL;
     axis2_endpoint_ref_t *notify_epr = NULL;
 
     axis2_status_t status = AXIS2_SUCCESS;
@@ -1391,21 +1397,6 @@ savan_util_process_subscriber_node(
             if(filter)
             {
                 savan_subscriber_set_filter(subscriber, env, filter);
-            }
-        }
-
-        if(endto)
-        {
-            topic_epr = axis2_endpoint_ref_create(env, endto);
-        }
-
-        if(topic_epr)
-        {
-            axis2_char_t *endto = NULL;
-            endto = (axis2_char_t *) axis2_endpoint_ref_get_address(topic_epr, env);
-            if(endto)
-            {
-                printf("endto:%s\n",  endto);
             }
         }
     }
@@ -1503,11 +1494,15 @@ savan_util_create_savan_specific_subscriber_node(
     axis2_status_t status = AXIS2_FAILURE;
     axiom_namespace_t *ns1 = NULL;
     axiom_namespace_t *ns2 = NULL;
+    axiom_namespace_t *ns3 = NULL;
     axiom_node_t *sub_node = NULL;
     axiom_node_t *id_node = NULL;
+    axiom_node_t *topic_node = NULL;
     axiom_element_t *subs_elem = NULL;
     axiom_element_t* id_elem = NULL;
+    axiom_element_t* topic_elem = NULL;
     axis2_char_t *id = NULL;
+    axis2_char_t *topic = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_util_create_savan_specific_subscriber_node");
@@ -1537,6 +1532,12 @@ savan_util_create_savan_specific_subscriber_node(
     ns2 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
     id_elem = axiom_element_create(env, subs_node, ELEM_NAME_ID, ns2, &id_node);
     axiom_element_set_text(id_elem, env, id, id_node);
+    
+    /* Topic element */
+    topic = savan_subscriber_get_topic(subscriber, env);
+    ns3 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
+    topic_elem = axiom_element_create(env, subs_node, ELEM_NAME_TOPIC, ns3, &topic_node);
+    axiom_element_set_text(topic_elem, env, topic, topic_node);
 
     sub_node = savan_util_create_subscriber_node(env, subscriber, subs_node);
     if(!sub_node)

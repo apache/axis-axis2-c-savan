@@ -158,7 +158,7 @@ savan_publishing_client_publish(
         {
             axis2_char_t *filter_template_path = NULL;
             axis2_char_t *id = savan_subscriber_get_id(sub, env);
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Publishing to %s", id);
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Publishing to:%s", id);
 
             filter_template_path = savan_util_get_module_param(env, conf, 
                     SAVAN_FILTER_TEMPLATE_PATH);
