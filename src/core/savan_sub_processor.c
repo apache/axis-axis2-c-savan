@@ -342,6 +342,12 @@ savan_sub_processor_create_subscriber_from_msg(
     if(topic_url)
     {
         savan_subscriber_set_topic_url(subscriber, env, topic_url);
+        status = savan_util_populate_topic(env, topic_url, conf);
+        if(status != AXIS2_SUCCESS)
+        {
+            axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+            return NULL;
+        }
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 

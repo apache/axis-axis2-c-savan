@@ -51,7 +51,8 @@ extern "C"
     savan_publishing_client_publish(
         savan_publishing_client_t *client,
         const axutil_env_t *env,
-        axiom_node_t *payload);
+        axiom_node_t *payload,
+        axis2_char_t *topic_url);
     
     AXIS2_EXTERN savan_publishing_client_t * AXIS2_CALL
     savan_publishing_client_create(

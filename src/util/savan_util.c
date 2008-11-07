@@ -70,7 +70,8 @@ build_topics_request_om_payload(
 static axutil_array_list_t *
 process_subscriber_list_node(
     const axutil_env_t *env,
-    axiom_node_t *subs_list_node);
+    axiom_node_t *subs_list_node,
+    axis2_conf_t *conf);
 
 static axutil_array_list_t *
 process_topic_list_node(
@@ -648,7 +649,8 @@ savan_util_get_subscriber_from_remote_subs_mgr(
     const axutil_env_t *env,
     axis2_char_t *subs_id,
     axis2_char_t *subs_mgr_url,
-    void *s_client)
+    void *s_client,
+    axis2_conf_t *conf)
 {
     axis2_endpoint_ref_t* endpoint_ref = NULL;
     axis2_options_t *options = NULL;
@@ -669,7 +671,7 @@ savan_util_get_subscriber_from_remote_subs_mgr(
     ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
     if (ret_node)
     {
-        subscriber = savan_util_process_savan_specific_subscriber_node(env, ret_node);
+        subscriber = savan_util_process_savan_specific_subscriber_node(env, ret_node, conf);
     }
     else
     {
@@ -713,7 +715,8 @@ build_subscriber_request_om_payload(
 savan_subscriber_t *AXIS2_CALL
 savan_util_process_savan_specific_subscriber_node(
     const axutil_env_t *env,
-    axiom_node_t *subs_node)
+    axiom_node_t *subs_node,
+    axis2_conf_t *conf)
 {
     axiom_element_t *subs_elem = NULL;
     axiom_node_t *sub_node = NULL;
@@ -760,6 +763,13 @@ savan_util_process_savan_specific_subscriber_node(
 
         topic_url = axiom_element_get_text(topic_elem, env, topic_node);
         savan_subscriber_set_topic_url(subscriber, env, topic_url);
+        status = savan_util_populate_topic(env, topic_url, conf);
+        if(status != AXIS2_SUCCESS)
+        {
+            axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+            return NULL;
+        }
+
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Received subscriber topic:%s", topic_url);
     }
 
@@ -789,7 +799,8 @@ savan_util_get_subscriber_list_from_remote_subs_mgr(
     const axutil_env_t *env,
     axis2_char_t *topic,
     axis2_char_t *subs_mgr_url,
-    void *s_client)
+    void *s_client,
+    axis2_conf_t *conf)
 {
     axis2_endpoint_ref_t* endpoint_ref = NULL;
     axis2_options_t *options = NULL;
@@ -811,7 +822,7 @@ savan_util_get_subscriber_list_from_remote_subs_mgr(
     ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
     if (ret_node)
     {
-        subscriber_list = process_subscriber_list_node(env, ret_node);
+        subscriber_list = process_subscriber_list_node(env, ret_node, conf);
     }
     else
     {
@@ -856,7 +867,8 @@ build_subscribers_request_om_payload(
 static axutil_array_list_t *
 process_subscriber_list_node(
     const axutil_env_t *env,
-    axiom_node_t *subs_list_node)
+    axiom_node_t *subs_list_node,
+    axis2_conf_t *conf)
 {
     axiom_element_t *subs_list_element = NULL;
     axiom_children_qname_iterator_t *subs_iter = NULL;
@@ -894,7 +906,7 @@ process_subscriber_list_node(
         if(subs_node) /* Iterate Savan specific subscriber elements */
         {
             /* Now read Savan specific Subscribe element */
-            subscriber = savan_util_process_savan_specific_subscriber_node(env, subs_node);
+            subscriber = savan_util_process_savan_specific_subscriber_node(env, subs_node, conf);
             if(!subscriber)
             {
                 AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
@@ -1550,5 +1562,48 @@ savan_util_create_savan_specific_subscriber_node(
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Exit:savan_util_create_savan_specific_subscriber_node");
     return subs_node;
+}
+
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_util_populate_topic(
+    const axutil_env_t *env,
+    axis2_char_t *topic_url,
+    axis2_conf_t *conf)
+{
+    axis2_status_t status = AXIS2_SUCCESS;
+    axis2_char_t *dbname = NULL;
+    axutil_array_list_t *topic_store = NULL;
+    axis2_char_t sql_retrieve[256];
+    int size = 0;
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_populate_topic");
+
+    dbname = savan_util_get_dbname(env, conf), 
+
+    sprintf(sql_retrieve, "select topic_name from topic;");
+
+    topic_store = savan_db_mgr_retrieve_all(env, savan_util_get_dbname(env, conf),
+            savan_db_mgr_topic_find_callback, sql_retrieve);
+
+    size = axutil_array_list_size(topic_store, env);
+    if(size == 0)
+    {
+        axis2_char_t *topic_name = NULL;
+
+        topic_name = savan_util_get_topic_name_from_topic_url(env, topic_url);
+        status = savan_db_mgr_insert_topic(env, dbname, topic_name, topic_url);
+        if(status == AXIS2_SUCCESS)
+        {
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Topic %s added", topic_url);
+        }
+        else
+        {
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Topic %s could not be added", topic_url);
+        }
+    }
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_populate_topic");
+
+    return status;
 }
 

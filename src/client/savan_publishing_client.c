@@ -71,7 +71,8 @@ AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_publishing_client_publish(
     savan_publishing_client_t *client,
     const axutil_env_t *env,
-    axiom_node_t *payload)
+    axiom_node_t *payload,
+    axis2_char_t *topic_url)
 {
     axutil_param_t *param = NULL;
     axis2_svc_t *pubs_svc = NULL;
@@ -80,7 +81,6 @@ savan_publishing_client_publish(
     axis2_module_desc_t *module_desc = NULL;
     int i = 0, size = 0;
     axutil_param_t *topic_param = NULL;
-    axis2_char_t *topic_url = NULL;
     axutil_qname_t *qname = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_publishing_client_publish");
@@ -88,14 +88,17 @@ savan_publishing_client_publish(
     conf = client->conf;
     pubs_svc = client->svc;
 
-    topic_param = axis2_svc_get_param(pubs_svc, env, SAVAN_TOPIC_URL);
-    if (!topic_param)
+    if(!topic_url)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] TopicURL param not available");
-        return AXIS2_SUCCESS;
-    }
+        topic_param = axis2_svc_get_param(pubs_svc, env, SAVAN_TOPIC_URL);
+        if (!topic_param)
+        {
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] TopicURL param not available");
+            return AXIS2_SUCCESS;
+        }
 
-    topic_url = axutil_param_get_value(topic_param, env);
+        topic_url = axutil_param_get_value(topic_param, env);
+    }
 
     qname = axutil_qname_create(env, SAVAN_MODULE, NULL, NULL);
     module_desc = axis2_conf_get_module(conf, env, qname);
@@ -127,7 +130,7 @@ savan_publishing_client_publish(
         }
 
         subs_store = savan_util_get_subscriber_list_from_remote_subs_mgr(env, topic_url, 
-                subs_mgr_url, svc_client);
+                subs_mgr_url, svc_client, conf);
     }
     else
     {

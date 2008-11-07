@@ -73,6 +73,14 @@ savan_subs_mgr_add_subscriber(
     if(topic_url)
     {
         savan_subscriber_set_topic_url(subscriber, env, topic_url);
+
+        status = savan_util_populate_topic(env, topic_url, conf);
+        if(status != AXIS2_SUCCESS)
+        {
+            axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+            return NULL;
+        }
+
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
             "[savan] Subscriber will be added to the topic:%s ", topic_url);
     }

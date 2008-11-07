@@ -268,7 +268,8 @@ extern "C"
         const axutil_env_t *env,
         axis2_char_t *topic,
         axis2_char_t *subs_mgr_url,
-        void *svc_client);
+        void *svc_client,
+        axis2_conf_t *conf);
 
     AXIS2_EXTERN axis2_char_t *AXIS2_CALL
     savan_util_get_topic_name_from_topic_url(
@@ -310,7 +311,8 @@ extern "C"
         const axutil_env_t *env,
         axis2_char_t *subs_id,
         axis2_char_t *subs_mgr_url,
-        void *s_client);
+        void *s_client,
+        axis2_conf_t *conf);
 
     void *AXIS2_CALL
     savan_util_get_svc_client(
@@ -326,7 +328,8 @@ extern "C"
     AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
     savan_util_process_savan_specific_subscriber_node(
         const axutil_env_t *env,
-        axiom_node_t *sub_node);
+        axiom_node_t *sub_node,
+        axis2_conf_t *conf);
 
     AXIS2_EXTERN axiom_node_t * AXIS2_CALL
     savan_util_create_subscriber_node(
@@ -339,6 +342,12 @@ extern "C"
         const axutil_env_t *env, 
         savan_subscriber_t *subscriber,
         axiom_node_t *parent_node);
+
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
+    savan_util_populate_topic(
+        const axutil_env_t *env,
+        axis2_char_t *topic_url,
+        axis2_conf_t *conf);
 
 /** @} */
 #ifdef __cplusplus
