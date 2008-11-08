@@ -59,26 +59,21 @@ extern "C"
         SAVAN_ERROR_STORE_NOT_FOUND,
         /* Failed to build a default soap envelope */
         SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV,
+	    /*Requested delivery mode is not supported */
+        SAVAN_ERROR_REQUESTED_DELIVERY_MODE_NOT_SUPPORTED,
+
+
         
         SAVAN_ERROR_LAST
     
     } savan_error_codes_t;
 
-	typedef enum savan_fault_types
-	{
-    	SAVAN_FAULT_DMRU = 0,
-    	SAVAN_FAULT_IET,
-    	SAVAN_FAULT_UET,
-    	SAVAN_FAULT_FNS,
-    	SAVAN_FAULT_FRU,
-    	SAVAN_FAULT_ESUP,
-    	SAVAN_FAULT_UTR,
-    	SAVAN_FAULT_IM
-	}savan_fault_types_t;
+    axis2_status_t AXIS2_CALL
+    savan_error_init();
+
 
 	#define SAVAN_FAULT_DMRU_CODE "s12:Sender"
 	#define SAVAN_FAULT_DMRU_SUB_CODE "wse:DeliveryModeRequestedUnavailable."
-	#define SAVAN_FAULT_DMRU_REASON "The requested delivery mode is not supported."
 	#define SAVAN_FAULT_DMRU_DETAIL ""
 
 	#define SAVAN_FAULT_IET_CODE "s12:Sender"
@@ -116,6 +111,18 @@ extern "C"
 	#define SAVAN_FAULT_UTR_REASON ""
 	#define SAVAN_FAULT_UTR_DETAIL ""
         
+	/*typedef enum savan_fault_types
+	{
+    	SAVAN_FAULT_DMRU = 0,
+    	SAVAN_FAULT_IET,
+    	SAVAN_FAULT_UET,
+    	SAVAN_FAULT_FNS,
+    	SAVAN_FAULT_FRU,
+    	SAVAN_FAULT_ESUP,
+    	SAVAN_FAULT_UTR,
+    	SAVAN_FAULT_IM
+	}savan_fault_types_t;*/
+
 /** @} */
 #ifdef __cplusplus
 }

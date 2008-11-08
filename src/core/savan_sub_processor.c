@@ -407,7 +407,7 @@ savan_sub_processor_validate_delivery_mode(
         savan_util_create_fault_envelope(msg_ctx, env,
                                          SAVAN_FAULT_DMRU_CODE, 
                                          SAVAN_FAULT_DMRU_SUB_CODE,
-                                         SAVAN_FAULT_DMRU_REASON, 
+                                         SAVAN_ERROR_REQUESTED_DELIVERY_MODE_NOT_SUPPORTED, 
                                          SAVAN_FAULT_DMRU_DETAIL);
 
 		return AXIS2_FAILURE;

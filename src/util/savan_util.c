@@ -298,22 +298,20 @@ savan_util_build_fault_msg(
 
     fault_ele = axiom_element_create(env, NULL, "Fault", NULL, &fault_node);
 
-   	code_ele = axiom_element_create(env, fault_node, "Code",
-        NULL, &code_node);
-	code_value_ele = axiom_element_create(env, 
-		code_node, "Value", NULL, &code_value_node);
+   	code_ele = axiom_element_create(env, fault_node, "Code", NULL, &code_node);
+	code_value_ele = axiom_element_create(env, code_node, "Value", NULL, &code_value_node);
    	axiom_element_set_text(code_value_ele, env, code, code_value_node);
-	sub_code_ele = axiom_element_create(env, 
-		code_node, "Subcode", NULL, &sub_code_node);
-	sub_code_value_ele = axiom_element_create(env, 
-		sub_code_node, "Value", NULL, &sub_code_value_node);
+	sub_code_ele = axiom_element_create(env, code_node, "Subcode", NULL, &sub_code_node);
+    sub_code_value_ele = axiom_element_create(env, sub_code_node, "Value", NULL, 
+            &sub_code_value_node);
+
    	axiom_element_set_text(sub_code_value_ele, env, subcode, sub_code_value_node);
 	reason_ele = axiom_element_create(env, fault_node, "Reason", NULL, &reason_node);
-	reason_text_ele = axiom_element_create(env, 
-		reason_node, "Text", NULL, &reason_text_node);
+	reason_text_ele = axiom_element_create(env, reason_node, "Text", NULL, &reason_text_node);
 	axiom_element_set_text(reason_text_ele, env, reason, reason_text_node);
 	detail_ele = axiom_element_create(env, fault_node, "Detail", NULL, &detail_node);	
 	axiom_element_set_text(detail_ele, env, detail, detail_node);
+
     return fault_node;
 }
 
