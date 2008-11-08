@@ -194,9 +194,14 @@ savan_sub_processor_renew_subscription(
     subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
     if (!subscriber)
     {
-        savan_util_create_fault_envelope(msg_ctx, env, SAVAN_FAULT_UTR_CODE, 
-                SAVAN_FAULT_UTR_SUB_CODE, "Could not find the subscriber.", NULL);
+        axis2_char_t *reason = NULL;
 
+        axutil_error_set_error_number(env->error, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND); 
+        reason = (axis2_char_t *) axutil_error_get_message(env->error);
+        savan_util_create_fault_envelope(msg_ctx, env, SAVAN_FAULT_UTR_CODE, 
+                SAVAN_FAULT_UTR_SUB_CODE, reason, SAVAN_FAULT_UTR_DETAIL1);
+
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to find the subscriber"); 
         return AXIS2_FAILURE;
     }
@@ -211,11 +216,16 @@ savan_sub_processor_renew_subscription(
     renewable = savan_sub_processor_is_subscription_renewable(env, msg_ctx);
     if (!renewable)
     {
+        axis2_char_t *reason = NULL;
+
+        axutil_error_set_error_number(env->error, SAVAN_ERROR_UNABLE_TO_RENEW); 
+        reason = (axis2_char_t *) axutil_error_get_message(env->error);
         savan_util_create_fault_envelope(msg_ctx, env, SAVAN_FAULT_UTR_CODE,
                                          SAVAN_FAULT_UTR_SUB_CODE, 
-                                         "Subscription can not be renewed.", 
-                                         NULL);
+                                         reason, 
+                                         SAVAN_FAULT_UTR_DETAIL2);
 
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_UNABLE_TO_RENEW, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                         "[savan] Subscription can not be renewed");
         savan_subscriber_set_renew_status(subscriber, env, AXIS2_FALSE);
@@ -404,10 +414,14 @@ savan_sub_processor_validate_delivery_mode(
 	}
 	else
 	{
+        axis2_char_t *reason = NULL;
+
+        axutil_error_set_error_number(env->error, SAVAN_ERROR_REQUESTED_DELIVERY_MODE_NOT_SUPPORTED); 
+        reason = (axis2_char_t *) axutil_error_get_message(env->error);
         savan_util_create_fault_envelope(msg_ctx, env,
                                          SAVAN_FAULT_DMRU_CODE, 
                                          SAVAN_FAULT_DMRU_SUB_CODE,
-                                         SAVAN_ERROR_REQUESTED_DELIVERY_MODE_NOT_SUPPORTED, 
+                                         reason, 
                                          SAVAN_FAULT_DMRU_DETAIL);
 
 		return AXIS2_FAILURE;
@@ -427,7 +441,7 @@ savan_sub_processor_validate_expiration_time(
       {
       savan_util_create_fault_envelope(msg_ctx, env,
       SAVAN_FAULT_IET_CODE, SAVAN_FAULT_IET_SUB_CODE,
-      SAVAN_FAULT_IET_REASON, SAVAN_FAULT_IET_DETAIL);
+      SAVAN_ERROR_EXPIRATION_TIME_REQUESTED_IS_INVALID, SAVAN_FAULT_IET_DETAIL);
 
       return AXIS2_FAILURE;
       }
@@ -435,7 +449,7 @@ savan_sub_processor_validate_expiration_time(
       {
       savan_util_create_fault_envelope(msg_ctx, env,
       SAVAN_FAULT_UET_CODE, SAVAN_FAULT_UET_SUB_CODE,
-      SAVAN_FAULT_UET_REASON, SAVAN_FAULT_UET_DETAIL);
+      SAVAN_ERROR_ONLY_EXPIRATION_DURATIONS_ARE_SUPPORTED, SAVAN_FAULT_UET_DETAIL);
 
       return AXIS2_FAILURE;
       }
@@ -462,25 +476,33 @@ savan_sub_processor_validate_filter(
 	}
 	else if(!axutil_strcmp(filter_dialect, DEFAULT_FILTER_DIALECT))
 	{
+        axis2_char_t *reason = NULL;
+
 #ifdef SAVAN_FILTERING
         return AXIS2_SUCCESS;
 #else
+        axutil_error_set_error_number(env->error, SAVAN_ERROR_FILTERING_IS_NOT_SUPPORTED); 
+        reason = (axis2_char_t *) axutil_error_get_message(env->error);
         savan_util_create_fault_envelope(msg_ctx, env,
                                          SAVAN_FAULT_FNS_CODE, 
                                          SAVAN_FAULT_FNS_SUB_CODE,
-                                         SAVAN_FAULT_FNS_REASON, 
-                                         "Server doesn't support filtering");
+                                         reason, 
+                                         SAVAN_FAULT_FNS_DETAIL);
 
 		return AXIS2_FAILURE;
 #endif
 	}
 	else
 	{
+        axis2_char_t *reason = NULL;
+        
+        axutil_error_set_error_number(env->error, SAVAN_ERROR_REQUESTED_FILTER_DIALECT_IS_NOT_SUPPORTED); 
+        reason = (axis2_char_t *) axutil_error_get_message(env->error);
 		savan_util_create_fault_envelope(msg_ctx, env,
                                          SAVAN_FAULT_FRU_CODE, 
                                          SAVAN_FAULT_FRU_SUB_CODE,
-                                         SAVAN_FAULT_FRU_REASON, 
-                                         "Server does not support the dialect.");
+                                         reason, 
+                                         SAVAN_FAULT_FRU_DETAIL);
 		return AXIS2_FAILURE;
 	}
 }

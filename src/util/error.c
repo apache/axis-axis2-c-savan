@@ -26,6 +26,30 @@ savan_error_init()
     axutil_error_messages[SAVAN_ERROR_REQUESTED_DELIVERY_MODE_NOT_SUPPORTED] = 
         "Requested delivery mode is not supported";
 
+    axutil_error_messages[SAVAN_ERROR_EXPIRATION_TIME_REQUESTED_IS_INVALID] = 
+        "Expiration time requested is invalid";
+
+    axutil_error_messages[SAVAN_ERROR_ONLY_EXPIRATION_DURATIONS_ARE_SUPPORTED] = 
+        "Only expiration durations are supported";
+
+    axutil_error_messages[SAVAN_ERROR_FILTERING_IS_NOT_SUPPORTED] = 
+        "Filtering is not supported";
+
+    axutil_error_messages[SAVAN_ERROR_REQUESTED_FILTER_DIALECT_IS_NOT_SUPPORTED] = 
+        "Requested filter dialect is not supported";
+
+    axutil_error_messages[SAVAN_ERROR_MESSAGE_IS_NOT_VALID_AND_CANNOT_BE_PROCESSED] = 
+        "Messsage is not valid and cannot be processed";
+
+    axutil_error_messages[SAVAN_ERROR_MESSAGE_CANNOT_BE_PROCESSED_BY_EVENT_SOURCE] = 
+        "Message cannot be processed by the event source";
+    
+    axutil_error_messages[SAVAN_ERROR_UNABLE_TO_RENEW] = 
+        "Unable to Renew";
+    
+    axutil_error_messages[SAVAN_ERROR_SUBSCRIBER_NOT_FOUND] = 
+        "Subscriber is not found";
+
     return AXIS2_SUCCESS;
 }
 

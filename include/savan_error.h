@@ -59,10 +59,24 @@ extern "C"
         SAVAN_ERROR_STORE_NOT_FOUND,
         /* Failed to build a default soap envelope */
         SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV,
-	    /*Requested delivery mode is not supported */
+	    /* Requested delivery mode is not supported */
         SAVAN_ERROR_REQUESTED_DELIVERY_MODE_NOT_SUPPORTED,
-
-
+	    /* Expiration time requested is invalid */
+        SAVAN_ERROR_EXPIRATION_TIME_REQUESTED_IS_INVALID,
+	    /* Only expiration durations are supported */
+        SAVAN_ERROR_ONLY_EXPIRATION_DURATIONS_ARE_SUPPORTED,
+	    /* Filtering is not supported */
+        SAVAN_ERROR_FILTERING_IS_NOT_SUPPORTED,
+	    /* Requested filter dialect is not supported */
+        SAVAN_ERROR_REQUESTED_FILTER_DIALECT_IS_NOT_SUPPORTED,
+	    /* Messsage is not valid and cannot be processed */
+        SAVAN_ERROR_MESSAGE_IS_NOT_VALID_AND_CANNOT_BE_PROCESSED,
+        /* Message cannot be processed by the event source */
+        SAVAN_ERROR_MESSAGE_CANNOT_BE_PROCESSED_BY_EVENT_SOURCE,
+        /* Unable to Renew */
+        SAVAN_ERROR_UNABLE_TO_RENEW,
+        /* Subscriber is not found */
+        SAVAN_ERROR_SUBSCRIBER_NOT_FOUND,
         
         SAVAN_ERROR_LAST
     
@@ -78,38 +92,32 @@ extern "C"
 
 	#define SAVAN_FAULT_IET_CODE "s12:Sender"
 	#define SAVAN_FAULT_IET_SUB_CODE "wse:InvalidExpirationTime"
-	#define SAVAN_FAULT_IET_REASON "The expiration time requested is invalid."
 	#define SAVAN_FAULT_IET_DETAIL ""
 
 	#define SAVAN_FAULT_UET_CODE "s12:Sender"
 	#define SAVAN_FAULT_UET_SUB_CODE "wse:UnsupportedExpirationTime"
-	#define SAVAN_FAULT_UET_REASON "Only expiration durations are supported."
 	#define SAVAN_FAULT_UET_DETAIL ""
 
 	#define SAVAN_FAULT_FNS_CODE "s12:Sender"
 	#define SAVAN_FAULT_FNS_SUB_CODE "wse:FilteringNotSupported"
-	#define SAVAN_FAULT_FNS_REASON "Filtering is not supported."
-	#define SAVAN_FAULT_FNS_DETAIL ""
+	#define SAVAN_FAULT_FNS_DETAIL "Server doesn't support filtering"
 
 	#define SAVAN_FAULT_FRU_CODE "s12:Sender"
 	#define SAVAN_FAULT_FRU_SUB_CODE "wse:FilteringRequestedUnavailable"
-	#define SAVAN_FAULT_FRU_REASON "Requested filter dialect is not supported."
-	#define SAVAN_FAULT_FRU_DETAIL ""
+	#define SAVAN_FAULT_FRU_DETAIL "Server does not support the dialect"
 
 	#define SAVAN_FAULT_IM_CODE "s12:Sender"
 	#define SAVAN_FAULT_IM_SUB_CODE "wse:InvalidMessages"
-	#define SAVAN_FAULT_IM_REASON "The messsage is not valid and cannot be processed."
 	#define SAVAN_FAULT_IM_DETAIL "Invalid message."
 
 	#define SAVAN_FAULT_ESUP_CODE "s12:Receiver"
 	#define SAVAN_FAULT_ESUP_SUB_CODE "wse:EventSourceUnableToProcess"
-	#define SAVAN_FAULT_ESUP_REASON ""
 	#define SAVAN_FAULT_ESUP_DETAIL ""
 	
 	#define SAVAN_FAULT_UTR_CODE "s12:Receiver"
 	#define SAVAN_FAULT_UTR_SUB_CODE "wse:UnableToRenew"
-	#define SAVAN_FAULT_UTR_REASON ""
-	#define SAVAN_FAULT_UTR_DETAIL ""
+	#define SAVAN_FAULT_UTR_DETAIL1 "Could not find the subscriber"
+	#define SAVAN_FAULT_UTR_DETAIL2 "Subscription can not be renewed"
         
 	/*typedef enum savan_fault_types
 	{

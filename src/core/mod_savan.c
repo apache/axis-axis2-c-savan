@@ -72,6 +72,8 @@ mod_savan_init(
     axis2_status_t status = AXIS2_SUCCESS;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:mod_savan_init");
+    
+    savan_error_init();
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:mod_savan_init");
 
