@@ -64,6 +64,8 @@ savan_client_create(
     if (!client)
     { 
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+           "[savan] Memory allocation failed for Savan Client");
         return NULL;        
     }
     

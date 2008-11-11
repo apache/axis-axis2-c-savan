@@ -926,6 +926,8 @@ savan_db_mgr_retrieve_all(
     if(!data_list)
     {
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+           "[savan] Memory allocation failed for Savan DB Manager");
         return NULL;
     }
     args = AXIS2_MALLOC(env->allocator, sizeof(savan_db_mgr_args_t));

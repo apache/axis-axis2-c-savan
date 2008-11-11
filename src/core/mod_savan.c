@@ -108,6 +108,8 @@ mod_savan_fill_handler_create_func_map(axis2_module_t *module,
     if(!module->handler_create_func_map)
     {
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+           "[savan] Memory allocation failed for Savan Module");
         return AXIS2_FAILURE;
     }
     /* Remove the hard coded strings. Instead use macros */

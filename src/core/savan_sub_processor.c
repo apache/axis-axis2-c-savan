@@ -99,8 +99,7 @@ savan_sub_processor_subscribe(
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create a subscriber"); 
         AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_CREATE_SUBSCRIBER, AXIS2_FAILURE);
-        status = axutil_error_get_status_code(env->error);
-        return status;
+        return AXIS2_FAILURE;
     }    
     /* Set the expiry time on the subscription */
     /* TODO : For now we are ignoring the Expiry sent by the client. Add support
@@ -196,12 +195,11 @@ savan_sub_processor_renew_subscription(
     {
         axis2_char_t *reason = NULL;
 
-        axutil_error_set_error_number(env->error, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND); 
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
         reason = (axis2_char_t *) axutil_error_get_message(env->error);
         savan_util_create_fault_envelope(msg_ctx, env, SAVAN_FAULT_UTR_CODE, 
                 SAVAN_FAULT_UTR_SUB_CODE, reason, SAVAN_FAULT_UTR_DETAIL1);
 
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to find the subscriber"); 
         return AXIS2_FAILURE;
     }
@@ -218,14 +216,13 @@ savan_sub_processor_renew_subscription(
     {
         axis2_char_t *reason = NULL;
 
-        axutil_error_set_error_number(env->error, SAVAN_ERROR_UNABLE_TO_RENEW); 
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_UNABLE_TO_RENEW, AXIS2_FAILURE);
         reason = (axis2_char_t *) axutil_error_get_message(env->error);
         savan_util_create_fault_envelope(msg_ctx, env, SAVAN_FAULT_UTR_CODE,
                                          SAVAN_FAULT_UTR_SUB_CODE, 
                                          reason, 
                                          SAVAN_FAULT_UTR_DETAIL2);
 
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_UNABLE_TO_RENEW, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                         "[savan] Subscription can not be renewed");
         savan_subscriber_set_renew_status(subscriber, env, AXIS2_FALSE);
