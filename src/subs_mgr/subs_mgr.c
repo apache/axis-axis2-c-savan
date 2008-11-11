@@ -52,11 +52,18 @@ savan_subs_mgr_add_subscriber(
     
     axis2_char_t *id = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_add_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_add_subscriber");
 
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     subscriber = savan_subscriber_create(env);
+    if(!subscriber)
+    {
+        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Cound not create subscriber");
+        return NULL;
+    }
+
     if(add_sub_node)
     {
         add_sub_elem = (axiom_element_t*)axiom_node_get_data_element(add_sub_node, env);
@@ -125,7 +132,7 @@ savan_subs_mgr_add_subscriber(
                 "[savan] Subscriber %s could not be added to the topic:%s", id, topic_url);
     }
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_subs_mgr_add_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_add_subscriber");
     return NULL;   
 }
 
@@ -151,7 +158,7 @@ savan_subs_mgr_remove_subscriber(
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_remove_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_remove_subscriber");
 
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
@@ -187,8 +194,8 @@ savan_subs_mgr_remove_subscriber(
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] Subscriber %s removed from the topic:%s", id, topic_url);
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_subs_mgr_remove_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+        "[savan] Exit:savan_subs_mgr_remove_subscriber");
 
     return NULL;   
 }
@@ -280,7 +287,7 @@ savan_subs_mgr_get_subscriber(
         }
     }
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_get_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_get_subscriber");
     return subs_node;
 }
 
