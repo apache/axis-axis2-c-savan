@@ -77,6 +77,12 @@ extern "C"
         SAVAN_ERROR_UNABLE_TO_RENEW,
         /* Subscriber is not found */
         SAVAN_ERROR_SUBSCRIBER_NOT_FOUND,
+        /* Could not populate Topic */
+        SAVAN_ERROR_COULD_NOT_POPULATE_TOPIC,
+        /* Parsing subsriber node failed */
+        SAVAN_ERROR_PARSING_SUBSCRIBER_NODE_FAILED,
+        /* Applying filter failed */
+        SAVAN_ERROR_APPLYING_FILTER_FAILED,
         
         SAVAN_ERROR_LAST
     

@@ -73,6 +73,7 @@ savan_sub_processor_create(
      
     if (!sub_processor)
     { 
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Cound not create sub_processor"); 
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
         return NULL;        
     }
@@ -291,7 +292,7 @@ savan_sub_processor_create_subscriber_from_msg(
     if (!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create a subscriber instance");
-        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_CREATE_SUBSCRIBER, AXIS2_FAILURE);
         return NULL;
     }
     
@@ -309,7 +310,7 @@ savan_sub_processor_create_subscriber_from_msg(
     if (!envelope)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to extract the soap envelop"); 
-        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_SOAP_ENVELOPE_OR_SOAP_BODY_NULL, AXIS2_FAILURE);
         return NULL;
     }
     
@@ -317,7 +318,7 @@ savan_sub_processor_create_subscriber_from_msg(
     if (!body)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to extract the soap body"); 
-        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_SOAP_ENVELOPE_OR_SOAP_BODY_NULL, AXIS2_FAILURE);
         return NULL;
     }
     
@@ -336,7 +337,7 @@ savan_sub_processor_create_subscriber_from_msg(
     if(AXIS2_SUCCESS != status)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Parsing subscriber node failed");
-        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_PARSING_SUBSCRIBER_NODE_FAILED, AXIS2_FAILURE);
         return NULL;
     }
 
@@ -352,7 +353,8 @@ savan_sub_processor_create_subscriber_from_msg(
         status = savan_util_populate_topic(env, topic_url, conf);
         if(status != AXIS2_SUCCESS)
         {
-            axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+            AXIS2_ERROR_SET(env->error, SAVAN_ERROR_COULD_NOT_POPULATE_TOPIC, AXIS2_FAILURE);
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not populate topic");
             return NULL;
         }
     }

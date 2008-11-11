@@ -49,6 +49,15 @@ savan_error_init()
     
     axutil_error_messages[SAVAN_ERROR_SUBSCRIBER_NOT_FOUND] = 
         "Subscriber is not found";
+        
+    axutil_error_messages[SAVAN_ERROR_COULD_NOT_POPULATE_TOPIC] = 
+        "Could not populate Topic";
+    
+    axutil_error_messages[SAVAN_ERROR_PARSING_SUBSCRIBER_NODE_FAILED] = 
+        "Parsing subsriber node failed";
+    
+    axutil_error_messages[SAVAN_ERROR_APPLYING_FILTER_FAILED] = 
+        "Applying filter failed";
 
     return AXIS2_SUCCESS;
 }

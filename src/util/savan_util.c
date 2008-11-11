@@ -242,7 +242,7 @@ savan_util_apply_filter(
 	if(!node)
 	{
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Applying filter for payload failed");
-        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_APPLYING_FILTER_FAILED, AXIS2_FAILURE);
 		return NULL;
 	}
 	else
@@ -737,7 +737,7 @@ savan_util_process_savan_specific_subscriber_node(
     if (!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create a subscriber instance");
-        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_CREATE_SUBSCRIBER, AXIS2_FAILURE);
         return NULL;
     }
 
@@ -764,7 +764,8 @@ savan_util_process_savan_specific_subscriber_node(
         status = savan_util_populate_topic(env, topic_url, conf);
         if(status != AXIS2_SUCCESS)
         {
-            axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+            AXIS2_ERROR_SET(env->error, SAVAN_ERROR_COULD_NOT_POPULATE_TOPIC, AXIS2_FAILURE);
+            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not populate topic");
             return NULL;
         }
 
@@ -782,7 +783,7 @@ savan_util_process_savan_specific_subscriber_node(
         if(AXIS2_SUCCESS != status)
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Parsing subscriber node failed");
-            axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+            AXIS2_ERROR_SET(env->error, SAVAN_ERROR_PARSING_SUBSCRIBER_NODE_FAILED, AXIS2_FAILURE);
             return NULL;
         }
     }
@@ -1446,7 +1447,7 @@ savan_util_create_subscriber_node(
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_create_subscriber_node");
     if(!subscriber)
     {
-        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscriber structure passed is NULL");
         return NULL;
     }
@@ -1521,7 +1522,7 @@ savan_util_create_savan_specific_subscriber_node(
     if(!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscriber structure must be present");
-        axutil_error_set_status_code(env->error, AXIS2_FAILURE);
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
         return NULL;
     }
 
