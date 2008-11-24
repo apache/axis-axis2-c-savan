@@ -100,8 +100,6 @@ savan_util_create_fault_envelope(
     axiom_node_t *body_node = NULL;
     axiom_node_t *fault_node = NULL;
 
-
-    fault_node = savan_util_build_fault_msg(env, code, subcode, reason, detail);
     envelope = axiom_soap_envelope_create_default_soap_envelope(env,
         AXIOM_SOAP12);
 
@@ -113,8 +111,7 @@ savan_util_create_fault_envelope(
     body = axiom_soap_envelope_get_body(envelope, env);
     body_node = axiom_soap_body_get_base_node(body, env);
 
-    fault_node = savan_util_build_fault_msg(env, code,
-        subcode, reason, detail);
+    fault_node = savan_util_build_fault_msg(env, code, subcode, reason, detail);
 
     axiom_node_add_child(body_node , env, fault_node);
     axis2_msg_ctx_set_fault_soap_envelope(msg_ctx, env, envelope);
