@@ -104,7 +104,7 @@ typedef struct savan_subs_mgr_info
 #define ELEM_NAME_EXPIRES               "Expires"
 #define ELEM_NAME_FILTER                "Filter"
 #define ELEM_NAME_ADDR                  "Address"
-#define ELEM_NAME_REF_PARAM             "ReferenceParameter"
+#define ELEM_NAME_REF_PARAM             "ReferenceParameters"
 #define ELEM_NAME_ID                    "Identifier"
 #define ELEM_NAME_SUB_MGR               "SubscriptionManager"
 #define SAVAN_IN_HANDLER                "SavanInHandler"
