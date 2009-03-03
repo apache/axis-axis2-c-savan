@@ -20,6 +20,7 @@
 #include <axis2_core_utils.h>
 #include <axis2_endpoint_ref.h>
 #include <axis2_svc_client.h>
+#include <axis2_addr.h>
 #include <platforms/axutil_platform_auto_sense.h>
 #include <axiom_soap.h>
 #include <axiom_soap_const.h>
@@ -784,12 +785,14 @@ savan_util_process_subscriber_node(
     axiom_node_t *endto_node = NULL;
     axiom_node_t *delivery_node = NULL;
     axiom_node_t *notify_node = NULL;
+    axiom_node_t *address_node = NULL;
     axiom_node_t *filter_node = NULL;
     axiom_node_t *expires_node = NULL;
     
     axiom_element_t *endto_elem = NULL;
     axiom_element_t *delivery_elem = NULL;
     axiom_element_t *notify_elem = NULL;
+    axiom_element_t *address_elem = NULL;
     axiom_element_t *expires_elem = NULL;
     axiom_element_t *filter_elem = NULL;
     
@@ -838,7 +841,12 @@ savan_util_process_subscriber_node(
             axutil_qname_free(qname, env);
             if(notify_elem)
             {
-                notify = axiom_element_get_text(notify_elem, env, notify_node);
+                qname = axutil_qname_create(env, ELEM_NAME_NOTIFYTO, EVENTING_NAMESPACE, NULL);
+                address_elem = axiom_element_get_first_child_with_qname(notify_elem, env, qname, 
+                        notify_node, &address_node);
+                axutil_qname_free(qname, env);
+
+                notify = axiom_element_get_text(address_elem, env, address_node);
                 if(notify)
                 {
                     notify_epr = axis2_endpoint_ref_create(env, notify);
@@ -900,16 +908,19 @@ savan_util_create_subscriber_node(
 {
 	axiom_attribute_t *dialect = NULL;
     axiom_namespace_t *ns = NULL;
+    axiom_namespace_t *addr_ns = NULL;
     axiom_node_t *sub_node = NULL;
     axiom_node_t *endto_node = NULL;
     axiom_node_t *delivery_node = NULL;
     axiom_node_t *notify_node = NULL;
+    axiom_node_t *address_node = NULL;
     axiom_node_t *filter_node = NULL;
     axiom_node_t *expires_node = NULL;
     axiom_element_t* sub_elem = NULL;
     axiom_element_t* endto_elem = NULL;
     axiom_element_t* delivery_elem = NULL;
     axiom_element_t* notify_elem = NULL;
+    axiom_element_t* address_elem = NULL;
     axiom_element_t* filter_elem = NULL;
     axiom_element_t* expires_elem = NULL;
     axis2_char_t *endto = NULL;
@@ -953,7 +964,9 @@ savan_util_create_subscriber_node(
     delivery_elem = axiom_element_create(env, sub_node, ELEM_NAME_DELIVERY, ns, &delivery_node);
         
     notify_elem = axiom_element_create(env, delivery_node, ELEM_NAME_NOTIFYTO, ns, &notify_node);
-    axiom_element_set_text(notify_elem, env, notify, notify_node);
+    addr_ns = axiom_namespace_create (env, AXIS2_WSA_NAMESPACE_SUBMISSION, ADDRESSING_NS_PREFIX);
+    address_elem = axiom_element_create(env, notify_node, ELEM_NAME_ADDR, addr_ns, &address_node);
+    axiom_element_set_text(address_elem, env, notify, address_node);
     
     /* Expires element */
     if(expires)
