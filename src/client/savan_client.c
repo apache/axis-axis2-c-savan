@@ -425,7 +425,7 @@ savan_client_get_sub_id_from_response(
     /* Format:
      *  <SubscribeResponse>
      *    <SubscriptionManager>
-     *      <ReferenceParameter>
+     *      <ReferenceParameters>
      *        <Identifier>
      */
 
