@@ -36,11 +36,6 @@ extern "C"
 {
 #endif
 
-typedef AXIS2_DECLARE_DATA struct savan_db_mgr_args
-{
-    const axutil_env_t *env;
-    void *data;
-} savan_db_mgr_args_t;
 
 /** 
  * @brief Savan Database Manager Struct Impl

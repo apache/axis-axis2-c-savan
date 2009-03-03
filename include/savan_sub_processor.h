@@ -34,6 +34,7 @@
 #include <axutil_env.h>
 #include <axis2_conf_ctx.h>
 #include <axutil_array_list.h>
+#include <savan_storage_mgr.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -108,7 +109,8 @@ extern "C"
     */
     AXIS2_EXTERN savan_sub_processor_t * AXIS2_CALL
     savan_sub_processor_create(
-        const axutil_env_t *env);
+        const axutil_env_t *env,
+        savan_storage_mgr_t *storage_mgr);
     
     /**
     * Freesf a subscription manager instance.

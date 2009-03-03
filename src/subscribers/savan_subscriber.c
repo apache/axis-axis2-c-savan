@@ -35,8 +35,8 @@ struct savan_subscriber_t
     axis2_char_t *delivery_mode;
     axis2_char_t *expires;
     axis2_char_t *filter;
-    axis2_char_t *topic_name;
-    axis2_char_t *topic_url;
+    /*axis2_char_t *topic_name;
+    axis2_char_t *topic_url;*/
     axis2_bool_t renewed;
 	axis2_char_t *filter_dialect;
 
@@ -67,8 +67,8 @@ savan_subscriber_create(
     subscriber->expires = NULL;
     subscriber->filter = NULL;
     subscriber->filter_dialect = NULL;
-    subscriber->topic_name = NULL;
-    subscriber->topic_url = NULL;
+    /*subscriber->topic_name = NULL;
+    subscriber->topic_url = NULL;*/
     subscriber->renewed = AXIS2_FALSE;
 	#ifdef SAVAN_FILTERING
 	subscriber->xslt_filter = NULL;
@@ -112,7 +112,7 @@ savan_subscriber_free(
         AXIS2_FREE(env->allocator, subscriber->filter);
     }
 
-    if(subscriber->topic_name)
+    /*if(subscriber->topic_name)
     {
         AXIS2_FREE(env->allocator, subscriber->topic_name);
     }
@@ -120,7 +120,7 @@ savan_subscriber_free(
     if(subscriber->topic_url)
     {
         AXIS2_FREE(env->allocator, subscriber->topic_url);
-    }
+    }*/
 
 	#ifdef SAVAN_FILTERING
     if(subscriber->xslt_filter)
@@ -475,7 +475,7 @@ savan_subscriber_get_renew_status(
     return subscriber->renewed;
 }
 
-AXIS2_EXTERN axis2_status_t AXIS2_CALL
+/*AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_set_topic_name(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
@@ -516,4 +516,4 @@ savan_subscriber_get_topic_url(
 {
     return subscriber->topic_url;
 }
-
+*/

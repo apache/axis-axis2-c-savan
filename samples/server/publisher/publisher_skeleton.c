@@ -223,7 +223,7 @@ publisher_worker_func(
     axis2_conf_t *conf = NULL;
     axis2_svc_t *svc = NULL;
 	axiom_attribute_t *test_data = NULL;
-    axis2_char_t *topic_url = "http://localhost:9090/axis2/services/publisher";
+    axis2_char_t *topic = "weather";
     
     publisher_data_t *mydata = (publisher_data_t*)data;
     main_env = mydata->env;
@@ -256,7 +256,7 @@ publisher_worker_func(
             axiom_element_set_text(test_elem, env, "test data", test_node);
 		
 			/*printf("%s\n", axiom_node_to_string(test_node, env));*/
-            savan_publishing_client_publish(pub_client, env, test_node, topic_url);
+            savan_publishing_client_publish(pub_client, env, test_node, topic);
             savan_publishing_client_free(pub_client, env);
         }
         AXIS2_SLEEP(5);

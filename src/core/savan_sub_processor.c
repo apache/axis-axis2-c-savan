@@ -27,11 +27,12 @@
 #include <savan_error.h>
 #include <savan_subscriber.h>
 #include <savan_util.h>
-#include <savan_db_mgr.h>
+#include <savan_storage_mgr.h>
 
 struct savan_sub_processor
 {
     int dummy;
+    savan_storage_mgr_t *storage_mgr;
 };
 
 savan_subscriber_t * AXIS2_CALL 
@@ -62,7 +63,8 @@ savan_sub_processor_validate_subscription(
 
 AXIS2_EXTERN savan_sub_processor_t *AXIS2_CALL
 savan_sub_processor_create(
-    const axutil_env_t *env)
+    const axutil_env_t *env,
+    savan_storage_mgr_t *storage_mgr)
 {
     savan_sub_processor_t *sub_processor = NULL;
     
@@ -74,9 +76,12 @@ savan_sub_processor_create(
     if (!sub_processor)
     { 
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Cound not create sub_processor"); 
-        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
         return NULL;        
     }
+    
+    memset ((void *) sub_processor, 0, sizeof(savan_sub_processor_t));
+    sub_processor->storage_mgr = storage_mgr;
     
     return sub_processor;
 }
@@ -99,7 +104,7 @@ savan_sub_processor_subscribe(
     if (!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create a subscriber"); 
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_CREATE_SUBSCRIBER, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FAILED_TO_CREATE_SUBSCRIBER, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }    
     /* Set the expiry time on the subscription */
@@ -107,7 +112,10 @@ savan_sub_processor_subscribe(
      * to consider this when setting the expiry time */
 
     expires = savan_util_get_expiry_time(env);
-    savan_subscriber_set_expires(subscriber, env, expires);
+    if(expires)
+    {
+        savan_subscriber_set_expires(subscriber, env, expires);
+    }
 
     /*Set the filter template file for the subscriber*/
 
@@ -129,7 +137,8 @@ savan_sub_processor_subscribe(
 		return status;
 	}
 
-    if(AXIS2_SUCCESS != (status = savan_util_add_subscriber(env, msg_ctx, subscriber)))
+    if(AXIS2_SUCCESS != (status = savan_util_add_subscriber(env, msg_ctx, 
+                    sub_processor->storage_mgr, subscriber)))
 	{
         savan_subscriber_free(subscriber, env);
 		return status;
@@ -151,7 +160,7 @@ savan_sub_processor_unsubscribe(
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sub_processor_unsubscribe");
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
+    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, sub_processor->storage_mgr, NULL);
     if (!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to find the subscriber"); 
@@ -163,7 +172,7 @@ savan_sub_processor_unsubscribe(
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);
 
     /* Remove from store */
-    status = savan_util_remove_subscriber(env, msg_ctx, subscriber);
+    status = savan_util_remove_subscriber(env, msg_ctx, sub_processor->storage_mgr, subscriber);
     if (status != AXIS2_SUCCESS)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to remove the subscriber"); 
@@ -183,25 +192,38 @@ savan_sub_processor_renew_subscription(
     savan_subscriber_t *subscriber = NULL;
     axis2_char_t *id = NULL;
     axis2_bool_t renewable = AXIS2_TRUE;
-    axis2_char_t *expires = NULL;
-    axis2_char_t *renewed_expires = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     axis2_status_t status = AXIS2_FAILURE;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sub_processor_renew_subscription");
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
+    renewable = savan_sub_processor_is_subscription_renewable(env, msg_ctx);
+    if (!renewable)
+    {
+        axis2_char_t *reason = NULL;
+
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_UNABLE_TO_RENEW, AXIS2_FAILURE);
+        reason = (axis2_char_t *) axutil_error_get_message(env->error);
+        savan_util_create_fault_envelope(msg_ctx, env, SAVAN_FAULT_UTR_CODE,
+                                         SAVAN_FAULT_UTR_SUB_CODE, 
+                                         reason, 
+                                         SAVAN_FAULT_UTR_DETAIL2);
+
+        savan_subscriber_set_renew_status(subscriber, env, AXIS2_FALSE);
+        return AXIS2_FAILURE;
+    }
+
+    subscriber = savan_util_get_subscriber_from_renew_msg(env, msg_ctx, sub_processor->storage_mgr, NULL);
     if (!subscriber)
     {
         axis2_char_t *reason = NULL;
 
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
         reason = (axis2_char_t *) axutil_error_get_message(env->error);
         savan_util_create_fault_envelope(msg_ctx, env, SAVAN_FAULT_UTR_CODE, 
                 SAVAN_FAULT_UTR_SUB_CODE, reason, SAVAN_FAULT_UTR_DETAIL1);
 
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to find the subscriber"); 
         return AXIS2_FAILURE;
     }
 
@@ -209,36 +231,9 @@ savan_sub_processor_renew_subscription(
     id = savan_subscriber_get_id(subscriber, env);
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);
 
-    /* Check whether the subscription can be renewed. If renewable, set the new
-     * expiry time in the subscriber */
-
-    renewable = savan_sub_processor_is_subscription_renewable(env, msg_ctx);
-    if (!renewable)
-    {
-        axis2_char_t *reason = NULL;
-
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_UNABLE_TO_RENEW, AXIS2_FAILURE);
-        reason = (axis2_char_t *) axutil_error_get_message(env->error);
-        savan_util_create_fault_envelope(msg_ctx, env, SAVAN_FAULT_UTR_CODE,
-                                         SAVAN_FAULT_UTR_SUB_CODE, 
-                                         reason, 
-                                         SAVAN_FAULT_UTR_DETAIL2);
-
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                        "[savan] Subscription can not be renewed");
-        savan_subscriber_set_renew_status(subscriber, env, AXIS2_FALSE);
-        return AXIS2_FAILURE;
-    }
-
-    expires = savan_subscriber_get_expires(subscriber, env);
-    renewed_expires = savan_util_get_renewed_expiry_time(env, expires);
-    savan_subscriber_set_expires(subscriber, env, renewed_expires);
-    savan_subscriber_set_renew_status(subscriber, env, AXIS2_TRUE);
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-    status = savan_db_mgr_update_subscriber(env, 
-                                            savan_util_get_dbname(env, conf), 
-                                            subscriber);
+    status = savan_storage_mgr_update_subscriber(sub_processor->storage_mgr, env, subscriber);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_sub_processor_renew_subscription");
 
@@ -280,8 +275,7 @@ savan_sub_processor_create_subscriber_from_msg(
     axiom_node_t *sub_node = NULL;
     axiom_element_t *body_elem = NULL;
     axiom_element_t *sub_elem = NULL;
-    axis2_char_t *topic_url = NULL;
-    axis2_endpoint_ref_t *topic_epr = NULL;
+    axis2_char_t *temp_id = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_sub_processor_create_subscriber_from_msg");
@@ -292,12 +286,17 @@ savan_sub_processor_create_subscriber_from_msg(
     if (!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create a subscriber instance");
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_CREATE_SUBSCRIBER, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FAILED_TO_CREATE_SUBSCRIBER, AXIS2_FAILURE);
         return NULL;
     }
     
     /* Assign a unique id to subscriber */
-    sub_id = axutil_uuid_gen(env);
+    temp_id = axutil_uuid_gen(env);
+    sub_id = axutil_strcat(env, "urn:uuid:", temp_id, NULL);
+    if(temp_id)
+    {
+        AXIS2_FREE(env->allocator, temp_id);
+    }
     if (sub_id)
     {
         savan_subscriber_set_id(subscriber, env, sub_id);
@@ -310,7 +309,7 @@ savan_sub_processor_create_subscriber_from_msg(
     if (!envelope)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to extract the soap envelop"); 
-        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_SOAP_ENVELOPE_OR_SOAP_BODY_NULL, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_SOAP_ENVELOPE_OR_SOAP_BODY_NULL, AXIS2_FAILURE);
         return NULL;
     }
     
@@ -318,7 +317,7 @@ savan_sub_processor_create_subscriber_from_msg(
     if (!body)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to extract the soap body"); 
-        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_SOAP_ENVELOPE_OR_SOAP_BODY_NULL, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_SOAP_ENVELOPE_OR_SOAP_BODY_NULL, AXIS2_FAILURE);
         return NULL;
     }
     
@@ -336,27 +335,8 @@ savan_sub_processor_create_subscriber_from_msg(
     status = savan_util_process_subscriber_node(env, sub_node, sub_elem, subscriber);
     if(AXIS2_SUCCESS != status)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Parsing subscriber node failed");
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_PARSING_SUBSCRIBER_NODE_FAILED, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_PARSING_SUBSCRIBER_NODE_FAILED, AXIS2_FAILURE);
         return NULL;
-    }
-
-    topic_epr = axis2_msg_ctx_get_to(msg_ctx, env);
-    if(topic_epr)
-    {
-        topic_url = (axis2_char_t *)axis2_endpoint_ref_get_address(topic_epr, env);
-    }
-
-    if(topic_url)
-    {
-        savan_subscriber_set_topic_url(subscriber, env, topic_url);
-        status = savan_util_populate_topic(env, topic_url, conf);
-        if(status != AXIS2_SUCCESS)
-        {
-            AXIS2_ERROR_SET(env->error, SAVAN_ERROR_COULD_NOT_POPULATE_TOPIC, AXIS2_FAILURE);
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not populate topic");
-            return NULL;
-        }
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
@@ -475,7 +455,6 @@ savan_sub_processor_validate_filter(
 	}
 	else if(!axutil_strcmp(filter_dialect, DEFAULT_FILTER_DIALECT))
 	{
-        axis2_char_t *reason = NULL;
 
 #ifdef SAVAN_FILTERING
         return AXIS2_SUCCESS;
@@ -537,6 +516,8 @@ savan_sub_processor_free(
     savan_sub_processor_t * sub_processor,
     const axutil_env_t * env)
 {
+    sub_processor->storage_mgr = NULL;
+
     if (sub_processor)
     {
         AXIS2_FREE(env->allocator, sub_processor);

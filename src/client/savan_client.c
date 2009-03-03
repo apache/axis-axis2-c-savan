@@ -24,6 +24,7 @@
 #include <savan_util.h>
 #include <savan_constants.h>
 #include <savan_subscriber.h>
+#include <savan_storage_mgr.h>
 
 struct savan_client_t
 {
@@ -90,7 +91,7 @@ savan_client_subscribe(
     axis2_char_t *sub_url = NULL;
     axis2_char_t *sub_elem_local_name = NULL;
     savan_subscriber_t *subscriber = NULL;
-    axis2_char_t *endto = NULL;
+    /*axis2_char_t *endto = NULL;*/
     axis2_char_t *notify = NULL;
     axis2_char_t *filter = NULL;
     axis2_char_t *filter_dialect = NULL;
@@ -106,20 +107,27 @@ savan_client_subscribe(
     axis2_options_set_action(wsa_options, env, SAVAN_ACTIONS_SUB);
     
     /* extract the values from the options map */
-    endto = axutil_hash_get(options, SAVAN_OP_KEY_ENDTO_EPR, AXIS2_HASH_KEY_STRING);
+    /* endto endpoint reference is used by the event source to send a subscription end message. Default is not
+     * to send this message by the event source. How this should be provided by the client?
+     */
+    /*endto = axutil_hash_get(options, SAVAN_OP_KEY_ENDTO_EPR, AXIS2_HASH_KEY_STRING);*/
     notify = axutil_hash_get(options, SAVAN_OP_KEY_NOTIFY_EPR, AXIS2_HASH_KEY_STRING);
     filter = axutil_hash_get(options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING);
     filter_dialect = axutil_hash_get(options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING);
     expires = axutil_hash_get(options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING);
 
     subscriber = savan_subscriber_create(env);
-    endpoint_ref = axis2_endpoint_ref_create(env, endto);
-    savan_subscriber_set_end_to(subscriber, env, endpoint_ref);
+    /*endpoint_ref = axis2_endpoint_ref_create(env, endto);
+    savan_subscriber_set_end_to(subscriber, env, endpoint_ref);*/
     endpoint_ref = axis2_endpoint_ref_create(env, notify);
     savan_subscriber_set_notify_to(subscriber, env, endpoint_ref);
     savan_subscriber_set_filter(subscriber, env, filter);
     savan_subscriber_set_filter_dialect(subscriber, env, filter_dialect);
-    savan_subscriber_set_expires(subscriber, env, expires);
+    if(expires)
+    {
+        savan_subscriber_set_expires(subscriber, env, expires);
+    }
+
     /* Create the Subscriber node */
     sub_node = savan_util_create_subscriber_node(env, subscriber, NULL);
     if(!sub_node)
@@ -188,26 +196,27 @@ savan_client_renew(
     axis2_char_t *expires = NULL;
     axis2_status_t status = AXIS2_FAILURE;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][client] "
-        "renew...");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_client_renew");
     
     /* Set wsa action as Renew. remember the old action */
     wsa_options = (axis2_options_t*)axis2_svc_client_get_options(svc_client, env);
     old_action = axis2_options_get_action(wsa_options, env);
     axis2_options_set_action(wsa_options, env, SAVAN_ACTIONS_RENEW);
-    
-    /* Extract the values from the options map */
-    expires = axutil_hash_get(options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING);
-    
+     
     /* Create the body of the Renew request */
     ns = axiom_namespace_create (env, EVENTING_NAMESPACE, EVENTING_NS_PREFIX);
     renew_elem = axiom_element_create(env, NULL, ELEM_NAME_RENEW, ns, &renew_node);
         
-    /* Expires element */
-    expires_elem = axiom_element_create(env, renew_node, ELEM_NAME_EXPIRES, ns,
-        &expires_node);
-    axiom_element_set_text(expires_elem, env, expires, expires_node);
-    
+    /* Extract the values from the options map */
+    expires = axutil_hash_get(options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING);
+    if(expires)
+    {
+        /* Expires element */
+        expires_elem = axiom_element_create(env, renew_node, ELEM_NAME_EXPIRES, ns,
+            &expires_node);
+        axiom_element_set_text(expires_elem, env, expires, expires_node);
+    }
+
     savan_client_add_sub_id_to_soap_header(client, env, svc_client);
 
     /* send the Renew request and wait for the response */
@@ -218,13 +227,17 @@ savan_client_renew(
    
     if (!reply)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to send renew "
-            "request. Error: %d Reason: %s", env->error->error_number,
-            AXIS2_ERROR_GET_MESSAGE(env->error));
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[savan] Failed to send renew request. Error: %d Reason: %s", 
+                env->error->error_number, AXIS2_ERROR_GET_MESSAGE(env->error));
         status = AXIS2_FAILURE;
     }
     else
+    {
         status = AXIS2_SUCCESS;
+    }
+    
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_client_renew");
     return status;
 }
 

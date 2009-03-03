@@ -87,17 +87,90 @@ AC_ARG_ENABLE(filtering, [  --enable-filtering
   AC_MSG_RESULT(no)
 )
 
+AC_MSG_CHECKING(whether to build sqlite based storage)
+AC_ARG_ENABLE(sqlite, [  --enable-sqlite
+                          build Sqlite based storage (default=yes)],
+[ case "${enableval}" in
+  no)
+    AC_MSG_RESULT(no)
+    ;;
+  *)
+    AC_MSG_RESULT(yes)
+    SAVAN_STORAGE="sqlite"
 
-AC_MSG_CHECKING(To Use Xml Schema. This is a compulsory module to build Woden C)
+    ;;
+  esac ],
+  AC_MSG_RESULT(yes)
+  SAVAN_STORAGE="sqlite"
+)
+
+
+AC_MSG_CHECKING(whether to build service based storage)
+AC_ARG_ENABLE(service, [  --enable-service    
+                          build service based storage (default=no)],
+[ case "${enableval}" in
+  no)
+    AC_MSG_RESULT(no)
+    SAVAN_STORAGE=""
+    SVC_DIR=""
+    ;;
+  *)
+    AC_MSG_RESULT(yes)
+    SAVAN_STORAGE="service"
+    SVC_DIR="subs_mgr"
+    ;;
+  esac ],
+  AC_MSG_RESULT(no)
+)
+
+AC_MSG_CHECKING(To Use Registry based storage manager . This is an optional module to build Savan C)
+AC_ARG_WITH(registry,
+[  --with-registry[=PATH]     Find the REGISTRY header files in 'PATH'.
+    'PATH' should point to REGISTRY include files location.
+    If you omit the '=PATH' part completely, the configure script will search
+    '$(AXIS2C_HOME)/include/registry-0.1.0' for REGISTRY headers.],
+[ case "$withval" in
+  no)
+    AC_MSG_RESULT(no)
+    SAVAN_STORAGE=""
+    ;;
+  *)
+    AC_MSG_RESULT(yes)
+    SAVAN_STORAGE="registry"
+    dnl Find registry include dir in the path
+    if test -d $withval; then
+        registryinc="-I$withval"
+    dnl else find the registry include dir in $(AXIS2C_HOME)/include
+    elif test -d '$(AXIS2C_HOME)/include'; then
+        registryinc="-I$(AXIS2C_HOME)/include/registry-0.1.0"
+    else
+        AC_MSG_ERROR(could not find registry. stop)
+    fi
+    ;;
+  esac ],
+  AC_MSG_RESULT(no)
+)
+
+
+AC_MSG_CHECKING(To Use Xml Schema.)
 AXIOMINC="-I$abs_top_builddir/../axis2c/axiom/include"
 UTILINC="-I$abs_top_builddir/../axis2c/util/include"
 NEETHIINC="-I$abs_top_builddir/../axis2c/neethi/include"
 CFLAGS="$CFLAGS $LIBXML2_CFLAGS"
+
+REGISTRYINC=$registryinc
+
+AC_SUBST(REGISTRYINC)
 AC_SUBST(AXIS2INC)
 AC_SUBST(AXIOMINC)
 AC_SUBST(UTILINC)
 AC_SUBST(NEETHIINC)
 AC_SUBST(XMLSCHEMAINC)
+AC_SUBST(SAVAN_STORAGE)
+AC_SUBST(SVC_DIR)
+
+export SAVAN_STORAGE
+export SVC_DIR
 
 AC_CONFIG_FILES([Makefile \
     src/Makefile \
@@ -106,6 +179,12 @@ AC_CONFIG_FILES([Makefile \
     src/handlers/Makefile \
     src/msgreceivers/Makefile\
     src/subscribers/Makefile\
+    src/storage/Makefile\
+    src/storage/common/Makefile\
+    src/storage/sqlite/Makefile\
+    src/storage/registry/Makefile\
+    src/storage/registry/test/Makefile\
+    src/storage/service/Makefile\
     src/subs_mgr/Makefile\
     src/data/Makefile\
     src/util/Makefile

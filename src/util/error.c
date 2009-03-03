@@ -58,6 +58,30 @@ savan_error_init()
     
     axutil_error_messages[SAVAN_ERROR_APPLYING_FILTER_FAILED] = 
         "Applying filter failed";
+        
+    axutil_error_messages[SAVAN_ERROR_STORAGE_MANAGER_CREATION_FAILED] =
+        "Memory allocation failed for Savan Storage Manager";
+    
+    axutil_error_messages[SAVAN_ERROR_SUBSCRIBER_RETRIEVE_ERROR] =
+        "Could not retrieve subscriber from storage";
+    
+    axutil_error_messages[SAVAN_ERROR_SUBSCRIBER_REMOVE_ERROR] =
+        "Could not remove subscriber from storage";
+    
+    axutil_error_messages[SAVAN_ERROR_SUBSCRIBER_UPDATE_ERROR] =
+        "Could not update subscriber to storage";
+    
+    axutil_error_messages[SAVAN_ERROR_SUBSCRIBER_INSERT_ERROR] =
+        "Could not insert subscriber into storage";
+    
+    axutil_error_messages[SAVAN_ERROR_TOPIC_INSERT_ERROR] =
+        "Could not insert topic into storage";
+    
+    axutil_error_messages[SAVAN_ERROR_DATABASE_TABLE_CREATION_ERROR] =
+        "Could not create database table";
+    
+    axutil_error_messages[SAVAN_ERROR_DATABASE_CREATION_ERROR] =
+        "Could not create database";
 
     return AXIS2_SUCCESS;
 }

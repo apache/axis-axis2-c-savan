@@ -25,7 +25,7 @@
 #include <savan_constants.h>
 
 #include "savan_subs_mgr.h"
-#include <savan_db_mgr.h>
+#include <savan_storage_mgr.h>
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
 savan_subs_mgr_add_subscriber(
@@ -36,19 +36,17 @@ savan_subs_mgr_add_subscriber(
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     savan_subscriber_t *subscriber = NULL;
-    axis2_char_t *topic_url = NULL;
     axis2_status_t status = AXIS2_SUCCESS;
 
     axutil_qname_t *qname = NULL;
     
     axiom_node_t *sub_node = NULL;
     axiom_node_t *id_node = NULL;
-    axiom_node_t *topic_node = NULL;
     
     axiom_element_t *sub_elem = NULL;
     axiom_element_t *id_elem = NULL;
-    axiom_element_t *topic_elem = NULL;
     axiom_element_t *add_sub_elem = NULL;
+    savan_storage_mgr_t *storage_mgr = NULL;
     
     axis2_char_t *id = NULL;
 
@@ -71,27 +69,6 @@ savan_subs_mgr_add_subscriber(
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] node:%s", axiom_node_to_string(add_sub_node, env));
-    /*Get topic element from node */
-    qname = axutil_qname_create(env, ELEM_NAME_TOPIC, SAVAN_NAMESPACE, NULL);
-    topic_elem = axiom_element_get_first_child_with_qname(add_sub_elem, env, qname,
-        add_sub_node, &topic_node);
-    axutil_qname_free(qname, env);
-    topic_url = axiom_element_get_text(topic_elem, env, topic_node);
-    if(topic_url)
-    {
-        savan_subscriber_set_topic_url(subscriber, env, topic_url);
-
-        status = savan_util_populate_topic(env, topic_url, conf);
-        if(status != AXIS2_SUCCESS)
-        {
-            AXIS2_ERROR_SET(env->error, SAVAN_ERROR_COULD_NOT_POPULATE_TOPIC, AXIS2_FAILURE);
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not populate topic");
-            return NULL;
-        }
-
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "[savan] Subscriber will be added to the topic:%s ", topic_url);
-    }
 
     /* Get Id element from AddSubscriber*/
     qname = axutil_qname_create(env, ELEM_NAME_ID, SAVAN_NAMESPACE, NULL);
@@ -122,15 +99,21 @@ savan_subs_mgr_add_subscriber(
         }
     }
 
-    if(savan_db_mgr_insert_subscriber(env, savan_util_get_dbname(env, conf), subscriber))
+    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
+    if(!storage_mgr)
+    {
+        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+        return NULL;
+    }
+    if(savan_storage_mgr_insert_subscriber(storage_mgr, env, subscriber))
     {
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "[savan] Subscriber %s added to the topic:%s", id, topic_url);
+            "[savan] Subscriber %s added", id);
     }
     else
     {
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-                "[savan] Subscriber %s could not be added to the topic:%s", id, topic_url);
+                "[savan] Subscriber %s could not be added", id);
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_add_subscriber");
@@ -143,21 +126,18 @@ savan_subs_mgr_remove_subscriber(
     axiom_node_t *remove_sub_node,
     axis2_msg_ctx_t *msg_ctx)
 {
-    axis2_char_t *topic_url = NULL;
-
     axutil_qname_t *qname = NULL;
     
     axiom_node_t *id_node = NULL;
-    axiom_node_t *topic_node = NULL;
     
     axiom_element_t *id_elem = NULL;
-    axiom_element_t *topic_elem = NULL;
     axiom_element_t *remove_sub_elem = NULL;
     
-    axis2_char_t *id = NULL;
+    const axis2_char_t *subscriber_id = NULL;
     axis2_char_t sql_remove[256];
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
+    savan_storage_mgr_t *storage_mgr = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_remove_subscriber");
 
@@ -168,14 +148,6 @@ savan_subs_mgr_remove_subscriber(
     
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] node:%s", 
         axiom_node_to_string(remove_sub_node, env));
-    /*Get topic element from node */
-    qname = axutil_qname_create(env, ELEM_NAME_TOPIC, SAVAN_NAMESPACE, NULL);
-    topic_elem = axiom_element_get_first_child_with_qname(remove_sub_elem, env, 
-        qname, remove_sub_node, &topic_node);
-    axutil_qname_free(qname, env);
-    topic_url = axiom_element_get_text(topic_elem, env, topic_node);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Subscriber will be removed from the topic:%s ", topic_url);
 
     /* Get Id element from RemoveSubscriber*/
     qname = axutil_qname_create(env, ELEM_NAME_ID, SAVAN_NAMESPACE, NULL);
@@ -183,17 +155,24 @@ savan_subs_mgr_remove_subscriber(
         qname, remove_sub_node, &id_node);
     axutil_qname_free(qname, env);
     
-    id = axiom_element_get_text(id_elem, env, id_node);
+    subscriber_id = axiom_element_get_text(id_elem, env, id_node);
     
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Removing subscriber with id %s from topic %s", id, topic_url);
+        "[savan] Removing subscriber with id %s", subscriber_id);
     
-    sprintf(sql_remove, "delete from subscriber where id='%s'", id);
+    sprintf(sql_remove, "delete from subscriber where id='%s'", subscriber_id);
 
-    savan_db_mgr_remove(env, savan_util_get_dbname(env, conf), sql_remove);
+    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
+    if(!storage_mgr)
+    {
+        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+        return NULL;
+    }
+
+    savan_storage_mgr_remove_subscriber(storage_mgr, env, subscriber_id);
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Subscriber %s removed from the topic:%s", id, topic_url);
+        "[savan] Subscriber %s removed", subscriber_id);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
         "[savan] Exit:savan_subs_mgr_remove_subscriber");
@@ -210,12 +189,12 @@ savan_subs_mgr_get_subscriber(
     axiom_node_t *subs_id_parent_node = NULL;
     axiom_node_t *subs_id_node = NULL;
     savan_subscriber_t *subscriber = NULL;
-    axis2_char_t *subs_id = NULL;
+    const axis2_char_t *subs_id = NULL;
     axiom_node_t *subs_node = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
-    axis2_char_t sql_retrieve[256];
     axis2_status_t status = AXIS2_SUCCESS;
+    savan_storage_mgr_t *storage_mgr = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
         "[savan] Entry:savan_subs_mgr_get_subscriber");
@@ -270,13 +249,13 @@ savan_subs_mgr_get_subscriber(
         return NULL;
     }
 
-
-    sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
-        "expires, filter, renewed, topic_url from subscriber, topic"\
-        " where id='%s' and topic.topic_name=subscriber.topic_name;", subs_id);
-
-    subscriber = savan_db_mgr_retrieve(env, savan_util_get_dbname(env, conf), 
-                savan_db_mgr_subs_retrieve_callback, sql_retrieve);
+    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
+    if(!storage_mgr)
+    {
+        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+        return NULL;
+    }
+    subscriber = savan_storage_mgr_retrieve_subscriber(storage_mgr, env, subs_id);
     
     subs_node = savan_util_create_savan_specific_subscriber_node(env, subscriber, NULL);
     if(!subs_node)
@@ -298,85 +277,78 @@ savan_subs_mgr_get_subscriber_list(
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx)
 {
-    axis2_char_t *topic_url = NULL;
-    axis2_char_t *topic_name = NULL;
     axutil_array_list_t *subs_store = NULL;
     axiom_namespace_t *ns1 = NULL;
     axiom_node_t *subs_list_node = NULL;
-    axiom_node_t *topic_parent_node = NULL;
-    axiom_node_t *topic_node = NULL;
     axiom_element_t* subs_list_elem = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
-    axis2_char_t sql_retrieve[256];
     int i = 0, size = 0;
+    savan_storage_mgr_t *storage_mgr = NULL;
+    axiom_node_t *filter_parent_node = NULL;
+    axiom_node_t *filter_node = NULL;
+    axis2_char_t *filter = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_get_subscriber_list");
     /* Expected request format is :-
      * <ns1:get_subscriber_list xmlns:ns1="http://ws.apache.org/savan">
-     *      <Topic>topic_url</Topic>
      *      <ns:Susbscriber xmlns:ns="http://schemas.xmlsoap.org/ws/2004/08/eventing">
      *      ...
      *      </ns:Subscriber>
      *      <ns:Susbscriber xmlns:ns="http://schemas.xmlsoap.org/ws/2004/08/eventing">
      *      ...
-     *      </ns:get_subscriber_list>
-     * </ns1:Subscribers>
+     *      </ns:Subscriber>
+     * </ns1:get_subscriber_list>
      */
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     if (!node) /* 'get_subscriber_list' node */
     {
-        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_SVC_SKEL_INPUT_OM_NODE_NULL, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_SVC_SKEL_INPUT_OM_NODE_NULL, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Axiom node is null, unable to continue");
         return NULL;
     }
 
-    topic_parent_node = axiom_node_get_first_element(node, env);
-    if (!topic_parent_node) 
+    filter_parent_node = axiom_node_get_first_element(node, env);
+    if (!filter_parent_node) 
     {
-        AXIS2_ERROR_SET(env->error, 
-            AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                        "[savan] topic parent node is null, unable to continue");
+            "[savan] filter parent node is null, unable to continue");
         return NULL;
     }
 
-    topic_node = axiom_node_get_first_child(topic_parent_node, env);
-    if (!topic_node) /* actual topic text */
+    filter_node = axiom_node_get_first_child(filter_parent_node, env);
+    if (!filter_node) /* actual filter text */
     {
-        AXIS2_ERROR_SET(env->error, 
-            AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST, AXIS2_FAILURE);
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Invalid XML in request");
+        AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST, AXIS2_FAILURE);
         return NULL;
     }
 
-    if (axiom_node_get_node_type(topic_node, env) == AXIOM_TEXT)
+    if (axiom_node_get_node_type(filter_node, env) == AXIOM_TEXT)
     {
-        axiom_text_t *topic_text = (axiom_text_t *)axiom_node_get_data_element(
-            topic_node, env);
-        if (topic_text && axiom_text_get_value(topic_text , env))
+        axiom_text_t *filter_text = (axiom_text_t *)axiom_node_get_data_element(
+            filter_node, env);
+        if (filter_text && axiom_text_get_value(filter_text , env))
         {
-            topic_url = (axis2_char_t *)axiom_text_get_value(topic_text, env);
-            topic_name = savan_util_get_topic_name_from_topic_url(env, topic_url);
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Requested Topic:%s", topic_name);
+            filter = (axis2_char_t *)axiom_text_get_value(filter_text, env);
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Requested Filter:%s", filter);
         }
     }
     else
     {
-        AXIS2_ERROR_SET(env->error, 
-            AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Invalid XML in request");
         return NULL;
     }
 
-    sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
-        "expires, filter, topic_url, renewed from subscriber, topic where "\
-        "subscriber.topic_name=topic.topic_name and topic.topic_name='%s';", 
-            topic_name);
-
-    subs_store = savan_db_mgr_retrieve_all(env, savan_util_get_dbname(env, conf),
-            savan_db_mgr_subs_find_callback, sql_retrieve);
+    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
+    if(!storage_mgr)
+    {
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+        return NULL;
+    }
+    subs_store = savan_storage_mgr_retrieve_all_subscribers(storage_mgr, env, filter);
 
     /* create the body of the subscribers element */
     ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
@@ -412,68 +384,4 @@ savan_subs_mgr_get_subscriber_list(
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_get_subscriber_list");
     return subs_list_node;
 }
-
-AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_subs_mgr_get_topic_list(
-    const axutil_env_t *env,
-    axiom_node_t *node,
-    axis2_msg_ctx_t *msg_ctx)
-{
-
-    axutil_array_list_t *topic_store = NULL;
-    axiom_namespace_t *ns1 = NULL;
-    axiom_node_t *topic_list_node = NULL;
-    axiom_element_t* topic_list_elem = NULL;
-    axis2_conf_ctx_t *conf_ctx = NULL;
-    axis2_conf_t *conf = NULL;
-    axis2_char_t sql_retrieve[256];
-    int i = 0, size = 0;
-
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_get_topic_list");
-
-    /* Expected request format is :-
-     * <ns1:get_topic_list xmlns:ns1="http://ws.apache.org/savan">
-     * </ns1:get_topic_list>
-     */
-    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-    if (!node) /* 'get_topic_list' node */
-    {
-        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_SVC_SKEL_INPUT_OM_NODE_NULL, AXIS2_FAILURE);
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Input parameter NULL");
-        return NULL;
-    }
-    /* create the body of the topic_list element */
-    ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
-    topic_list_elem = axiom_element_create(env, NULL, ELEM_NAME_TOPICS, ns1, &topic_list_node);
-    sprintf(sql_retrieve, "select topic_url from topic;");
-
-    topic_store = savan_db_mgr_retrieve_all(env, savan_util_get_dbname(env, conf),
-            savan_db_mgr_topic_find_callback, sql_retrieve);
-
-    size = axutil_array_list_size(topic_store, env);
-    for(i = 0; i < size; i++)
-    {
-        axis2_char_t *topic_url = NULL;
-        topic_url = axutil_array_list_get(topic_store, env, i); 
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "topic_url:%s", topic_url);
-        if (topic_url)
-        {
-            axiom_node_t *topic_node = NULL;
-            axiom_element_t* topic_elem = NULL;
-
-            /* create the topic element */
-            topic_elem = axiom_element_create(env, topic_list_node, ELEM_NAME_TOPIC, ns1, 
-                    &topic_node);
-            if(topic_node)
-            {
-                axiom_element_set_text(topic_elem, env, topic_url, topic_node); 
-            }
-        }
-    }
-
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_get_topic_list");
-    return topic_list_node;
-}
-
 

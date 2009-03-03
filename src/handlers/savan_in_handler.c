@@ -33,7 +33,7 @@
 #include <savan_sub_processor.h>
 #include <savan_util.h>
 #include <savan_msg_recv.h>
-#include <savan_db_mgr.h>
+#include <savan_storage_mgr.h>
 
 axis2_status_t AXIS2_CALL
 savan_in_handler_invoke(struct axis2_handler *handler, 
@@ -73,6 +73,7 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     int type;
+    savan_storage_mgr_t *storage_mgr = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Start:savan_in_handler_invoke");
 
@@ -81,16 +82,18 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
 
-    if(!savan_db_mgr_create_db(env, savan_util_get_dbname(env, conf)))
+    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
+    if(!storage_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the database. Check \
             whether database path is correct and accessible. Exit loading the Savan module");
+        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
 
         return AXIS2_FAILURE;
     }
     
     /* create a subscription processor */
-    processor = savan_sub_processor_create(env);
+    processor = savan_sub_processor_create(env, storage_mgr);
     if (!processor)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create subscription processor");

@@ -68,6 +68,7 @@ typedef struct savan_subs_mgr_info
 
 #define EVENTING_NAMESPACE "http://schemas.xmlsoap.org/ws/2004/08/eventing"
 #define EVENTING_NS_PREFIX "wse"
+#define ADDRESSING_NS_PREFIX "wsa"
 /*#define SAVAN_NAMESPACE "http://ws.apache.org/savan"*/
 #define SAVAN_NAMESPACE "http://ws.apache.org/axis2/services/subscription"
 #define SAVAN_NS_PREFIX "savan"
@@ -84,7 +85,8 @@ typedef struct savan_subs_mgr_info
 #define ELEM_NAME_ADD_TOPIC "AddTopic"
 #define ELEM_NAME_REMOVE_TOPIC "RemoveTopic"
 #define DEFAULT_DELIVERY_MODE "http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push"
-#define DEFAULT_FILTER_DIALECT "http://www.w3.org/TR/1999/REC-xpath-19991116"
+#define XPATH_FILTER_DIALECT "http://www.w3.org/TR/1999/REC-xpath-19991116"
+#define DEFAULT_FILTER_DIALECT "http://synapse.apache.org/eventing/dialect/topicFilter"
 
 /* Eventing element names */
 #define ELEM_NAME_SUBSCRIBE             "Subscribe"
@@ -122,7 +124,9 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_SUBSCRIBER_LIST       "savan_subs_list"
 #define SAVAN_SUBSCRIBER       "savan_subscriber"
 #define SAVAN_TOPIC_LIST       "savan_topic_list"
-#define SAVAN_DB "savan_db"
+#define SAVAN_RESOURCE "savan_resource"
+#define SAVAN_RESOURCE_USERNAME "username"
+#define SAVAN_RESOURCE_PASSWORD "password"
 #define SAVAN_MODULE  "savan"
 #define SAVAN_TOPIC_URL  "TopicURL"
 #define SAVAN_SUBSCRIPTION_MGR_URL  "SubscriptionMgrURL"
@@ -130,6 +134,16 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_FILTER_TEMPLATE_PATH  "savan_filter_template_path"
 #define SAVAN_FILTER_DIALECT "Dialect"
 #define SAVAN_SUBSCRIPTION_MANAGER "subscription"
+#define SAVAN_STORAGE_MANAGER "storage_mgr"
+#define SAVAN_SQLITE  "sqlite"
+#define SAVAN_INMEMORY_STORAGE  "inmemory"
+#define SAVAN_SERVICE_STORAGE  "service"
+#define SAVAN_REGISTRY_STORAGE  "registry"
+
+#define SAVAN_SUBS_MGR_ADD_SUBSCRIBER_URL "http://ws.apache.org/axis2/c/subscription/add_subscriber"
+#define SAVAN_SUBS_MGR_GET_SUBSCRIBER_URL "http://ws.apache.org/axis2/c/subscription/add_subscriber"
+#define SAVAN_SUBS_MGR_GET_SUBSCRIBER_LIST_URL "http://ws.apache.org/axis2/c/subscription/add_subscriber"
+#define SAVAN_SUBS_MGR_REMOVE_SUBSCRIBER_URL "http://ws.apache.org/axis2/c/subscription/add_subscriber"
 
 /** @} */
 #ifdef __cplusplus

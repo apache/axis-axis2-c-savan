@@ -282,7 +282,7 @@ extern "C"
         void *subscriber, 
         const axutil_env_t *env);
 
-    AXIS2_EXTERN axis2_status_t AXIS2_CALL
+    /*AXIS2_EXTERN axis2_status_t AXIS2_CALL
         savan_subscriber_set_topic_name(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
@@ -291,7 +291,7 @@ extern "C"
     AXIS2_EXTERN axis2_char_t *AXIS2_CALL
     savan_subscriber_get_topic_name(
         savan_subscriber_t *subscriber,
-        const axutil_env_t *env);
+        const axutil_env_t *env);*/
     
     axis2_status_t AXIS2_CALL
     savan_subscriber_set_filter_template_path(
@@ -304,7 +304,7 @@ extern "C"
         savan_subscriber_t *subscriber,
         const axutil_env_t *env);
 
-    AXIS2_EXTERN axis2_status_t AXIS2_CALL
+    /*AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_subscriber_set_topic_url(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
@@ -313,7 +313,7 @@ extern "C"
     AXIS2_EXTERN axis2_char_t *AXIS2_CALL
     savan_subscriber_get_topic_url(
         savan_subscriber_t *subscriber,
-        const axutil_env_t *env);
+        const axutil_env_t *env);*/
 /** @} */
 #ifdef __cplusplus
 }

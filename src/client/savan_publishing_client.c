@@ -29,7 +29,7 @@
 #include <savan_subscriber.h>
 #include <savan_util.h>
 #include <savan_constants.h>
-#include <savan_db_mgr.h>
+#include <savan_storage_mgr.h>
 
 struct savan_publishing_client_t
 {
@@ -74,89 +74,28 @@ savan_publishing_client_publish(
     savan_publishing_client_t *client,
     const axutil_env_t *env,
     axiom_node_t *payload,
-    axis2_char_t *topic_url)
+    axis2_char_t *filter)
 {
-    axutil_param_t *param = NULL;
     axis2_svc_t *pubs_svc = NULL;
     axutil_array_list_t *subs_store = NULL;
     axis2_conf_t *conf = NULL;
-    axis2_module_desc_t *module_desc = NULL;
     int i = 0, size = 0;
-    axutil_param_t *topic_param = NULL;
-    axutil_qname_t *qname = NULL;
+    savan_storage_mgr_t *storage_mgr = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_publishing_client_publish");
    
     conf = client->conf;
     pubs_svc = client->svc;
 
-    if(!topic_url)
+    storage_mgr = savan_util_get_storage_mgr(env, NULL, conf);
+    if(storage_mgr)
     {
-        topic_param = axis2_svc_get_param(pubs_svc, env, SAVAN_TOPIC_URL);
-        if (!topic_param)
-        {
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] TopicURL param not available");
-            return AXIS2_SUCCESS;
-        }
-
-        topic_url = axutil_param_get_value(topic_param, env);
-    }
-
-    qname = axutil_qname_create(env, SAVAN_MODULE, NULL, NULL);
-    module_desc = axis2_conf_get_module(conf, env, qname);
-
-    param = axis2_module_desc_get_param(module_desc, env, SAVAN_SUBSCRIPTION_MGR_URL);
-    axutil_qname_free(qname, env);
-
-    if(param)
-    {
-        axis2_char_t *subs_mgr_url = NULL;
-
-        axis2_svc_client_t* svc_client = NULL;
-        axutil_param_t *svc_client_param = NULL;
-
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "[savan] Using remote subscription manager to retrieve subscribers for %s", topic_url);
-        subs_mgr_url = axutil_param_get_value(param, env);
-        svc_client_param = axis2_svc_get_param(pubs_svc, env, SAVAN_SVC_CLIENT);
-        if(svc_client_param)
-        {
-            svc_client = axutil_param_get_value(svc_client_param, env);
-        }
-
-        if(!svc_client)
-        {
-            svc_client = (axis2_svc_client_t *) savan_util_get_svc_client(env);
-            svc_client_param = axutil_param_create(env, SAVAN_SVC_CLIENT, svc_client);
-            axis2_svc_add_param(pubs_svc, env, svc_client_param);
-        }
-
-        subs_store = savan_util_get_subscriber_list_from_remote_subs_mgr(env, topic_url, 
-                subs_mgr_url, svc_client, conf);
-    }
-    else
-    {
-        axis2_char_t sql_retrieve[256];
-        axis2_char_t *topic_name = NULL;
-
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "[savan] Using local subscription manager to retrieve subscribers for %s", topic_url);
-
-        topic_name = savan_util_get_topic_name_from_topic_url(env, topic_url);
-        sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
-            "expires, filter, renewed, topic_url from subscriber, topic"\
-            " where topic.topic_name=subscriber.topic_name and"\
-            " topic.topic_name='%s';", topic_name);
-
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql_retrieve:%s", sql_retrieve);
-        subs_store = savan_db_mgr_retrieve_all(env, savan_util_get_dbname(env, conf),
-                                               savan_db_mgr_subs_find_callback, 
-                                               sql_retrieve);
+        subs_store = savan_storage_mgr_retrieve_all_subscribers(storage_mgr, env, filter);
     }
 
     if (!subs_store)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscriber store is NULL"); 
+        AXIS2_LOG_WARNING(env->log, AXIS2_LOG_SI, "[savan] Subscriber store is NULL"); 
         return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
     }
 

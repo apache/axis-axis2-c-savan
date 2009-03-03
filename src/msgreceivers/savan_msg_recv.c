@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <savan_msg_recv.h>
 #include <string.h>
 #include <axiom_element.h>
 #include <axiom_soap_envelope.h>
@@ -28,6 +27,8 @@
 #include <savan_constants.h>
 #include <savan_error.h>
 #include <savan_subscriber.h>
+#include <savan_storage_mgr.h>
+#include <savan_msg_recv.h>
 
 axis2_status_t AXIS2_CALL
 savan_msg_recv_invoke_business_logic_sync(
@@ -77,7 +78,7 @@ savan_msg_recv_create(
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Failed to create axis2 message receiver"); 
-        AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
         return NULL;
     }
     
@@ -85,6 +86,7 @@ savan_msg_recv_create(
     if (status != AXIS2_TRUE)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to set message receiver scope"); 
+        AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
         axis2_msg_recv_free(msg_recv, env);
         return NULL;
     }
@@ -185,32 +187,29 @@ savan_msg_recv_handle_sub_request(
     if (!default_envelope)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "[savan] Failed to build soap envelope for response message"); 
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
+            "[savan] Failed to build soap envelope for response message"); 
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
 
     /* Create body elements and attach */
     
     ns = axiom_namespace_create (env, EVENTING_NAMESPACE, EVENTING_NS_PREFIX);
-    addr_ns = axiom_namespace_create(env, AXIS2_WSA_NAMESPACE_SUBMISSION, "wsa");
+    addr_ns = axiom_namespace_create(env, AXIS2_WSA_NAMESPACE_SUBMISSION, ADDRESSING_NS_PREFIX);
     
     /* SubscribeResponse element */
-    response_elem = axiom_element_create(env, NULL, ELEM_NAME_SUB_RESPONSE, ns,
-        &response_node);
+    response_elem = axiom_element_create(env, NULL, ELEM_NAME_SUB_RESPONSE, ns, &response_node);
     
     /* SubscriptionManager element */
-    submgr_elem = axiom_element_create(env, response_node, ELEM_NAME_SUB_MGR, ns,
-        &submgr_node);
-    addr_elem = axiom_element_create(env, submgr_node, ELEM_NAME_ADDR, addr_ns,
-        &addr_node);
+    submgr_elem = axiom_element_create(env, response_node, ELEM_NAME_SUB_MGR, ns, &submgr_node);
+    addr_elem = axiom_element_create(env, submgr_node, ELEM_NAME_ADDR, addr_ns, &addr_node);
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
     qname = axutil_qname_create(env, SAVAN_MODULE, NULL, NULL);
     module_desc = axis2_conf_get_module(conf, env, qname);
     axutil_qname_free(qname, env);
-    subs_mgr_url_param = axis2_module_desc_get_param(module_desc, env, 
-        SAVAN_SUBSCRIPTION_MGR_URL);
+    /* May be later we get the subscription manager url from Policy */
+    subs_mgr_url_param = axis2_module_desc_get_param(module_desc, env, SAVAN_SUBSCRIPTION_MGR_URL);
     if(subs_mgr_url_param)
     {
         submgr_addr = axutil_param_get_value(subs_mgr_url_param, env);
@@ -228,13 +227,13 @@ savan_msg_recv_handle_sub_request(
     id = (axis2_char_t*)axutil_property_get_value(property, env);
     
     /* Set sub id as a ref param */
-    refparam_elem = axiom_element_create(env, submgr_node, ELEM_NAME_REF_PARAM,
-        addr_ns, &refparam_node);
+    refparam_elem = axiom_element_create(env, submgr_node, ELEM_NAME_REF_PARAM, addr_ns, 
+            &refparam_node);
     id_elem = axiom_element_create(env, refparam_node, ELEM_NAME_ID, ns, &id_node);
     axiom_element_set_text(id_elem, env, id, id_node);
     
     /* Expires element. Get expiry time from subscriber and set */
-    /*subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, id);*/
+    /*subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, storage_mgr, id);*/
     subs_prop = axis2_msg_ctx_get_property(msg_ctx, env, SAVAN_SUBSCRIBER);
     if(subs_prop)
     {
@@ -246,16 +245,20 @@ savan_msg_recv_handle_sub_request(
     }
     else
     {
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscriber not found");
         return AXIS2_FAILURE;
     }
-    
-    expires_elem = axiom_element_create(env, response_node, ELEM_NAME_EXPIRES, ns,
-        &expires_node);
-    axiom_element_set_text(expires_elem, env, expires, expires_node);
-    
+   
+    if(expires)
+    {
+        expires_elem = axiom_element_create(env, response_node, ELEM_NAME_EXPIRES, ns,
+            &expires_node);
+        axiom_element_set_text(expires_elem, env, expires, expires_node);
+    }
+
     axiom_node_add_child(body_node , env, response_node);
-     axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
+    axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_sub_request");
     return AXIS2_SUCCESS;
@@ -274,6 +277,9 @@ savan_msg_recv_handle_unsub_request(
     axiom_node_t *response_node = NULL;
     axiom_element_t *response_elem = NULL;
     savan_subscriber_t *subscriber = NULL;
+    savan_storage_mgr_t *storage_mgr = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_unsub_request");
     
@@ -281,7 +287,18 @@ savan_msg_recv_handle_unsub_request(
      * reply we will need to check whether the subscriber has been removed from
      * the store */
     
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
+    if(!storage_mgr)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
+            whether resource path is correct and accessible. Exit loading the Savan module");
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+
+        return AXIS2_FAILURE;
+    }
+
+    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, storage_mgr, NULL);
     if (subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
@@ -333,37 +350,48 @@ savan_msg_recv_handle_renew_request(
     axiom_element_t *expires_elem = NULL;
     axis2_char_t *expires = NULL;
     savan_subscriber_t *subscriber = NULL;
-    axis2_bool_t renewed = AXIS2_FALSE;
+    savan_storage_mgr_t *storage_mgr = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_renew_request");
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
-    if (!subscriber)
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
+    if(!storage_mgr)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[savan] Failed to find the subscriber from local store");
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
+            whether resource path is correct and accessible. Exit loading the Savan module");
+        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+
         return AXIS2_FAILURE;
     }
 
-    renewed = savan_subscriber_get_renew_status(subscriber, env);
+    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, storage_mgr, NULL);
+    if (!subscriber)
+    {
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
+        return AXIS2_FAILURE;
+    }
+
+    /*renewed = savan_subscriber_get_renew_status(subscriber, env);
     if (!renewed)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[savan] Subscription is not renewed");
-        /*return AXIS2_FAILURE;*/
-    }
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Subscription is not renewed");
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_UNABLE_TO_RENEW, AXIS2_FAILURE);
+        return AXIS2_FAILURE;
+    }*/
 
     /* Set wsa action as RenewResponse. */
     info_header =  axis2_msg_ctx_get_msg_info_headers(new_msg_ctx, env);
-    axis2_msg_info_headers_set_action(info_header, env, 
-        SAVAN_ACTIONS_RENEW_RESPONSE);
+    axis2_msg_info_headers_set_action(info_header, env, SAVAN_ACTIONS_RENEW_RESPONSE);
     
     default_envelope = savan_msg_recv_build_soap_envelope(env, &body_node);
     if (!default_envelope)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[savan] Failed to build soap envelope for response message"); 
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
+                "[savan] Failed to build soap envelope for response message"); 
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
 
@@ -377,13 +405,15 @@ savan_msg_recv_handle_renew_request(
 
     /* Expires element */
     expires = savan_subscriber_get_expires(subscriber, env);
-    
-    expires_elem = axiom_element_create(env, response_node, ELEM_NAME_EXPIRES, ns,
-        &expires_node);
-    axiom_element_set_text(expires_elem, env, expires, expires_node);
-    
+    if(expires)
+    {
+        expires_elem = axiom_element_create(env, response_node, ELEM_NAME_EXPIRES, ns,
+            &expires_node);
+        axiom_element_set_text(expires_elem, env, expires, expires_node);
+    }
+
     axiom_node_add_child(body_node , env, response_node);
-     axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
+    axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_renew_request");
     return AXIS2_SUCCESS;
@@ -405,6 +435,9 @@ savan_msg_recv_handle_get_status_request(
     axiom_element_t *expires_elem = NULL;
     axis2_char_t *expires = NULL;
     savan_subscriber_t *subscriber = NULL;
+    savan_storage_mgr_t *storage_mgr = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+    axis2_conf_t *conf = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_msg_recv_handle_get_status_request");
@@ -413,12 +446,23 @@ savan_msg_recv_handle_get_status_request(
     info_header =  axis2_msg_ctx_get_msg_info_headers(new_msg_ctx, env);
     axis2_msg_info_headers_set_action(info_header, env, SAVAN_ACTIONS_GET_STATUS_RESPONSE);
     
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
+    if(!storage_mgr)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
+            whether resource path is correct and accessible. Exit loading the Savan module");
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+
+        return AXIS2_FAILURE;
+    }
+
     default_envelope = savan_msg_recv_build_soap_envelope(env, &body_node);
     if (!default_envelope)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Failed to build soap envelope for response message"); 
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
 
@@ -431,15 +475,17 @@ savan_msg_recv_handle_get_status_request(
         &response_node);
 
     /* Expires element */
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, NULL);
-    expires = savan_subscriber_get_expires(subscriber, env);
 
-    expires_elem = axiom_element_create(env, response_node, ELEM_NAME_EXPIRES, ns,
-        &expires_node);
-    axiom_element_set_text(expires_elem, env, expires, expires_node);
-    
+    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, storage_mgr, NULL);
+    expires = savan_subscriber_get_expires(subscriber, env);
+    if(expires)
+    {
+        expires_elem = axiom_element_create(env, response_node, ELEM_NAME_EXPIRES, ns, &expires_node);
+        axiom_element_set_text(expires_elem, env, expires, expires_node);
+    }
+
     axiom_node_add_child(body_node , env, response_node);
-     axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
+    axis2_msg_ctx_set_soap_envelope(new_msg_ctx, env, default_envelope);
     
      AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Exit:savan_msg_recv_handle_get_status_request");

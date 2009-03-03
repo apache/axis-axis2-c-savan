@@ -81,7 +81,7 @@ listener_init(axis2_svc_skeleton_t *svc_skeleton,
     /* Add the implemented operation names of the service to  
      * the array list of functions 
      */
-    axutil_array_list_add(svc_skeleton->func_array, env, "notify");
+    axutil_array_list_add(svc_skeleton->func_array, env, "weather");
 
     /* Any initialization stuff of service should go here */
 

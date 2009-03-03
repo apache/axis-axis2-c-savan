@@ -46,7 +46,6 @@ int main(int argc, char** argv)
     /* Set up the environment */
     env = axutil_env_create_all("subscriber.log", AXIS2_LOG_LEVEL_TRACE);
 
-    printf("\n***************************************\n");
     printf("Starting Savan subscriber...\n");
 
     client_home = AXIS2_GETENV("AXIS2C_HOME");
@@ -54,9 +53,11 @@ int main(int argc, char** argv)
     /*init_event_source((axutil_env_t*)env, client_home);*/
     
     /* Set end point reference of echo service */
-    address = "http://localhost:9090/axis2/services/publisher";
+    address = "http://localhost:9090/axis2/services/weather";
     if (argc > 1 )
+    {
         address = argv[1];
+    }
     
     printf ("Event source endpoint : %s\n", address);
     
@@ -99,6 +100,11 @@ int main(int argc, char** argv)
 
     axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
         DEFAULT_FILTER_DIALECT);*/
+    
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING, "weather");
+
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
+        DEFAULT_FILTER_DIALECT);
 
     /* Create a savan client */
     savan_client = savan_client_create(env);
@@ -117,15 +123,17 @@ int main(int argc, char** argv)
         exit(0);
     }
 
-    AXIS2_SLEEP(16);
+    /*AXIS2_SLEEP(16);*/
+    AXIS2_SLEEP(1);
 
 
-    printf("\n***************************************\n");
     printf("Renewing subscription...\n");
     address = savan_client_get_sub_url(savan_client);
     printf("address:%s\n", address); 
     endpoint_ref = axis2_options_get_to(options, env);
     axis2_endpoint_ref_set_address(endpoint_ref, env, address);
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "2010-02-12T06:54Z");
+    /*axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "P3Y6M4DT12H30M5S");*/
     status = savan_client_renew(savan_client, env, svc_client, savan_options);
     if (status == AXIS2_SUCCESS)
     {
@@ -134,7 +142,6 @@ int main(int argc, char** argv)
 
     AXIS2_SLEEP(1);
 
-    printf("\n***************************************\n");
     printf("Getting status of subscription...\n");
     address = savan_client_get_sub_url(savan_client);
     endpoint_ref = axis2_options_get_to(options, env);
@@ -146,17 +153,16 @@ int main(int argc, char** argv)
         printf("GetStatus successful\n");
     }
 
-    printf("\n***************************************\n");
     printf("Unsubscribing...\n");
     address = savan_client_get_sub_url(savan_client);
     endpoint_ref = axis2_options_get_to(options, env);
     axis2_endpoint_ref_set_address(endpoint_ref, env, address);
     axis2_svc_client_remove_all_headers(svc_client, env);
-    status = savan_client_unsubscribe(savan_client, env, svc_client);
+    /*status = savan_client_unsubscribe(savan_client, env, svc_client);
     if (status == AXIS2_SUCCESS)
     {
         printf("Unsubscribe successful\n");
-    }
+    }*/
 
 
     if (svc_client)
@@ -182,7 +188,7 @@ void init_event_source(axutil_env_t* env, axis2_char_t *home)
     printf("Initializing event source...");
 
     /* Set end point reference of echo service */
-    address = "http://localhost:9090/axis2/services/publisher";
+    address = "http://localhost:9090/axis2/services/weather";
     
     /* Create EPR with given address */
     endpoint_ref = axis2_endpoint_ref_create(env, address);

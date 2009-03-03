@@ -1,6 +1,5 @@
 <service name="publisher">
     <parameter name="ServiceClass" locked="xsd:false">publisher</parameter>
-    <parameter name="loadServiceAtStartup" locked="xsd:false">true</parameter>
    <description>
        This is a sample eventing data source which loads as the axis2 engine startup and 
        start publishing to its subscribers.

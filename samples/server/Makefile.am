@@ -1,4 +1,4 @@
-SUBDIRS = listener publisher
-EXTRA_DIST=listener publisher
+SUBDIRS = listener publisher weather
+EXTRA_DIST=listener publisher weather
 
 

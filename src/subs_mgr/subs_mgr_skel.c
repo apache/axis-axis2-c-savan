@@ -32,8 +32,9 @@
 
 #include "savan_subs_mgr.h"
 #include <savan_constants.h>
-#include <savan_db_mgr.h>
+#include <savan_storage_mgr.h>
 #include <savan_util.h>
+#include <savan_error.h>
 
 int AXIS2_CALL
 savan_subs_mgr_free(
@@ -118,27 +119,26 @@ savan_subs_mgr_init_with_conf(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
-    axutil_array_list_t *topic_param_list = NULL;
+    savan_storage_mgr_t *storage_mgr = NULL;
+    /*axutil_array_list_t *topic_param_list = NULL;
     axis2_svc_t *subs_svc = NULL;
     axis2_op_t *op = NULL;
-    int i = 0, size = 0;
-    const axis2_char_t *dbname = NULL;
+    int i = 0, size = 0;*/
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_init_with_conf");
 
-    dbname = savan_util_get_dbname(env, conf);
-
-    if(!savan_db_mgr_create_db(env, dbname))
+    storage_mgr = savan_util_get_storage_mgr(env, NULL, conf);
+    if(!storage_mgr)
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "[savan] Could not create the database for name %s. Check whether database path "\
-                "is correct and accessible. Exit loading the Savan module", dbname);
-        
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the database. Check \
+            whether database path is correct and accessible. Exit loading the Savan module");
+        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+
         return AXIS2_FAILURE;
     }
 
     savan_subs_mgr_init(svc_skeleton, env);
-    subs_svc = axis2_conf_get_svc(conf, env, "subscription");
+    /*subs_svc = axis2_conf_get_svc(conf, env, "subscription");
     op = axis2_svc_get_op_with_name(subs_svc, env, "get_topic_list");
     topic_param_list = axis2_op_get_all_params(op, env);
     if(topic_param_list)
@@ -167,7 +167,7 @@ savan_subs_mgr_init_with_conf(
         {
             AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Topic %s could not be added", topic_url_str);
         }
-    }
+    }*/
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_subs_mgr_init_with_conf");
 

@@ -83,6 +83,22 @@ extern "C"
         SAVAN_ERROR_PARSING_SUBSCRIBER_NODE_FAILED,
         /* Applying filter failed */
         SAVAN_ERROR_APPLYING_FILTER_FAILED,
+        /* Memory allocation failed for Savan Storage Manager */
+        SAVAN_ERROR_STORAGE_MANAGER_CREATION_FAILED,
+        /* Could not retrieve subscriber from storage */
+        SAVAN_ERROR_SUBSCRIBER_RETRIEVE_ERROR,
+        /* Could not remove subscriber from storage */
+        SAVAN_ERROR_SUBSCRIBER_REMOVE_ERROR,
+        /* Could not update subscriber to storage */
+        SAVAN_ERROR_SUBSCRIBER_UPDATE_ERROR,
+        /* Could not insert subscriber into storage */
+        SAVAN_ERROR_SUBSCRIBER_INSERT_ERROR,
+        /* Could not insert topic into storage */
+        SAVAN_ERROR_TOPIC_INSERT_ERROR,
+        /* Could not create database table */
+        SAVAN_ERROR_DATABASE_TABLE_CREATION_ERROR,
+        /* Could not create database */
+        SAVAN_ERROR_DATABASE_CREATION_ERROR,
         
         SAVAN_ERROR_LAST
     
