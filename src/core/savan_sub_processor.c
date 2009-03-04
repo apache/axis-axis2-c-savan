@@ -455,8 +455,10 @@ savan_sub_processor_validate_filter(
 	}
 	else if(!axutil_strcmp(filter_dialect, DEFAULT_FILTER_DIALECT))
 	{
+        axis2_char_t *reason = NULL;
 
 #ifdef SAVAN_FILTERING
+        reason = "";
         return AXIS2_SUCCESS;
 #else
         axutil_error_set_error_number(env->error, SAVAN_ERROR_FILTERING_IS_NOT_SUPPORTED); 
