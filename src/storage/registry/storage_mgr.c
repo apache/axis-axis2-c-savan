@@ -362,12 +362,10 @@ savan_registry_storage_mgr_update_subscriber(
 
     subscriber_id = savan_subscriber_get_id(subscriber, env);
     filter = savan_subscriber_get_filter(subscriber, env);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "filter:%s", filter);
     val = remote_registry_resource_get_property(index_res, env, subscriber_id);
     if(val)
     {
         path = axutil_strcat(env, val, AXIS2_PATH_SEP_STR, subscriber_id, NULL);
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "path:%s", path);
     }
 
     res = remote_registry_get(storagemgrimpl->remote_registry, env, path, NULL);
