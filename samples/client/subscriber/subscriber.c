@@ -132,7 +132,8 @@ int main(int argc, char** argv)
     printf("address:%s\n", address); 
     endpoint_ref = axis2_options_get_to(options, env);
     axis2_endpoint_ref_set_address(endpoint_ref, env, address);
-    axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "2010-02-12T06:54Z");
+    /*axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "2010-02-12T06:54Z");*/
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "2009-04-26T21:07:00.000-08:00");
     /*axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "P3Y6M4DT12H30M5S");*/
     status = savan_client_renew(savan_client, env, svc_client, savan_options);
     if (status == AXIS2_SUCCESS)
