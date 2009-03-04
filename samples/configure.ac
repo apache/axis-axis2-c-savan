@@ -128,7 +128,6 @@ AC_SUBST(GUTHTHILA_LIBS)
 
 AC_CONFIG_FILES([Makefile \
     server/Makefile \
-    server/publisher/Makefile \
     server/weather/Makefile \
     server/listener/Makefile \
     client/Makefile \
