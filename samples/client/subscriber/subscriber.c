@@ -25,10 +25,16 @@
 #include <savan_client.h>
 #include <savan_constants.h>
 
-void init_event_source(axutil_env_t* env, axis2_char_t *home);
+static void event_source_handle_lifecycle(
+        axutil_env_t* env, 
+        axis2_svc_client_t *svc_client,
+        axis2_char_t *address,
+        axis2_char_t *action);
 
 axiom_node_t *
-build_om_payload_for_echo_svc(const axutil_env_t *env);
+build_om_payload_for_weather_svc(
+        const axutil_env_t *env,
+        axis2_char_t *node_name);
 
 int main(int argc, char** argv)
 {
@@ -50,9 +56,7 @@ int main(int argc, char** argv)
     printf("Starting Savan subscriber...\n");
 
     client_home = AXIS2_GETENV("AXIS2C_HOME");
-    
-    /*init_event_source((axutil_env_t*)env, client_home);*/
-    
+     
     /* Set end point reference of echo service */
     address = "http://localhost:9090/axis2/services/weather";
     if (argc > 1 )
@@ -110,71 +114,101 @@ int main(int argc, char** argv)
     /* Create a savan client */
     savan_client = savan_client_create(env);
 
-    printf("Select the action:\n"\
-            "1 subscribe\n"\
-            "2 renew\n"\
-            "3 get status\n"\
-            "4 unsubscribe\n"\
-            "5 start weather event source\n"\
-            "6 stop weather event source\n");
-
-    scanf("%d", &action);
-
-    if(1 == action) /* Send subscribe message */
+    while(AXIS2_TRUE)
     {
-        status  = savan_client_subscribe(savan_client, env, svc_client, savan_options);
-        
-        if (status == AXIS2_SUCCESS)
+        printf("\nSelect the action:\n"\
+                "1 subscribe\n"\
+                "2 renew\n"\
+                "3 get status\n"\
+                "4 unsubscribe\n"\
+                "5 start weather event source\n"\
+                "6 stop weather event source\n"\
+                "7 quit\n\n");
+
+        scanf("%d", &action);
+
+        if(1 == action) /* Send subscribe message */
         {
-            printf("Subscribe successful\n");
-            printf("Subscription ID: %s\n", savan_client_get_sub_id(savan_client));
+            status  = savan_client_subscribe(savan_client, env, svc_client, savan_options);
+            
+            if (status == AXIS2_SUCCESS)
+            {
+                printf("Subscribe successful\n");
+                printf("Subscription ID: %s\n", savan_client_get_sub_id(savan_client));
+            }
+            else
+            {
+                printf("Subscription Failed\n");
+                exit(0);
+            }
+        }
+        else if(2 == action)
+        {
+            printf("Renewing subscription...\n");
+            address = savan_client_get_sub_url(savan_client);
+            printf("address:%s\n", address); 
+            endpoint_ref = axis2_options_get_to(options, env);
+            axis2_endpoint_ref_set_address(endpoint_ref, env, address);
+            /*axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "2010-02-12T06:54Z");*/
+            axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "2009-04-26T21:07:00.000-08:00");
+            /*axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "P3Y6M4DT12H30M5S");*/
+            status = savan_client_renew(savan_client, env, svc_client, savan_options);
+            if (status == AXIS2_SUCCESS)
+            {
+                printf("Renew successful\n");
+            }
+        }
+        else if(3 == action)
+        {
+            printf("Getting status of subscription...\n");
+            address = savan_client_get_sub_url(savan_client);
+            endpoint_ref = axis2_options_get_to(options, env);
+            axis2_endpoint_ref_set_address(endpoint_ref, env, address);
+            axis2_svc_client_remove_all_headers(svc_client, env);
+            subs_status = savan_client_get_status(savan_client, env, svc_client);
+            if (subs_status)
+            {
+                printf("Subscription expires on:%s\n", subs_status);
+            }
+        }
+        else if(4 == action)
+        {
+            printf("Unsubscribing...\n");
+            address = savan_client_get_sub_url(savan_client);
+            endpoint_ref = axis2_options_get_to(options, env);
+            axis2_endpoint_ref_set_address(endpoint_ref, env, address);
+            axis2_svc_client_remove_all_headers(svc_client, env);
+            status = savan_client_unsubscribe(savan_client, env, svc_client);
+            if (status == AXIS2_SUCCESS)
+            {
+                printf("Unsubscribe successful\n");
+            }
+        }
+        else if(5 == action)
+        {
+            axis2_options_set_action(options, env,
+                "http://ws.apache.org/axis2/c/savan/samples/weather/start");
+            endpoint_ref = axis2_options_get_to(options, env);
+            axis2_endpoint_ref_set_address(endpoint_ref, env, address);
+            axis2_svc_client_remove_all_headers(svc_client, env);
+            event_source_handle_lifecycle((axutil_env_t*)env, svc_client, address, "start");
+        }
+        else if(6 == action)
+        {
+            axis2_options_set_action(options, env,
+                "http://ws.apache.org/axis2/c/savan/samples/weather/stop");
+            endpoint_ref = axis2_options_get_to(options, env);
+            axis2_endpoint_ref_set_address(endpoint_ref, env, address);
+            axis2_svc_client_remove_all_headers(svc_client, env);
+            event_source_handle_lifecycle((axutil_env_t*)env, svc_client, address, "stop");
+        }
+        else if(7 == action)
+        {
+            break;
         }
         else
         {
-            printf("Subscription Failed\n");
-            exit(0);
-        }
-    }
-    else if(2 == action)
-    {
-        printf("Renewing subscription...\n");
-        address = savan_client_get_sub_url(savan_client);
-        printf("address:%s\n", address); 
-        endpoint_ref = axis2_options_get_to(options, env);
-        axis2_endpoint_ref_set_address(endpoint_ref, env, address);
-        /*axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "2010-02-12T06:54Z");*/
-        axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "2009-04-26T21:07:00.000-08:00");
-        /*axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "P3Y6M4DT12H30M5S");*/
-        status = savan_client_renew(savan_client, env, svc_client, savan_options);
-        if (status == AXIS2_SUCCESS)
-        {
-            printf("Renew successful\n");
-        }
-    }
-    else if(3 == action)
-    {
-        printf("Getting status of subscription...\n");
-        address = savan_client_get_sub_url(savan_client);
-        endpoint_ref = axis2_options_get_to(options, env);
-        axis2_endpoint_ref_set_address(endpoint_ref, env, address);
-        axis2_svc_client_remove_all_headers(svc_client, env);
-        subs_status = savan_client_get_status(savan_client, env, svc_client);
-        if (subs_status)
-        {
-            printf("GetStatus successful\n");
-        }
-    }
-    else if(4 == action)
-    {
-        printf("Unsubscribing...\n");
-        address = savan_client_get_sub_url(savan_client);
-        endpoint_ref = axis2_options_get_to(options, env);
-        axis2_endpoint_ref_set_address(endpoint_ref, env, address);
-        axis2_svc_client_remove_all_headers(svc_client, env);
-        status = savan_client_unsubscribe(savan_client, env, svc_client);
-        if (status == AXIS2_SUCCESS)
-        {
-            printf("Unsubscribe successful\n");
+            break;
         }
     }
 
@@ -188,47 +222,18 @@ int main(int argc, char** argv)
 }
 
 
-void init_event_source(axutil_env_t* env, axis2_char_t *home)
+static void event_source_handle_lifecycle(
+        axutil_env_t* env, 
+        axis2_svc_client_t *svc_client, 
+        axis2_char_t *address,
+        axis2_char_t *action)
 {
-    const axis2_char_t *address = NULL;
-    axis2_endpoint_ref_t* endpoint_ref = NULL;
-    axis2_options_t *options = NULL;
-    axis2_svc_client_t* svc_client = NULL;
     axiom_node_t *ret_node = NULL;
     axiom_node_t *payload = NULL;
 
-    AXIS2_LOG_INFO(env->log, "Initializing event source...");
-    printf("Initializing event source...");
+    AXIS2_LOG_INFO(env->log, "[savan] event_source_handle_lifecycle");
 
-    /* Set end point reference of echo service */
-    address = "http://localhost:9090/axis2/services/weather";
-    
-    /* Create EPR with given address */
-    endpoint_ref = axis2_endpoint_ref_create(env, address);
-
-    /* Setup options */
-    options = axis2_options_create(env);
-    axis2_options_set_to(options, env, endpoint_ref);
-    axis2_options_set_action(options, env,
-        "http://ws.apache.org/axis2/c/savan/samples/weather/start");
-
-    /* Create service client */
-    svc_client = axis2_svc_client_create(env, home);
-    if (!svc_client)
-    {
-        printf("Error creating service client\n");
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Client invoke failed: Error code:"
-                  " %d :: %s", env->error->error_number,
-                        AXIS2_ERROR_GET_MESSAGE(env->error));
-    }
-
-    /* Set service client options */
-    axis2_svc_client_set_options(svc_client, env, options);    
-    
-    /* Engage addressing module */
-    axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
-    
-    payload = build_om_payload_for_echo_svc(env);
+    payload = build_om_payload_for_weather_svc(env, action);
     
     /* Send request */
     ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
@@ -236,43 +241,33 @@ void init_event_source(axutil_env_t* env, axis2_char_t *home)
     if(ret_node)
     {
         axis2_char_t *om_str = NULL;
+
         om_str = axiom_node_to_string(ret_node, env);
         if (om_str)
-            printf("\nReceived OM : %s\n", om_str);
-        printf("\nPublisher init successful\n");
+        {
+            printf("\n%s\n", om_str);
+        }
     }
     else
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Stub invoke FAILED: Error code:"
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Invoke FAILED: Error code:"
             " %d :: %s", env->error->error_number, AXIS2_ERROR_GET_MESSAGE(env->error));
-        printf("\nPublisher init failed\n");
+        printf("\nWeather event source call failed\n");
     }
-    if(svc_client)
-        axis2_svc_client_free(svc_client, env);
 }
 
-
-/* build SOAP request message content using OM */
 axiom_node_t *
-build_om_payload_for_echo_svc(const axutil_env_t *env)
+build_om_payload_for_weather_svc(
+        const axutil_env_t *env,
+        axis2_char_t *node_name)
 {
-    axiom_node_t *echo_om_node = NULL;
-    axiom_element_t* echo_om_ele = NULL;
-    axiom_node_t* text_om_node = NULL;
-    axiom_element_t * text_om_ele = NULL;
-    axiom_namespace_t *ns1 = NULL;
-    axis2_char_t *om_str = NULL;
+    axiom_node_t *om_node = NULL;
+    axiom_element_t* om_ele = NULL;
+    axiom_namespace_t *ns = NULL;
 
-    ns1 = axiom_namespace_create(env, "http://ws.apache.org/axis2/c/samples", "ns1");
-    echo_om_ele = axiom_element_create(env, NULL, "echoString", ns1, &echo_om_node);
-    text_om_ele = axiom_element_create(env, echo_om_node, "text", NULL, &text_om_node);
-    axiom_element_set_text(text_om_ele, env, "echo5", text_om_node);
+    ns = axiom_namespace_create(env, "http://ws.apache.org/axis2/c/savan/samples/weather", "ns");
+    om_ele = axiom_element_create(env, NULL, node_name, ns, &om_node);
 
-    om_str = axiom_node_to_string(echo_om_node, env);
-    if (om_str)
-    {
-        AXIS2_FREE(env->allocator, om_str);
-        om_str =  NULL;
-    }
-    return echo_om_node;
+    return om_node;
 }
+

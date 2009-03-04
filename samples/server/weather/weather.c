@@ -21,40 +21,55 @@
 #include "weather.h"
 
 axiom_node_t *
-build_om_programatically(const axutil_env_t *env, axis2_char_t *text);
+build_om_programatically(
+        const axutil_env_t *env, 
+        axis2_char_t *text);
 
 axiom_node_t *
-axis2_weather_start(const axutil_env_t *env, axiom_node_t *node)
+axis2_weather_start(
+        const axutil_env_t *env, 
+        axiom_node_t *node)
 {
 	axiom_node_t *ret_node = NULL;
 
-    printf("Weather service start called.\n");
-
-    AXIS2_ENV_CHECK(env, NULL);
-
-    ret_node = build_om_programatically(env, "Publisher started");
+    ret_node = build_om_programatically(env, "Weather event source started successfully");
 
     return ret_node;
 }
 
+axiom_node_t *
+axis2_weather_stop(
+        const axutil_env_t *env, 
+        axiom_node_t *node)
+{
+	axiom_node_t *ret_node = NULL;
+
+    ret_node = build_om_programatically(env, "Weather event source stopped successfully");
+
+    return ret_node;
+}
+
+
 /* Builds the response content */
 axiom_node_t *
-build_om_programatically(const axutil_env_t *env, axis2_char_t *text)
+build_om_programatically(
+        const axutil_env_t *env, 
+        axis2_char_t *text)
 {
-    axiom_node_t *echo_om_node = NULL;
-    axiom_element_t* echo_om_ele = NULL;
+    axiom_node_t *om_node = NULL;
+    axiom_element_t* om_ele = NULL;
     axiom_node_t* text_om_node = NULL;
     axiom_element_t * text_om_ele = NULL;
-    axiom_namespace_t *ns1 = NULL;
+    axiom_namespace_t *ns = NULL;
     
-    ns1 = axiom_namespace_create (env, "http://ws.apache.org/axis2/c/samples", "ns1");
+    ns = axiom_namespace_create (env, "http://ws.apache.org/axis2/c/savan/samples/weather", "ns");
 
-    echo_om_ele = axiom_element_create(env, NULL, "echoString", ns1, &echo_om_node);
+    om_ele = axiom_element_create(env, NULL, "weather", ns, &om_node);
     
-    text_om_ele = axiom_element_create(env, echo_om_node, "text", NULL, &text_om_node);
+    text_om_ele = axiom_element_create(env, om_node, "text", NULL, &text_om_node);
 
     axiom_element_set_text(text_om_ele, env, text, text_om_node);
     
-    return echo_om_node;
+    return om_node;
 }
 

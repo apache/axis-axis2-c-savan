@@ -19,6 +19,14 @@
 
 #include <axiom_node.h>
 
-axiom_node_t *axis2_weather_start(const axutil_env_t *env, axiom_node_t *node);
+axiom_node_t *
+axis2_weather_start(
+        const axutil_env_t *env, 
+        axiom_node_t *node);
+
+axiom_node_t *
+axis2_weather_stop(
+        const axutil_env_t *env, 
+        axiom_node_t *node);
 
 #endif /* PUBLISHER_H*/

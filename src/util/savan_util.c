@@ -604,7 +604,7 @@ savan_util_get_expiry_time(
 {
     /* TODO: decide how to set expiry time */
     
-    return NULL;
+    return "*";
 }
 
 axis2_char_t * AXIS2_CALL
@@ -841,7 +841,7 @@ savan_util_process_subscriber_node(
             axutil_qname_free(qname, env);
             if(notify_elem)
             {
-                qname = axutil_qname_create(env, ELEM_NAME_NOTIFYTO, EVENTING_NAMESPACE, NULL);
+                qname = axutil_qname_create(env, ELEM_NAME_ADDR, AXIS2_WSA_NAMESPACE_SUBMISSION, NULL);
                 address_elem = axiom_element_get_first_child_with_qname(notify_elem, env, qname, 
                         notify_node, &address_node);
                 axutil_qname_free(qname, env);

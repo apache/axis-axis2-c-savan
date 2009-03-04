@@ -131,7 +131,7 @@ weather_init_with_conf(
     axis2_conf_t *conf)
 {
     weather_init(svc_skeleton, env);
-    start_weather_thread(env, conf); 
+    /*start_weather_thread(env, conf); */
     return AXIS2_SUCCESS;
 }
 
@@ -155,6 +155,7 @@ weather_invoke(
      */
     if (node)
     {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "node:%s", axiom_node_to_string(node, env));
         if (axiom_node_get_node_type(node, env) == AXIOM_ELEMENT)
         {
             axiom_element_t *element = NULL;
@@ -164,15 +165,18 @@ weather_invoke(
             {
                 axis2_char_t *op_name =
                     axiom_element_get_localname(element, env);
+                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "op_name:%s", op_name);
                 if (op_name)
                 {
                     if (axutil_strcmp(op_name, "start") == 0)
                     {
                         start_weather_thread(env, conf); 
+                        return axis2_weather_start(env, node);
                     }
                     if (axutil_strcmp(op_name, "stop") == 0)
                     {
                         stop_weather_thread(env, conf); 
+                        return axis2_weather_stop(env, node);
                     }
                 }
             }
@@ -222,7 +226,7 @@ stop_weather_thread(
     param = axis2_svc_get_param(svc, env, WEATHER_STATUS);
     if(param)
     {
-        axutil_param_set_value(param, env, AXIS2_VALUE_FALSE);
+        axutil_param_set_value(param, env, axutil_strdup(env, AXIS2_VALUE_FALSE));
     }
 }
 
@@ -237,9 +241,9 @@ weather_on_fault(axis2_svc_skeleton_t *svc_skeli,
     axiom_node_t *error_node = NULL;
     axiom_node_t* text_node = NULL;
     axiom_element_t *error_ele = NULL;
-    error_ele = axiom_element_create(env, node, "TestServiceError", NULL, 
+    error_ele = axiom_element_create(env, node, "WeatherServiceError", NULL, 
         &error_node);
-    axiom_element_set_text(error_ele, env, "Test service failed ", 
+    axiom_element_set_text(error_ele, env, "Weather service failed ", 
         text_node);
     return error_node;
 }
@@ -288,14 +292,14 @@ weather_worker_func(
     env = axutil_init_thread_env(main_env);
 
     svc = axis2_conf_get_svc(conf, env, WEATHER);
-    param = axutil_param_create(env, WEATHER_STATUS, AXIS2_VALUE_TRUE);
+    param = axutil_param_create(env, WEATHER_STATUS, axutil_strdup(env, AXIS2_VALUE_TRUE));
     if(!param)
     {
         AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
         return NULL;
     }
     axis2_svc_add_param(svc, env, param);
-    while(axutil_strcmp(value, AXIS2_VALUE_TRUE))
+    while(!axutil_strcmp(value, AXIS2_VALUE_TRUE))
     {
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Inside while loop");
         {
@@ -309,12 +313,13 @@ weather_worker_func(
 
 			axiom_element_set_text(test_elem1, env, "sunny day", test_node1);
 
-            /*savan_publishing_client_publish(pub_client, env, test_node, topic);*/
+            savan_publishing_client_publish(pub_client, env, test_node, NULL);
             savan_publishing_client_free(pub_client, env);
             param = axis2_svc_get_param(svc, env, WEATHER_STATUS);
             if(param)
             {
                 value = axutil_param_get_value(param, env);
+                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] value:%s", value);
             }
         }
         AXIS2_SLEEP(5);

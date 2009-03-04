@@ -32,7 +32,7 @@
 #define ELEM_NAME_SUBSCRIPTION "subscription"
 #define ELEM_NAME_ENDPOINT "endpoint"
 #define ELEM_NAME_ADDRESS "address"
-#define ATTR_NAME_URL "url"
+#define ATTR_NAME_URL "uri"
 #define EPR_TYPE "application/vnd.epr"
 #define TOPIC_INDEX_PARENT_PATH "/eventing/index"
 #define SUBSCRIPTION_COLLECTION_NAME "system.subscriptions"
@@ -707,7 +707,8 @@ static axis2_char_t *savan_registry_storage_mgr_serialize_endpoint(
     axis2_char_t *notifyto = NULL;
     char *content = NULL;
     
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_sub_request");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+            "[savan] Entry:savan_registry_storage_mgr_serialize_endpoint");
     
     /* Format of the message is as 
      * <subscription><syn:endpoint xmlns:syn="http://ws.apache.org/ns/synapse"><syn:address uri=
@@ -732,6 +733,8 @@ static axis2_char_t *savan_registry_storage_mgr_serialize_endpoint(
     axiom_element_add_attribute(addr_elem, env, url_attr, addr_node);
 
     content = (char *) axiom_node_to_string(subs_node, env);
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
+            "[savan] Exit:savan_registry_storage_mgr_serialize_endpoint");
 
     return content; 
 }
