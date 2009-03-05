@@ -183,7 +183,8 @@ weather_invoke(
         }
     }
 
-    printf("Weather service ERROR: invalid OM parameters in request\n");
+    AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+            "[savan] Weather service ERROR: invalid OM parameters in request");
 
     return NULL;
 }
