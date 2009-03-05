@@ -29,7 +29,9 @@ axis2_listener_notify(const axutil_env_t *env, axiom_node_t *node)
 
     str = axiom_node_to_string(node, env);
     if (str)
-        printf("\nReceived : %s\n", str);
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[listener] Received : %s", str);
+    }
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "End:axis2_listener_notify");
 
     return NULL;
