@@ -2,7 +2,7 @@ datadir=$(prefix)
 SUBDIRS = src
 docsdir=$(prefix)/docs
 samplesdir=$(prefix)/samples/savanc
-includedir=$(prefix)/include/savan-0.90
+includedir=$(prefix)/include/savan-1.0
 sysconfdir=$(prefix)
 include_HEADERS=$(top_builddir)/include/*.h
 
