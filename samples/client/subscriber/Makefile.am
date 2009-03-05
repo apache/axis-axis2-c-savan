@@ -14,8 +14,7 @@ subscriber_LDADD   = $(LDFLAGS) \
                     -lpthread \
                     $(GUTHTHILA_LIBS) \
                     $(LIBXML2_LIBS)\
-					-lsavan_client \
-					-lregistry_client
+					-lsavan_client
 
 INCLUDES =  -I@AXIS2INC@ \
 			@AXIS2INC@ \
