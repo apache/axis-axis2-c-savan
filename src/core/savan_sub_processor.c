@@ -504,11 +504,12 @@ savan_sub_processor_validate_subscription(
 	{
 		return AXIS2_FAILURE;
 	}
-	if(savan_sub_processor_validate_filter(subscriber, 
+    /* Hold this until filter abstration is properly designed and implemented */
+	/*if(savan_sub_processor_validate_filter(subscriber, 
                                            env, msg_ctx) == AXIS2_FAILURE)
 	{
 		return AXIS2_FAILURE;
-	}
+	}*/
 		
 	return AXIS2_SUCCESS;
 }
