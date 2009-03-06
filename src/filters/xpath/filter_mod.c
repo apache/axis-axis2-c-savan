@@ -160,7 +160,7 @@ savan_xpath_filter_mod_apply(
     filtermodimpl = SAVAN_INTF_TO_IMPL(filtermod);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_xpath_filter_mod_insert_subscriber");
+            "[savan] Entry:savan_xpath_filter_mod_apply");
 
 	xfilter = (xmlChar *) savan_subscriber_get_filter(subscriber, env);
 	if(!xfilter)
@@ -230,7 +230,7 @@ savan_xpath_filter_mod_apply(
 	}
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_xpath_filter_insert_subscriber");
+            "[savan] Exit:savan_xpath_filter_mod_apply");
     return NULL;
 }
 
