@@ -24,6 +24,12 @@
 #include <savan_constants.h>
 #include <savan_util.h>
 #include <savan_error.h>
+#include <libxslt/xsltutils.h>
+#include <axiom_soap.h>
+#include <axiom_soap_const.h>
+#include <axiom_soap_envelope.h>
+#include <axiom_element.h>
+#include <axiom_node.h>
 
 /**
  *
@@ -36,10 +42,22 @@ typedef struct savan_xpath_filter
 {
     savan_filter_t filter;
     axis2_char_t *dialect;
+    axis2_char_t *filter_template_path;
     axis2_conf_t *conf;
 } savan_xpath_filter_t;
 
 #define SAVAN_INTF_TO_IMPL(filter) ((savan_xpath_filter_t *) filter)
+
+static xsltStylesheetPtr 
+savan_xpath_filter_get_filter_template(
+    const axutil_env_t *env,
+    axis2_char_t *filter_template_path,
+    xmlChar *filter);
+
+static axis2_status_t 
+savan_xpath_filter_update_filter_template(
+    xmlNodeSetPtr nodes,
+    const xmlChar* value);
 
 AXIS2_EXTERN void AXIS2_CALL
 savan_xpath_filter_free(
@@ -60,11 +78,12 @@ static const savan_filter_ops_t savan_filter_ops =
 };
 
 AXIS2_EXTERN savan_filter_t * AXIS2_CALL
-savan_filter_create(
+savan_xpath_filter_create(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
     savan_xpath_filter_t *filterimpl = NULL;
+    axis2_char_t *filter_template_path = NULL;
     
     filterimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_xpath_filter_t));
     if (!filterimpl)
@@ -75,8 +94,18 @@ savan_filter_create(
 
     memset ((void *) filterimpl, 0, sizeof(savan_xpath_filter_t));
 
+    filter_template_path = savan_util_get_module_param(env, conf, SAVAN_FILTER_TEMPLATE_PATH);
+    if(!filter_template_path)
+    {
+        savan_xpath_filter_free((savan_filter_t *) filterimpl, env);
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Filter template path not set");
+        return NULL;
+    }
+
+    filterimpl->filter_template_path = filter_template_path;
+
     filterimpl->dialect = NULL;
-    filterimpl->conf = NULL;
+    filterimpl->conf = conf;
     filterimpl->filter.ops = &savan_filter_ops;
 
     return (savan_filter_t *) filterimpl;
@@ -116,14 +145,137 @@ savan_xpath_filter_apply(
     savan_subscriber_t *subscriber,
     axiom_node_t *payload)
 {
+    xmlChar *buffer = NULL;
+    int size = 0;
+    axis2_char_t *payload_string = NULL;
+    xmlDocPtr payload_doc = NULL;
+    xsltStylesheetPtr xslt_template_filter = NULL;
+    axiom_xml_reader_t *reader = NULL;
+    axiom_stax_builder_t *om_builder = NULL;
+    axiom_document_t *document = NULL;
+    axiom_node_t *node = NULL;
+    xmlChar *xfilter = NULL;
     savan_xpath_filter_t *filterimpl = NULL;
+
     filterimpl = SAVAN_INTF_TO_IMPL(filter);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_xpath_filter_insert_subscriber");
-	
+
+	xfilter = (xmlChar *) savan_subscriber_get_filter(subscriber, env);
+	if(!xfilter)
+	{
+		return payload;
+	}
+
+    payload_string = axiom_node_to_string(payload, env);
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+        "[savan] payload_string before applying filter %s:%s", xfilter, payload_string);
+
+    payload_doc = (xmlDocPtr)xmlParseDoc((xmlChar*)payload_string);
+
+    xslt_template_filter = (xsltStylesheetPtr) savan_xpath_filter_get_filter_template(env, 
+            filterimpl->filter_template_path, xfilter);
+
+    xmlDocPtr result_doc = (xmlDocPtr)xsltApplyStylesheet(xslt_template_filter, payload_doc, NULL);
+
+    if(result_doc)
+    {
+        xmlDocDumpMemory(result_doc, &buffer, &size);
+    }
+
+    if(buffer)
+    {
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
+            "[savan] payload_string after applying filter:%s", buffer);
+        reader = axiom_xml_reader_create_for_memory(env, 
+                (char*)buffer,axutil_strlen((char*)buffer), NULL, AXIS2_XML_PARSER_TYPE_BUFFER);
+    }
+
+    if(reader)
+    {
+        om_builder = axiom_stax_builder_create(env, reader);
+    }
+
+    if(om_builder)
+    {
+        document = axiom_stax_builder_get_document(om_builder, env);
+    }
+
+    if(document)
+    {
+        node = axiom_document_build_all(document, env);
+    }
+
+    if(om_builder)
+    {
+        axiom_stax_builder_free_self(om_builder, env);
+    }
+
+    /*free(payload_string);*/ /* In apache freeing this give seg fault:damitha */
+    if(result_doc)
+    {
+	    xmlFreeDoc(result_doc);
+    }
+
+	if(!node)
+	{
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Applying filter for payload failed");
+        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_APPLYING_FILTER_FAILED, AXIS2_FAILURE);
+		return NULL;
+	}
+	else
+	{
+		return node;
+	}
+
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Exit:savan_xpath_filter_insert_subscriber");
     return NULL;
+}
+
+static xsltStylesheetPtr 
+savan_xpath_filter_get_filter_template(
+    const axutil_env_t *env,
+    axis2_char_t *filter_template_path,
+    xmlChar *filter)
+{
+    xsltStylesheetPtr xslt_template_xslt = NULL;
+    xmlDocPtr xslt_template_xml = NULL;
+    xmlChar* xpathExpr = NULL; 
+    xmlXPathContextPtr xpathCtx = NULL;
+    xmlXPathObjectPtr xpathObj = NULL;
+	
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] filter_template_path:%s", filter_template_path);
+
+    xslt_template_xml = xmlParseFile(filter_template_path);
+    xpathExpr = (xmlChar*)"//@select";
+    xpathCtx = xmlXPathNewContext(xslt_template_xml);
+    xpathObj = xmlXPathEvalExpression(xpathExpr, xpathCtx);
+    savan_xpath_filter_update_filter_template(xpathObj->nodesetval, filter);
+
+    xslt_template_xslt = xsltParseStylesheetDoc(xslt_template_xml);
+
+	xmlXPathFreeObject(xpathObj);
+	xmlXPathFreeContext(xpathCtx);
+
+    return xslt_template_xslt;
+}
+
+static axis2_status_t 
+savan_xpath_filter_update_filter_template(
+    xmlNodeSetPtr nodes,
+    const xmlChar* value)
+{
+    int size;
+    int i;
+    size = (nodes) ? nodes->nodeNr : 0;
+    for(i = size - 1; i >= 0; i--) 
+	{
+    	xmlNodeSetContent(nodes->nodeTab[i], value);
+    	if (nodes->nodeTab[i]->type != XML_NAMESPACE_DECL)
+        	nodes->nodeTab[i] = NULL;
+    }
+    return AXIS2_SUCCESS;
 }
 

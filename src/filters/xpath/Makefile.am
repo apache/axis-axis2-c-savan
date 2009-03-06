@@ -4,6 +4,8 @@ libsavan_filter_la_SOURCES = filter.c
 libsavan_filter_la_LIBADD = ../common/libsavan_common_filter.la \
 							 -lxml2
 
+data_DATA=template.xsl
+
 INCLUDES = -I$(top_builddir)/include \
 			-I$(top_builddir)/include/savan \
 			-I. \
