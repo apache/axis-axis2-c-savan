@@ -3,4 +3,7 @@
     <operation name="weather" mep="http://www.w3.org/2004/08/wsdl/in-only">
            <parameter name="wsamapping">http://ws.apache.org/axis2/c/samples/weather</parameter>
    </operation>
+    <operation name="weather_report" mep="http://www.w3.org/2004/08/wsdl/in-only">
+           <parameter name="wsamapping">http://ws.apache.org/axis2/c/samples/weather</parameter>
+   </operation>
 </service>

@@ -82,6 +82,7 @@ listener_init(axis2_svc_skeleton_t *svc_skeleton,
      * the array list of functions 
      */
     axutil_array_list_add(svc_skeleton->func_array, env, "weather");
+    axutil_array_list_add(svc_skeleton->func_array, env, "weather_report");
 
     /* Any initialization stuff of service should go here */
 
@@ -115,9 +116,9 @@ listener_on_fault(axis2_svc_skeleton_t *svc_skeli,
     axiom_node_t *error_node = NULL;
     axiom_node_t* text_node = NULL;
     axiom_element_t *error_ele = NULL;
-    error_ele = axiom_element_create(env, node, "TestServiceError", NULL, 
+    error_ele = axiom_element_create(env, node, "ListenerServiceError", NULL, 
         &error_node);
-    axiom_element_set_text(error_ele, env, "Test service failed ", 
+    axiom_element_set_text(error_ele, env, "Listener service failed ", 
         text_node);
     return error_node;
 }
