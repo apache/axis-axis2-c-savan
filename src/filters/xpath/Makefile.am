@@ -1,8 +1,7 @@
-noinst_LTLIBRARIES = libsavan_filter.la
+noinst_LTLIBRARIES = libsavan_filter_mod.la
 
-libsavan_filter_la_SOURCES = filter.c
-libsavan_filter_la_LIBADD = ../common/libsavan_common_filter.la \
-							 -lxml2
+libsavan_filter_mod_la_SOURCES = filter_mod.c
+libsavan_filter_mod_la_LIBADD = ../common/libsavan_common_filter_mod.la -lxml2
 
 data_DATA=template.xsl
 

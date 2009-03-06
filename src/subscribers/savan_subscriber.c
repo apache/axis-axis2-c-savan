@@ -22,10 +22,7 @@
 
 #include <savan_subscriber.h>
 #include <savan_util.h>
-
-#ifdef SAVAN_FILTERING
-#include <libxslt/xsltutils.h>
-#endif
+#include <savan_error.h>
 
 struct savan_subscriber_t
 {
@@ -39,11 +36,6 @@ struct savan_subscriber_t
     axis2_char_t *topic_url;*/
     axis2_bool_t renewed;
 	axis2_char_t *filter_dialect;
-
-	#ifdef SAVAN_FILTERING
-    xsltStylesheetPtr xslt_filter;
-    axis2_char_t *filter_template_path;
-	#endif
 };
 
 AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
@@ -70,10 +62,6 @@ savan_subscriber_create(
     /*subscriber->topic_name = NULL;
     subscriber->topic_url = NULL;*/
     subscriber->renewed = AXIS2_FALSE;
-	#ifdef SAVAN_FILTERING
-	subscriber->xslt_filter = NULL;
-	subscriber->filter_template_path = NULL;
-	#endif
         
     return subscriber;
 }
@@ -122,90 +110,12 @@ savan_subscriber_free(
         AXIS2_FREE(env->allocator, subscriber->topic_url);
     }*/
 
-	#ifdef SAVAN_FILTERING
-    if(subscriber->xslt_filter)
-    {
-        AXIS2_FREE(env->allocator, subscriber->xslt_filter);
-    }
-
-    if(subscriber->filter_template_path)
-    {
-        AXIS2_FREE(env->allocator, subscriber->filter_template_path);
-    }
-
-	#endif
-
     if(subscriber->filter_dialect)
     {
         AXIS2_FREE(env->allocator, subscriber->filter_dialect);
     }
 
     AXIS2_FREE(env->allocator, subscriber);
-}
-
-void* AXIS2_CALL
-savan_subscriber_get_filter_template(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env)
-{
-	#ifdef SAVAN_FILTERING
-    return subscriber->xslt_filter;
-	#else
-	return NULL;
-	#endif
-}
-
-axis2_status_t AXIS2_CALL
-savan_subscriber_set_filter_template(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env,
-    void *xslt_filter_template)
-{
-	if (!subscriber->filter)
-	{
-		return AXIS2_SUCCESS;
-	}
-
-	#ifdef SAVAN_FILTERING
-    if (subscriber->xslt_filter)
-    {
-        AXIS2_FREE(env->allocator, subscriber->filter);
-        subscriber->xslt_filter = NULL;
-    }
-    subscriber->xslt_filter = (xsltStylesheetPtr)xslt_filter_template;
-	#endif
-    return AXIS2_SUCCESS;
-}
-
-axis2_status_t AXIS2_CALL
-savan_subscriber_set_filter_template_path(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env,
-    axis2_char_t *path)
-{
-	#ifdef SAVAN_FILTERING
-    if (subscriber->filter_template_path)
-    {
-        AXIS2_FREE(env->allocator, subscriber->filter_template_path);
-        subscriber->filter_template_path = NULL;
-    }
-    subscriber->filter_template_path = axutil_strdup(env, path);
-	#endif
-    return AXIS2_SUCCESS;
-}
-
-axis2_char_t *AXIS2_CALL
-savan_subscriber_get_filter_template_path(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env)
-{
-    axis2_char_t *filter_template_path = NULL;
-
-	#ifdef SAVAN_FILTERING
-    filter_template_path = subscriber->filter_template_path;
-	#endif
-
-    return filter_template_path;
 }
 
 AXIS2_EXTERN axis2_char_t * AXIS2_CALL
@@ -382,6 +292,7 @@ AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_publish(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
+    savan_filter_mod_t *filtermod,
     axiom_node_t *payload)
 {
     axis2_svc_client_t *svc_client = NULL;
@@ -421,18 +332,25 @@ savan_subscriber_publish(
 
 	/* Apply the filter, and check whether it evaluates to success */
 
-    #ifdef SAVAN_FILTERING
-	filtered_payload = savan_util_apply_filter(subscriber, env, payload);
-    if(!filtered_payload)
+    if(savan_subscriber_get_filter(subscriber, env) && !filtermod)
     {
-        status = axutil_error_get_status_code(env->error);
-        if(AXIS2_SUCCESS != status)
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FILTER_MODULE_COULD_NOT_BE_RETRIEVED, AXIS2_FAILURE);
+        return AXIS2_FAILURE;
+    }
+
+    if(filtermod)
+    {
+        filtered_payload = savan_filter_mod_apply(filtermod ,env, subscriber, payload);
+        if(!filtered_payload)
         {
-            return status;
+            status = axutil_error_get_status_code(env->error);
+            if(AXIS2_SUCCESS != status)
+            {
+                return status;
+            }
         }
     }
-    #endif
-	
+
     /* Set service client options */
     axis2_svc_client_set_options(svc_client, env, options);
     if(filtered_payload)

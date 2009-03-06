@@ -18,7 +18,7 @@
 #define SAVAN_FILTER_H
 
 /**
-  * @file savan_filter.h
+  * @file savan_filter_mod.h
   * @brief 
   */
 #include <platforms/axutil_platform_auto_sense.h>
@@ -34,27 +34,27 @@ extern "C"
 #endif
 
 /** 
- * @ingroup savan_filter
+ * @ingroup savan_filter_mod
  * @{
  */
  
-typedef struct savan_filter savan_filter_t;
-typedef struct savan_filter_ops savan_filter_ops_t;
+typedef struct savan_filter_mod savan_filter_mod_t;
+typedef struct savan_filter_mod_ops savan_filter_mod_ops_t;
 
  /**
  * @brief Filter ops struct
- * Encapsulator struct for ops of savan_filter
+ * Encapsulator struct for ops of savan_filter_mod
  */
-AXIS2_DECLARE_DATA struct savan_filter_ops
+AXIS2_DECLARE_DATA struct savan_filter_mod_ops
 { 
     void (AXIS2_CALL * 
             free)(
-                savan_filter_t *filter,
+                savan_filter_mod_t *filter,
                 const axutil_env_t *env);
 
     axiom_node_t *(AXIS2_CALL *
             apply)(
-                savan_filter_t *filter, 
+                savan_filter_mod_t *filter, 
                 const axutil_env_t *env,
                 savan_subscriber_t *subscriber,
                 axiom_node_t *payload);
@@ -62,9 +62,9 @@ AXIS2_DECLARE_DATA struct savan_filter_ops
 
 };
 
-AXIS2_DECLARE_DATA struct savan_filter
+AXIS2_DECLARE_DATA struct savan_filter_mod
 {
-    const savan_filter_ops_t *ops;
+    const savan_filter_mod_ops_t *ops;
 };
 
 
@@ -74,8 +74,8 @@ AXIS2_DECLARE_DATA struct savan_filter
  * @param conf axis2 configuration
  * @return status of the operation
  */
-AXIS2_EXTERN savan_filter_t * AXIS2_CALL
-savan_filter_create(
+AXIS2_EXTERN savan_filter_mod_t * AXIS2_CALL
+savan_filter_mod_create(
     const axutil_env_t *env,
     axis2_conf_t *conf);
 
@@ -85,8 +85,8 @@ savan_filter_create(
  * @param env environment object
  */
 void AXIS2_CALL 
-savan_filter_free(
-    savan_filter_t *filter,
+savan_filter_mod_free(
+    savan_filter_mod_t *filtermod,
     const axutil_env_t *envv);
 
 /**
@@ -98,8 +98,8 @@ savan_filter_free(
  * @return filtered payload
  */
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_filter_apply(
-    savan_filter_t *filter, 
+savan_filter_mod_apply(
+    savan_filter_mod_t *filtermod, 
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,
     axiom_node_t *payload);

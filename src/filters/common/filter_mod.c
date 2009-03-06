@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-#include <savan_filter.h>
+#include <savan_filter_mod.h>
 #include <savan_constants.h>
 #include <savan_error.h>
 #include <savan_util.h>
@@ -25,20 +25,20 @@
 #include <axis2_conf_ctx.h>
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_filter_free(
-    savan_filter_t *filter,
+savan_filter_mod_free(
+    savan_filter_mod_t *filtermod,
     const axutil_env_t *env)
 {
-     return filter->ops->free(filter, env);
+     return filtermod->ops->free(filtermod, env);
 }
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_filter_apply(
-    savan_filter_t *filter, 
+savan_filter_mod_apply(
+    savan_filter_mod_t *filtermod, 
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,
     axiom_node_t *payload)
 {
-    return filter->ops->apply(filter, env, subscriber, payload);
+    return filtermod->ops->apply(filtermod, env, subscriber, payload);
 }
 

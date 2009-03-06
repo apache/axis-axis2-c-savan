@@ -101,15 +101,17 @@ int main(int argc, char** argv)
      * built and running with filtering enabled.
      */
     /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
-        "//test3[@data='5']");
+        "//test3[@data='5']");*/
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
+        "//weather_report");
+
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
+        XPATH_FILTER_DIALECT);
+    
+    /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING, "weather/4");
 
     axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
         DEFAULT_FILTER_DIALECT);*/
-    
-    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING, "weather/4");
-
-    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
-        DEFAULT_FILTER_DIALECT);
 
     /* Create a savan client */
     savan_client = savan_client_create(env);

@@ -69,24 +69,6 @@ AC_ARG_WITH(axis2,
   AC_MSG_RESULT(no)
 )
 
-AC_MSG_CHECKING(whether to enable savan filtering)
-AC_ARG_ENABLE(filtering, [  --enable-filtering
-                          enable savan filtering(default=no)],
-[ case "${enableval}" in
-  no)
-    AC_MSG_RESULT(no)
-    ;;
-  *)
-    AC_MSG_RESULT(yes)
-    PKG_CHECK_MODULES(XSLT, libxslt)
-    CFLAGS="$CFLAGS -DSAVAN_FILTERING $XSLT_CFLAGS"
-    LDFLAGS="$LDFLAGS -lxslt"
-
-    ;;
-  esac ],
-  AC_MSG_RESULT(no)
-)
-
 AC_MSG_CHECKING(whether to build sqlite based storage)
 AC_ARG_ENABLE(sqlite, [  --enable-sqlite
                           build Sqlite based storage (default=yes)],

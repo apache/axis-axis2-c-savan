@@ -81,6 +81,7 @@ savan_publishing_client_publish(
     axis2_conf_t *conf = NULL;
     int i = 0, size = 0;
     savan_storage_mgr_t *storage_mgr = NULL;
+    savan_filter_mod_t *filtermod = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_publishing_client_publish");
    
@@ -106,14 +107,11 @@ savan_publishing_client_publish(
         sub = (savan_subscriber_t *)axutil_array_list_get(subs_store, env, i);
         if (sub)
         {
-            axis2_char_t *filter_template_path = NULL;
             axis2_char_t *id = savan_subscriber_get_id(sub, env);
             AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Publishing to:%s", id);
 
-            filter_template_path = savan_util_get_module_param(env, conf, 
-                    SAVAN_FILTER_TEMPLATE_PATH);
-            savan_subscriber_set_filter_template_path(sub, env, filter_template_path);
-            if(!savan_subscriber_publish(sub, env, payload))
+            filtermod = savan_util_get_filter_module(env, client->conf);
+            if(!savan_subscriber_publish(sub, env, filtermod, payload))
             {
                 axis2_endpoint_ref_t *notifyto = savan_subscriber_get_notify_to(sub, env);
                 const axis2_char_t *address = NULL;

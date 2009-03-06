@@ -8,7 +8,4 @@ INCLUDES = -I$(top_builddir)/include \
 		@NEETHIINC@ \
 		@AXIS2INC@
 
-libsavan_subscribers_la_LIBADD = \
-                                -lxml2
-
 

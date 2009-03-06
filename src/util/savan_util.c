@@ -32,16 +32,6 @@
 #include <savan_msg_recv.h>
 #include <savan_error.h>
 #include <savan_storage_mgr.h>
-#ifdef SAVAN_FILTERING
-#include <libxslt/xsltutils.h>
-#endif
-
-#ifdef SAVAN_FILTERING
-axis2_status_t
-savan_util_update_filter_template(
-    xmlNodeSetPtr nodes,
-    const xmlChar* value);
-#endif
 
 axis2_status_t AXIS2_CALL
 savan_util_create_fault_envelope(
@@ -83,155 +73,6 @@ savan_util_create_fault_envelope(
 
     return AXIS2_SUCCESS;
 }
-
-#ifdef SAVAN_FILTERING
-axis2_status_t AXIS2_CALL
-savan_util_set_filter_template_for_subscriber(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env)
-{
-    xsltStylesheetPtr xslt_template_xslt = NULL;
-    xmlDocPtr xslt_template_xml = NULL;
-    axis2_char_t *filter_template_path = NULL;
-
-	if(!savan_subscriber_get_filter(subscriber, env))
-	{
-		return AXIS2_SUCCESS;
-	}
-
-    filter_template_path = savan_subscriber_get_filter_template_path(subscriber, env);
-    if(!filter_template_path)
-    {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Filter template path not set");
-        return AXIS2_FAILURE;
-    }
-
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] filter_template_path:%s", filter_template_path);
-
-    xslt_template_xml = xmlParseFile(filter_template_path);
-    xmlChar* xpathExpr = (xmlChar*)"//@select";
-    xmlChar* value = (xmlChar*)savan_subscriber_get_filter(subscriber,env);
-    xmlXPathContextPtr xpathCtx = xmlXPathNewContext(xslt_template_xml);
-    xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(xpathExpr, xpathCtx);
-    savan_util_update_filter_template(xpathObj->nodesetval, value);
-
-    xslt_template_xslt = xsltParseStylesheetDoc(xslt_template_xml);
-    savan_subscriber_set_filter_template(subscriber, env, xslt_template_xslt);
-
-	xmlXPathFreeObject(xpathObj);
-	xmlXPathFreeContext(xpathCtx);
-
-    return AXIS2_SUCCESS;
-}
-#endif
-
-#ifdef SAVAN_FILTERING
-axiom_node_t *AXIS2_CALL
-savan_util_apply_filter(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env,
-    axiom_node_t *payload)
-{
-    xmlChar *buffer = NULL;
-    int size = 0;
-    axis2_char_t *payload_string = NULL;
-    xmlDocPtr payload_doc = NULL;
-    xsltStylesheetPtr xslt_template_filter = NULL;
-    axiom_xml_reader_t *reader = NULL;
-    axiom_stax_builder_t *om_builder = NULL;
-    axiom_document_t *document = NULL;
-    axiom_node_t *node = NULL;
-    axis2_char_t *filter = NULL;
-
-	filter = savan_subscriber_get_filter(subscriber, env);
-	if(!filter)
-	{
-		return payload;
-	}
-
-    payload_string = axiom_node_to_string(payload, env);
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] payload_string before applying filter %s:%s", filter, payload_string);
-
-    payload_doc = (xmlDocPtr)xmlParseDoc((xmlChar*)payload_string);
-
-    savan_util_set_filter_template_for_subscriber(subscriber, env);
-
-    xslt_template_filter = (xsltStylesheetPtr)savan_subscriber_get_filter_template(subscriber,
-        env);
-
-    xmlDocPtr result_doc = (xmlDocPtr)xsltApplyStylesheet(xslt_template_filter, payload_doc, NULL);
-
-    if(result_doc)
-    {
-        xmlDocDumpMemory(result_doc, &buffer, &size);
-    }
-
-    if(buffer)
-    {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "[savan] payload_string after applying filter:%s", buffer);
-        reader = axiom_xml_reader_create_for_memory(env, 
-                (char*)buffer,axutil_strlen((char*)buffer), NULL, AXIS2_XML_PARSER_TYPE_BUFFER);
-    }
-
-    if(reader)
-    {
-        om_builder = axiom_stax_builder_create(env, reader);
-    }
-
-    if(om_builder)
-    {
-        document = axiom_stax_builder_get_document(om_builder, env);
-    }
-
-    if(document)
-    {
-        node = axiom_document_build_all(document, env);
-    }
-
-    if(om_builder)
-    {
-        axiom_stax_builder_free_self(om_builder, env);
-    }
-
-    /*free(payload_string);*/ /* In apache freeing this give seg fault:damitha */
-    if(result_doc)
-    {
-	    xmlFreeDoc(result_doc);
-    }
-
-	if(!node)
-	{
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Applying filter for payload failed");
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_APPLYING_FILTER_FAILED, AXIS2_FAILURE);
-		return NULL;
-	}
-	else
-	{
-		return node;
-	}
-}
-#endif
-
-#ifdef SAVAN_FILTERING
-axis2_status_t 
-savan_util_update_filter_template(
-    xmlNodeSetPtr nodes,
-    const xmlChar* value)
-{
-    int size;
-    int i;
-    size = (nodes) ? nodes->nodeNr : 0;
-    for(i = size - 1; i >= 0; i--) 
-	{
-    	xmlNodeSetContent(nodes->nodeTab[i], value);
-    	if (nodes->nodeTab[i]->type != XML_NAMESPACE_DECL)
-        	nodes->nodeTab[i] = NULL;
-    }
-    return AXIS2_SUCCESS;
-}
-#endif
 
 axiom_node_t * AXIS2_CALL
 savan_util_build_fault_msg(
@@ -1091,6 +932,39 @@ savan_util_get_storage_mgr(
     }
 
     return storage_mgr;
+}
+
+AXIS2_EXTERN savan_filter_mod_t * AXIS2_CALL
+savan_util_get_filter_module(
+    const axutil_env_t *env,
+    axis2_conf_t *conf)
+{
+    axutil_param_t *filter_param = NULL;
+    savan_filter_mod_t *filtermod = NULL;
+
+    if(conf)
+    {
+        filter_param = axis2_conf_get_param(conf, env, SAVAN_FILTER);
+        if(filter_param)
+        {
+            filtermod = (savan_filter_mod_t *) axutil_param_get_value(filter_param, env);
+        }
+    }
+
+    if(!filtermod)
+    {
+#ifdef SAVAN_FILTERING
+        filtermod = savan_filter_mod_create(env, conf);
+#endif
+
+        if(filtermod)
+        {
+            filter_param = axutil_param_create(env, SAVAN_FILTER, filtermod);
+            axis2_conf_add_param(conf, env, filter_param);
+        }
+    }
+
+    return filtermod;
 }
 
 axis2_bool_t AXIS2_CALL

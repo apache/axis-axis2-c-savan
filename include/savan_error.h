@@ -101,6 +101,8 @@ extern "C"
         SAVAN_ERROR_DATABASE_CREATION_ERROR,
         /* Could create the filter */
         SAVAN_ERROR_FILTER_CREATION_FAILED,
+        /* Could not create the filter module */
+        SAVAN_ERROR_FILTER_MODULE_COULD_NOT_BE_RETRIEVED,
         
         SAVAN_ERROR_LAST
     

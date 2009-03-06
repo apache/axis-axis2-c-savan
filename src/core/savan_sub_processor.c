@@ -453,7 +453,7 @@ savan_sub_processor_validate_filter(
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Filter is Null");
 		return AXIS2_SUCCESS;
 	}
-	else if(!axutil_strcmp(filter_dialect, DEFAULT_FILTER_DIALECT))
+	else if(!axutil_strcmp(filter_dialect, XPATH_FILTER_DIALECT))
 	{
         axis2_char_t *reason = NULL;
 
@@ -472,6 +472,10 @@ savan_sub_processor_validate_filter(
 		return AXIS2_FAILURE;
 #endif
 	}
+    else if(!axutil_strcmp(filter_dialect, SYNAPSE_FILTER_DIALECT))
+    {
+        return AXIS2_SUCCESS;
+    }
 	else
 	{
         axis2_char_t *reason = NULL;
@@ -505,11 +509,11 @@ savan_sub_processor_validate_subscription(
 		return AXIS2_FAILURE;
 	}
     /* Hold this until filter abstration is properly designed and implemented */
-	/*if(savan_sub_processor_validate_filter(subscriber, 
+	if(savan_sub_processor_validate_filter(subscriber, 
                                            env, msg_ctx) == AXIS2_FAILURE)
 	{
 		return AXIS2_FAILURE;
-	}*/
+	}
 		
 	return AXIS2_SUCCESS;
 }

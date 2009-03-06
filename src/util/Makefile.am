@@ -3,14 +3,9 @@ noinst_LTLIBRARIES = libsavan_util.la
 
 libsavan_util_la_SOURCES = savan_util.c error.c
 
-data_DATA=template.xsl
 INCLUDES = -I$(top_builddir)/include \
 		@AXIOMINC@ \
 		@AXIS2INC@ \
 		@UTILINC@ \
 		@NEETHIINC@
 
-libsavan_util_la_LIBADD = \
-                         -lxml2
-
-EXTRA_DIST=template.xsl

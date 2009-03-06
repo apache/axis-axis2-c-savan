@@ -85,6 +85,9 @@ savan_error_init()
 
     axutil_error_messages[SAVAN_ERROR_FILTER_CREATION_FAILED] =
         "Could not create the filter";
+    
+    axutil_error_messages[SAVAN_ERROR_FILTER_MODULE_COULD_NOT_BE_RETRIEVED] =
+        "Could not create the filter module";
 
     return AXIS2_SUCCESS;
 }
