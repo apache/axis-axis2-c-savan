@@ -151,6 +151,34 @@ AC_ARG_WITH(registry,
   AC_MSG_RESULT(no)
 )
 
+AC_MSG_CHECKING(To Use XPath based filter . This is an optional module to build Savan C)
+AC_ARG_WITH(xpath,
+[  --with-xpath[=PATH]     Find the libxml2 header files in 'PATH'.
+    'PATH' should point to libxml2 include files location.
+    If you omit the '=PATH' part completely, the configure script will assume
+    libxml2 is installed in default paths.],
+[ case "$withval" in
+  no)
+    AC_MSG_RESULT(no)
+    SAVAN_FILTER=""
+    ;;
+  *)
+    AC_MSG_RESULT(yes)
+    SAVAN_FILTER="xpath"
+    dnl Find libxml2 include dir in the path
+    if test -d $withval; then
+        xpathinc="-I$withval"
+    dnl else find the libxml2 include dir in /usr/local/include
+    elif test -d '/usr/local/include'; then
+        xpathinc="-I/usr/local/include"
+    else
+        AC_MSG_ERROR(could not find libxml2. stop)
+    fi
+    ;;
+  esac ],
+  AC_MSG_RESULT(no)
+)
+
 
 AC_MSG_CHECKING(To Use Xml Schema.)
 AXIOMINC="-I$abs_top_builddir/../axis2c/axiom/include"
@@ -159,17 +187,21 @@ NEETHIINC="-I$abs_top_builddir/../axis2c/neethi/include"
 CFLAGS="$CFLAGS $LIBXML2_CFLAGS"
 
 REGISTRYINC=$registryinc
+XPATHINC=$xpathinc
 
 AC_SUBST(REGISTRYINC)
+AC_SUBST(XPATHINC)
 AC_SUBST(AXIS2INC)
 AC_SUBST(AXIOMINC)
 AC_SUBST(UTILINC)
 AC_SUBST(NEETHIINC)
 AC_SUBST(XMLSCHEMAINC)
 AC_SUBST(SAVAN_STORAGE)
+AC_SUBST(SAVAN_FILTER)
 AC_SUBST(SVC_DIR)
 
 export SAVAN_STORAGE
+export SAVAN_FILTER
 export SVC_DIR
 
 AC_CONFIG_FILES([Makefile \
@@ -185,6 +217,9 @@ AC_CONFIG_FILES([Makefile \
     src/storage/registry/Makefile\
     src/storage/registry/test/Makefile\
     src/storage/service/Makefile\
+    src/filters/Makefile\
+    src/filters/common/Makefile\
+    src/filters/xpath/Makefile\
     src/subs_mgr/Makefile\
     src/data/Makefile\
     src/util/Makefile
