@@ -10,7 +10,7 @@ INCLUDES = -I$(top_builddir)/include \
 			@AXIS2INC@ \
 		   	@AXIOMINC@ \
 		   	@NEETHIINC@ \
-			@REGISTRYINC@ \
+			@XPATHINC@ \
 		   	@UTILINC@
 
 EXTRA_DIST=

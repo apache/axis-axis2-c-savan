@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-#include <savan_storage_mgr.h>
+#include <savan_filter.h>
 #include <axutil_log.h>
 #include <axutil_hash.h>
 #include <axutil_property.h>
@@ -34,7 +34,7 @@
  */
 typedef struct savan_xpath_filter
 {
-    savan_storage_mgr_t filter;
+    savan_filter_t filter;
     axis2_char_t *dialect;
     axis2_conf_t *conf;
 } savan_xpath_filter_t;
@@ -43,30 +43,28 @@ typedef struct savan_xpath_filter
 
 AXIS2_EXTERN void AXIS2_CALL
 savan_xpath_filter_free(
-    savan_storage_mgr_t *filter,
+    savan_filter_t *filter,
     const axutil_env_t *env);
 
-AXIS2_EXTERN axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axiom_node_t *AXIS2_CALL
 savan_xpath_filter_apply(
-    savan_storage_mgr_t *filter,
+    savan_filter_t *filter,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,
     axiom_node_t *payload);
 
-static const savan_storage_mgr_ops_t storage_mgr_ops = 
+static const savan_filter_ops_t savan_filter_ops = 
 {
     savan_xpath_filter_free,
-    savan_xpath_filter_apply,
-    NULL
+    savan_xpath_filter_apply
 };
 
-AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-savan_storage_mgr_create(
+AXIS2_EXTERN savan_filter_t * AXIS2_CALL
+savan_filter_create(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
     savan_xpath_filter_t *filterimpl = NULL;
-    axis2_status_t status = AXIS2_FAILURE;
     
     filterimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_xpath_filter_t));
     if (!filterimpl)
@@ -79,14 +77,14 @@ savan_storage_mgr_create(
 
     filterimpl->dialect = NULL;
     filterimpl->conf = NULL;
-    filterimpl->filter.ops = &storage_mgr_ops;
+    filterimpl->filter.ops = &savan_filter_ops;
 
-    return (savan_storage_mgr_t *) filterimpl;
+    return (savan_filter_t *) filterimpl;
 }
 
 AXIS2_EXTERN void AXIS2_CALL
 savan_xpath_filter_free(
-    savan_storage_mgr_t *filter,
+    savan_filter_t *filter,
     const axutil_env_t *env)
 {
     savan_xpath_filter_t *filterimpl = NULL;
@@ -111,9 +109,9 @@ savan_xpath_filter_free(
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_xpath_filter_free");
 }
 
-AXIS2_EXTERN axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axiom_node_t *AXIS2_CALL
 savan_xpath_filter_apply(
-    savan_storage_mgr_t *filter,
+    savan_filter_t *filter,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,
     axiom_node_t *payload)
@@ -126,6 +124,6 @@ savan_xpath_filter_apply(
 	
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Exit:savan_xpath_filter_insert_subscriber");
-    return AXIS2_SUCCESS;
+    return NULL;
 }
 

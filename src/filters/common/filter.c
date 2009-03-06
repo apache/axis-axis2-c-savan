@@ -32,7 +32,7 @@ savan_filter_free(
      return filter->ops->free(filter, env);
 }
 
-AXIS2_EXTERN axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axiom_node_t *AXIS2_CALL
 savan_filter_apply(
     savan_filter_t *filter, 
     const axutil_env_t *env,
