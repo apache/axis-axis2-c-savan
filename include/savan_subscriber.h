@@ -37,6 +37,7 @@ extern "C"
 {
 #endif
 
+    struct savan_filter_mod;
     typedef struct savan_subscriber_t savan_subscriber_t;
 
 	/* Set the filter dialect
@@ -69,32 +70,6 @@ extern "C"
 
 	AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 		savan_subscriber_get_delivery_mode(
-    	savan_subscriber_t *subscriber,
-    	const axutil_env_t *env);
-
-	/*
- 	* Set the filter template into the subscriber.
- 	* @param subscriber pointer to the subscriber
- 	* @param env pointer to env
- 	* @param xslt template pointer to the stylesheet
- 	*/
-
-	AXIS2_EXTERN axis2_status_t AXIS2_CALL
-	savan_subscriber_set_filter_template(
-    	savan_subscriber_t *subscriber,
-    	const axutil_env_t *env,
-    	void* xslt_filter_template);
-
-	/*
- 	* Get the filter template from the subscriber.
- 	* needs to cast into a xsltStylesheepPtr
- 	* @param subscriber pointer to the subscriber
- 	* @param env pointer to env
- 	* @param xslt template pointer to the stylesheet
- 	*/
-
-	AXIS2_EXTERN void* AXIS2_CALL
-	savan_subscriber_get_filter_template(
     	savan_subscriber_t *subscriber,
     	const axutil_env_t *env);
 
@@ -236,6 +211,7 @@ extern "C"
     savan_subscriber_publish(
         savan_subscriber_t *subscriber,
         const axutil_env_t *env,
+        struct savan_filter_mod *filtermod,
         axiom_node_t *payload);
 
     /**
@@ -293,17 +269,6 @@ extern "C"
         savan_subscriber_t *subscriber,
         const axutil_env_t *env);*/
     
-    axis2_status_t AXIS2_CALL
-    savan_subscriber_set_filter_template_path(
-        savan_subscriber_t *subscriber,
-        const axutil_env_t *env,
-        axis2_char_t *path);
-
-    axis2_char_t *AXIS2_CALL
-    savan_subscriber_get_filter_template_path(
-        savan_subscriber_t *subscriber,
-        const axutil_env_t *env);
-
     /*AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_subscriber_set_topic_url(
         savan_subscriber_t *subscriber,

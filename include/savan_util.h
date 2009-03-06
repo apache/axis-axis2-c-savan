@@ -30,6 +30,7 @@
 #include <savan_subscriber.h>
 #include <savan_sub_processor.h>
 #include <savan_storage_mgr.h>
+#include <savan_filter_mod.h>
 #include <axiom_node.h>
 #include <axiom_element.h>
 
@@ -102,38 +103,6 @@ extern "C"
 		axis2_char_t * subcode,
 		axis2_char_t * reason,
 		axis2_char_t * detail);
-
-	/**
- 	* Apply the filter against the subscriber
- 	* @param subscriber, pointer to the subscriber
- 	* @param env, pointer to the environment
- 	* @param payload, pointer to the payload.
- 	* returns filtered payload. 
- 	* If filtered payload is not NULL send it to the sink.
- 	* Else nothing is sent.
- 	*/ 
-
-	axiom_node_t *AXIS2_CALL
-	savan_util_apply_filter(
-    	savan_subscriber_t *subscriber,
-    	const axutil_env_t *env,
-    	axiom_node_t *payload);
-
-	/**
- 	* Set the filter template for the subscriber
- 	* for filtering.
- 	* @param subscriber pointer to the subscriber
- 	* @param sub_processor, pointer to the sub_processor
- 	* @param env, pointer to the environment.
- 	* returns success, if operation is successful.
- 	*/
-
-    #ifdef SAVAN_FILTERING
-    axis2_status_t AXIS2_CALL
-    savan_util_set_filter_template_for_subscriber(
-        savan_subscriber_t *subscriber,
-        const axutil_env_t *env);
-    #endif
 
     savan_message_types_t AXIS2_CALL
     savan_util_get_message_type(
@@ -375,7 +344,8 @@ extern "C"
      * available as a message context property. Otherwise create it and set as message context
      * property.
      * @param env environment object
-     * @param msg_ctx message context instance
+     * @param conf_ctx configuration context instance
+     * @param conf Axis2 main configuration instance
      * @return storage manager
      */
     AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
@@ -383,6 +353,20 @@ extern "C"
         const axutil_env_t *env,
         axis2_conf_ctx_t *conf_ctx,
         axis2_conf_t *conf);
+
+    /**
+     * Retrieve filter handler. If it is already created for this request scope then it should be 
+     * available as a message context property. Otherwise create it and set as message context
+     * property.
+     * @param env environment object
+     * @param conf Axis2 main configuration instance
+     * @return filter handler
+     */
+    AXIS2_EXTERN savan_filter_mod_t * AXIS2_CALL
+    savan_util_get_filter_module(
+        const axutil_env_t *env,
+        axis2_conf_t *conf);
+
 /** @} */
 #ifdef __cplusplus
 }

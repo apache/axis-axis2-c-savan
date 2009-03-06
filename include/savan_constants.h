@@ -86,7 +86,8 @@ typedef struct savan_subs_mgr_info
 #define ELEM_NAME_REMOVE_TOPIC "RemoveTopic"
 #define DEFAULT_DELIVERY_MODE "http://schemas.xmlsoap.org/ws/2004/08/eventing/DeliveryModes/Push"
 #define XPATH_FILTER_DIALECT "http://www.w3.org/TR/1999/REC-xpath-19991116"
-#define DEFAULT_FILTER_DIALECT "http://synapse.apache.org/eventing/dialect/topicFilter"
+#define SYNAPSE_FILTER_DIALECT "http://synapse.apache.org/eventing/dialect/topicFilter"
+#define DEFAULT_FILTER_DIALECT "http://www.w3.org/TR/1999/REC-xpath-19991116"
 
 /* Eventing element names */
 #define ELEM_NAME_SUBSCRIBE             "Subscribe"
@@ -135,6 +136,7 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_FILTER_DIALECT "Dialect"
 #define SAVAN_SUBSCRIPTION_MANAGER "subscription"
 #define SAVAN_STORAGE_MANAGER "storage_mgr"
+#define SAVAN_FILTER "filter"
 #define SAVAN_SQLITE  "sqlite"
 #define SAVAN_INMEMORY_STORAGE  "inmemory"
 #define SAVAN_SERVICE_STORAGE  "service"
