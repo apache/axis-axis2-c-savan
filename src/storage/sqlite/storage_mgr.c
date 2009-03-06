@@ -284,11 +284,6 @@ savan_sqlite_storage_mgr_subscriber_find_callback(
             savan_subscriber_set_filter(subscriber, env, argv[i]);
         }
 
-        /*if(0 == axutil_strcmp(col_name[i], "topic_url") )
-        {
-            savan_subscriber_set_topic_url(subscriber, env, argv[i]);
-        }*/
-
         if(0 == axutil_strcmp(col_name[i], "renewed") )
         {
             savan_subscriber_set_renew_status(subscriber, env, 
@@ -367,11 +362,6 @@ savan_sqlite_storage_mgr_subs_retrieve_callback(
         {
             savan_subscriber_set_filter(subscriber, env, argv[i]);
         }
-
-        /*if(0 == axutil_strcmp(col_name[i], "topic_url"))
-        {
-            savan_subscriber_set_topic_url(subscriber, env, argv[i]);
-        }*/
 
         if(0 == axutil_strcmp(col_name[i], "renewed"))
         {
@@ -533,19 +523,8 @@ savan_sqlite_storage_mgr_insert_subscriber(
     }
     if(filter)
     {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] filter:%s", filter);
         counter++;
         if (sqlite3_bind_text(insertqry, counter, filter, strlen(filter), SQLITE_STATIC))
-        {
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "[savan] Sql insert error: %s", sqlite3_errmsg(dbconn));
-        }
-    }
-    if(topic_name)
-    {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] topic_name:%s", topic_name);
-        counter++;
-        if (sqlite3_bind_text(insertqry, counter, topic_name, strlen(topic_name), SQLITE_STATIC))
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Sql insert error: %s", sqlite3_errmsg(dbconn));
@@ -733,20 +712,8 @@ savan_sqlite_storage_mgr_update_subscriber(
 
     if(filter)
     {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] filter:%s", filter);
         counter++;
         if (sqlite3_bind_text(updateqry, counter, filter, strlen(filter), SQLITE_STATIC))
-        {
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "[savan] Sql update error: %s", sqlite3_errmsg(dbconn));
-        }
-    }
-
-    if(topic_name)
-    {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] topic_name:%s", topic_name);
-        counter++;
-        if (sqlite3_bind_text(updateqry, counter, topic_name, strlen(topic_name), SQLITE_STATIC))
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Sql update error: %s", sqlite3_errmsg(dbconn));
@@ -1005,13 +972,13 @@ savan_sqlite_storage_mgr_retrieve_all_subscribers(
    
     if(filter)
     {
-        sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
-        "expires, renewed from subscriber"\
-        " where filter='%s';", filter);
+        sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, expires, filter, "\
+                "renewed from subscriber where filter='%s';", filter);
     }
     else
     {
-        sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, expires, renewed from subscriber;");
+        sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, expires, filter, "\
+                "renewed from subscriber;");
     }
 
     rc = sqlite3_exec(dbconn, sql_retrieve, savan_sqlite_storage_mgr_subscriber_find_callback, args, &error_msg);
@@ -1149,8 +1116,7 @@ savan_sqlite_storage_mgr_create_db(
     int rc = -1;
     axis2_char_t *error_msg = NULL;
     sqlite3 *dbconn = NULL;
-    axis2_char_t *sql_stmt1 = NULL;
-    axis2_char_t *sql_stmt2 = NULL;
+    axis2_char_t *sql_stmt = NULL;
     axis2_status_t status = AXIS2_FAILURE;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sqlite_storage_mgr_create_db");
@@ -1171,28 +1137,14 @@ savan_sqlite_storage_mgr_create_db(
     }
     #endif
 
-    sql_stmt1 = "create table if not exists topic(topic_name varchar(100) "\
-                 "primary key, topic_url varchar(200))";
-    sql_stmt2 = "create table if not exists subscriber(id varchar(100) "\
+    sql_stmt = "create table if not exists subscriber(id varchar(100) "\
                   "primary key, end_to varchar(200), notify_to varchar(200), "\
                   "delivery_mode varchar(100), expires varchar(100), "\
-                  "filter varchar(200), topic_name varchar(100), "\
-                  "renewed boolean)";
+                  "filter varchar(200), renewed boolean)";
 
     if(dbconn)
     {
-        rc = sqlite3_exec(dbconn, sql_stmt1, NULL, 0, &error_msg);
-        if( rc != SQLITE_OK )
-        {
-            AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "[savan] Error creating database table topic; sql error: %s", error_msg);
-            AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_TABLE_CREATION_ERROR, AXIS2_FAILURE);
-            sqlite3_free(error_msg);
-            sqlite3_close(dbconn);
-            return AXIS2_FAILURE;
-        }
-
-        rc = sqlite3_exec(dbconn, sql_stmt2, NULL, 0, &error_msg);
+        rc = sqlite3_exec(dbconn, sql_stmt, NULL, 0, &error_msg);
         if( rc != SQLITE_OK )
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
