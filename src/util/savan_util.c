@@ -463,7 +463,6 @@ savan_util_get_topic_name_from_topic_url(
     const axutil_env_t *env,
     axis2_char_t *topic_url)
 {
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "came");
     axis2_char_t *topic = NULL;
     axis2_char_t *temp = NULL;
 
