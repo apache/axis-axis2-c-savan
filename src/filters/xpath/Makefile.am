@@ -15,4 +15,4 @@ INCLUDES = -I$(top_builddir)/include \
 			@XPATHINC@ \
 		   	@UTILINC@
 
-EXTRA_DIST=
+EXTRA_DIST=template.xsl
