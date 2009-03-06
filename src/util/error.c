@@ -83,6 +83,9 @@ savan_error_init()
     axutil_error_messages[SAVAN_ERROR_DATABASE_CREATION_ERROR] =
         "Could not create database";
 
+    axutil_error_messages[SAVAN_ERROR_FILTER_CREATION_FAILED] =
+        "Could not create the filter";
+
     return AXIS2_SUCCESS;
 }
 

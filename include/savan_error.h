@@ -99,6 +99,8 @@ extern "C"
         SAVAN_ERROR_DATABASE_TABLE_CREATION_ERROR,
         /* Could not create database */
         SAVAN_ERROR_DATABASE_CREATION_ERROR,
+        /* Could create the filter */
+        SAVAN_ERROR_FILTER_CREATION_FAILED,
         
         SAVAN_ERROR_LAST
     
