@@ -174,6 +174,9 @@ AC_ARG_WITH(xpath,
     else
         AC_MSG_ERROR(could not find libxml2. stop)
     fi
+    PKG_CHECK_MODULES(XSLT, libxslt)
+    CFLAGS="$CFLAGS -DSAVAN_FILTERING $XSLT_CFLAGS"
+    LDFLAGS="$LDFLAGS -lxslt"
     ;;
   esac ],
   AC_MSG_RESULT(no)
