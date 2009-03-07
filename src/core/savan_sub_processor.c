@@ -461,7 +461,7 @@ savan_sub_processor_validate_filter(
         reason = "";
         return AXIS2_SUCCESS;
 #else
-        axutil_error_set_error_number(env->error, SAVAN_ERROR_FILTERING_IS_NOT_SUPPORTED); 
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FILTERING_IS_NOT_SUPPORTED, AXIS2_FAILURE); 
         reason = (axis2_char_t *) axutil_error_get_message(env->error);
         savan_util_create_fault_envelope(msg_ctx, env,
                                          SAVAN_FAULT_FNS_CODE, 
@@ -480,7 +480,7 @@ savan_sub_processor_validate_filter(
 	{
         axis2_char_t *reason = NULL;
         
-        axutil_error_set_error_number(env->error, SAVAN_ERROR_REQUESTED_FILTER_DIALECT_IS_NOT_SUPPORTED); 
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_REQUESTED_FILTER_DIALECT_IS_NOT_SUPPORTED, AXIS2_FAILURE); 
         reason = (axis2_char_t *) axutil_error_get_message(env->error);
 		savan_util_create_fault_envelope(msg_ctx, env,
                                          SAVAN_FAULT_FRU_CODE, 

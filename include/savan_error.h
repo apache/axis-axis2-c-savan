@@ -42,21 +42,13 @@ extern "C"
     { 
         /* No error */
         SAVAN_ERROR_NONE = SAVAN_ERROR_CODES_START,
-    
+   
         /* The soap action of an eventing message was missing */    
         SAVAN_ERROR_SOAP_ACTION_NULL,
-        /* Failed to create an instance of subscription processor */
-        SAVAN_ERROR_FAILED_TO_CREATE_SUB_PROCESSOR,
         /* Failed to create an instance of subscriber */
         SAVAN_ERROR_FAILED_TO_CREATE_SUBSCRIBER,
-        /* Cannot determinet messsage type */    
-        SAVAN_ERROR_UNKNOWN_MSG_TYPE,
         /* Unhandled message type */
         SAVAN_ERROR_UNHANDLED_MSG_TYPE,
-        /* Service instance could not be found */
-        SAVAN_ERROR_SERVICE_NOT_FOUND,
-        /* Subscriber store could not be found */
-        SAVAN_ERROR_STORE_NOT_FOUND,
         /* Failed to build a default soap envelope */
         SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV,
 	    /* Requested delivery mode is not supported */

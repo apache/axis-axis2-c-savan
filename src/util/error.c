@@ -23,6 +23,18 @@ AXIS2_IMPORT extern const axis2_char_t* axutil_error_messages[];
 axis2_status_t AXIS2_CALL
 savan_error_init()
 {
+    axutil_error_messages[SAVAN_ERROR_SOAP_ACTION_NULL] = 
+        "The soap action of an eventing message was missing";
+    
+    axutil_error_messages[SAVAN_ERROR_FAILED_TO_CREATE_SUBSCRIBER] = 
+        "Failed to create an instance of subscriber";
+
+    axutil_error_messages[SAVAN_ERROR_UNHANDLED_MSG_TYPE] = 
+        "Unhandled message type";
+
+    axutil_error_messages[SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV] = 
+        "Failed to build a default soap envelope";
+    
     axutil_error_messages[SAVAN_ERROR_REQUESTED_DELIVERY_MODE_NOT_SUPPORTED] = 
         "Requested delivery mode is not supported";
 
