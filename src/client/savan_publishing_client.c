@@ -215,6 +215,7 @@ savan_publishing_client_publish_to_subscriber(
         return AXIS2_FAILURE;
     }
 
+#ifdef SAVAN_FILTERING
     /* If this is a filtering request and filter module is defined then filter the request.
      */
     if(filtermod && savan_subscriber_get_filter(subscriber, env))
@@ -230,6 +231,7 @@ savan_publishing_client_publish_to_subscriber(
             }
         }
     }
+#endif
 
     if(filtered_payload)
     {

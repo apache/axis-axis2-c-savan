@@ -143,10 +143,12 @@ AC_ARG_WITH(xpath,
   no)
     AC_MSG_RESULT(no)
     SAVAN_FILTER=""
+    SAVAN_FILTER_LIB=""
     ;;
   *)
     AC_MSG_RESULT(yes)
     SAVAN_FILTER="xpath"
+    SAVAN_FILTER_LIB=xpath/libsavan_filter_mod.la
     dnl Find libxml2 include dir in the path
     if test -d $withval; then
         xpathinc="-I$withval"
@@ -183,10 +185,12 @@ AC_SUBST(NEETHIINC)
 AC_SUBST(XMLSCHEMAINC)
 AC_SUBST(SAVAN_STORAGE)
 AC_SUBST(SAVAN_FILTER)
+AC_SUBST(SAVAN_FILTER_LIB)
 AC_SUBST(SVC_DIR)
 
 export SAVAN_STORAGE
 export SAVAN_FILTER
+export SAVAN_FILTER_LIB
 export SVC_DIR
 
 AC_CONFIG_FILES([Makefile \
