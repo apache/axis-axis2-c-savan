@@ -14,8 +14,8 @@
  * limitations under the License.
  */
  
-#ifndef SAVAN_FILTER_H
-#define SAVAN_FILTER_H
+#ifndef SAVAN_FILTER_MOD_H
+#define SAVAN_FILTER_MOD_H
 
 /**
   * @file savan_filter_mod.h
@@ -109,4 +109,4 @@ savan_filter_mod_apply(
 }
 #endif
 
-#endif /*SAVAN_FILTER_H*/
+#endif /*SAVAN_FILTER_MOD_H*/

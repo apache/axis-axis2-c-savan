@@ -30,14 +30,16 @@
 
 #include <axis2_defines.h>
 #include <axutil_env.h>
-#include <axis2_conf_ctx.h>
+#include <axis2_svc_client.h>
 #include <axutil_hash.h>
+#include <savan_subscriber.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+    struct savan_filter_mod;
     typedef struct savan_publishing_client_t savan_publishing_client_t;
 
     /**
@@ -52,8 +54,27 @@ extern "C"
         savan_publishing_client_t *client,
         const axutil_env_t *env,
         axiom_node_t *payload,
-        axis2_char_t *topic_url);
+        axis2_char_t *filter);
     
+     /**
+     * Publishes the given msg to the client.
+     * @param client pointer to publishing client
+     * @param svc_client pointer to service client
+     * @param env pointer to environment struct
+     * @param subscriber pointer to subscriber
+     * @param filtermod pointer to filter module
+     * @param payload the content to be published
+     * @return AXIS2_SUCCESS on success, else AXIS2_FAILURE 
+     */
+   AXIS2_EXTERN axis2_status_t AXIS2_CALL
+    savan_publishing_client_publish_to_subscriber(
+        savan_publishing_client_t *client,
+        const axutil_env_t *env,
+        axis2_svc_client_t *svc_client,
+        savan_subscriber_t *subscriber,
+        struct savan_filter_mod *filtermod,
+        axiom_node_t *payload);
+
     AXIS2_EXTERN savan_publishing_client_t * AXIS2_CALL
     savan_publishing_client_create(
         const axutil_env_t *env,

@@ -390,7 +390,6 @@ savan_sqlite_storage_mgr_insert_subscriber(
     axis2_char_t *delivery_mode = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *filter = NULL;
-    axis2_char_t *topic_name = NULL;
     int renewed = 0;
     axis2_endpoint_ref_t *endto_epr = NULL;
     axis2_endpoint_ref_t *notifyto_epr = NULL;
@@ -579,7 +578,6 @@ savan_sqlite_storage_mgr_update_subscriber(
     axis2_char_t *delivery_mode = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *filter = NULL;
-    axis2_char_t *topic_name = NULL;
     int renewed = 0;
     axis2_endpoint_ref_t *endto_epr = NULL;
     axis2_endpoint_ref_t *notifyto_epr = NULL;

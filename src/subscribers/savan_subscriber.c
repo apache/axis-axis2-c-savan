@@ -16,9 +16,7 @@
  
 #include <axiom.h>
 #include <platforms/axutil_platform_auto_sense.h>
-
 #include <axis2_endpoint_ref.h>
-#include <axis2_svc_client.h>
 
 #include <savan_subscriber.h>
 #include <savan_util.h>
@@ -32,8 +30,6 @@ struct savan_subscriber_t
     axis2_char_t *delivery_mode;
     axis2_char_t *expires;
     axis2_char_t *filter;
-    /*axis2_char_t *topic_name;
-    axis2_char_t *topic_url;*/
     axis2_bool_t renewed;
 	axis2_char_t *filter_dialect;
 };
@@ -59,8 +55,6 @@ savan_subscriber_create(
     subscriber->expires = NULL;
     subscriber->filter = NULL;
     subscriber->filter_dialect = NULL;
-    /*subscriber->topic_name = NULL;
-    subscriber->topic_url = NULL;*/
     subscriber->renewed = AXIS2_FALSE;
         
     return subscriber;
@@ -99,16 +93,6 @@ savan_subscriber_free(
     {
         AXIS2_FREE(env->allocator, subscriber->filter);
     }
-
-    /*if(subscriber->topic_name)
-    {
-        AXIS2_FREE(env->allocator, subscriber->topic_name);
-    }
-    
-    if(subscriber->topic_url)
-    {
-        AXIS2_FREE(env->allocator, subscriber->topic_url);
-    }*/
 
     if(subscriber->filter_dialect)
     {
@@ -289,92 +273,6 @@ savan_subscriber_get_filter(
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_subscriber_publish(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env,
-    savan_filter_mod_t *filtermod,
-    axiom_node_t *payload)
-{
-    axis2_svc_client_t *svc_client = NULL;
-    axis2_char_t *path = NULL;
-    axis2_options_t *options = NULL;
-    axis2_status_t status = AXIS2_SUCCESS;
-    axis2_endpoint_ref_t *to = NULL;
-    const axis2_char_t *address = NULL;
-    axiom_node_t *filtered_payload = NULL;
-
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subscriber_publish");
-	
-    path = AXIS2_GETENV("AXIS2C_HOME");
-    svc_client = axis2_svc_client_create(env, path);
-
-    if(!svc_client)
-    {
-        AXIS2_LOG_ERROR (env->log, AXIS2_LOG_SI, 
-            "[savan]svc_client creation failed, unable to continue");
-        return AXIS2_SUCCESS;
-    }
-
-
-    /* Setup options */
-    options = axis2_options_create(env);
-    if(subscriber->notify_to)
-    {
-        address = axis2_endpoint_ref_get_address(subscriber->notify_to, env);
-        if(address)
-        {
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Publishing to:%s", address);
-            to = axis2_endpoint_ref_create(env, address);
-            axis2_options_set_to(options, env, to);
-        }
-    }
-    axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
-
-	/* Apply the filter, and check whether it evaluates to success */
-
-    if(savan_subscriber_get_filter(subscriber, env) && !filtermod)
-    {
-        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FILTER_MODULE_COULD_NOT_BE_RETRIEVED, AXIS2_FAILURE);
-        return AXIS2_FAILURE;
-    }
-
-    if(filtermod)
-    {
-        filtered_payload = savan_filter_mod_apply(filtermod ,env, subscriber, payload);
-        if(!filtered_payload)
-        {
-            status = axutil_error_get_status_code(env->error);
-            if(AXIS2_SUCCESS != status)
-            {
-                return status;
-            }
-        }
-    }
-
-    /* Set service client options */
-    axis2_svc_client_set_options(svc_client, env, options);
-    if(filtered_payload)
-    {
-        axis2_svc_client_fire_and_forget(svc_client, env, filtered_payload);
-    }
-    else
-    {
-        axis2_svc_client_fire_and_forget(svc_client, env, payload);
-    }
-
-    axiom_node_detach(payload, env); /*insert this to prevent payload corruption in subsequent 
-                                       "publish" calls with some payload.*/
-    if(svc_client)
-    {
-        axis2_svc_client_free(svc_client, env);
-    }
-
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_subscriber_publish");
-
-    return status;
-}
-
-AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_subscriber_set_renew_status(
     savan_subscriber_t *subscriber,
     const axutil_env_t *env,
@@ -393,45 +291,3 @@ savan_subscriber_get_renew_status(
     return subscriber->renewed;
 }
 
-/*AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_subscriber_set_topic_name(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env,
-    axis2_char_t *topic_name)
-{
-    subscriber->topic_name = axutil_strdup(env, topic_name);
-
-    return AXIS2_SUCCESS;
-}
-
-AXIS2_EXTERN axis2_char_t *AXIS2_CALL
-savan_subscriber_get_topic_name(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env)
-{
-    return subscriber->topic_name;
-}
-
-AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_subscriber_set_topic_url(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env,
-    axis2_char_t *topic_url)
-{
-    subscriber->topic_url = axutil_strdup(env, topic_url);
-    if(!subscriber->topic_name)
-    {
-        subscriber->topic_name = savan_util_get_topic_name_from_topic_url(env, topic_url);
-    }
-
-    return AXIS2_SUCCESS;
-}
-
-AXIS2_EXTERN axis2_char_t *AXIS2_CALL
-savan_subscriber_get_topic_url(
-    savan_subscriber_t *subscriber,
-    const axutil_env_t *env)
-{
-    return subscriber->topic_url;
-}
-*/

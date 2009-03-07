@@ -30,7 +30,6 @@
 
 #include <axis2_defines.h>
 #include <axutil_env.h>
-#include <axis2_conf_ctx.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -201,20 +200,6 @@ extern "C"
         const axutil_env_t *env);
 
     /**
-     * Publishes the given msg to the client.
-     * @param subscriber pointer to subscriber
-     * @param env pointer to environment struct
-     * @param payload the content to be published
-     * @return AXIS2_SUCCESS on success, else AXIS2_FAILURE 
-     */
-    AXIS2_EXTERN axis2_status_t AXIS2_CALL
-    savan_subscriber_publish(
-        savan_subscriber_t *subscriber,
-        const axutil_env_t *env,
-        struct savan_filter_mod *filtermod,
-        axiom_node_t *payload);
-
-    /**
      * Set whether the subscription is renewed or not.
      * @param subscriber pointer to subscriber
      * @param env pointer to environment struct
@@ -258,27 +243,6 @@ extern "C"
         void *subscriber, 
         const axutil_env_t *env);
 
-    /*AXIS2_EXTERN axis2_status_t AXIS2_CALL
-        savan_subscriber_set_topic_name(
-        savan_subscriber_t *subscriber,
-        const axutil_env_t *env,
-        axis2_char_t *topic_name);
-
-    AXIS2_EXTERN axis2_char_t *AXIS2_CALL
-    savan_subscriber_get_topic_name(
-        savan_subscriber_t *subscriber,
-        const axutil_env_t *env);*/
-    
-    /*AXIS2_EXTERN axis2_status_t AXIS2_CALL
-    savan_subscriber_set_topic_url(
-        savan_subscriber_t *subscriber,
-        const axutil_env_t *env,
-        axis2_char_t *topic_url);
-
-    AXIS2_EXTERN axis2_char_t *AXIS2_CALL
-    savan_subscriber_get_topic_url(
-        savan_subscriber_t *subscriber,
-        const axutil_env_t *env);*/
 /** @} */
 #ifdef __cplusplus
 }
