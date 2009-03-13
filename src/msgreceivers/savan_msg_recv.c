@@ -477,6 +477,14 @@ savan_msg_recv_handle_get_status_request(
     /* Expires element */
 
     subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, storage_mgr, NULL);
+    if(!subscriber)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[savan] Failed get subscriber using msg from storage manager"); 
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
+
+        return AXIS2_FAILURE;
+    }
     expires = savan_subscriber_get_expires(subscriber, env);
     if(expires)
     {

@@ -230,7 +230,9 @@ savan_util_get_subscriber_from_msg(
         sub_id = savan_util_get_subscription_id_from_msg(env, msg_ctx);
     }
 
+    axutil_allocator_switch_to_global_pool(env->allocator);
     subscriber = savan_storage_mgr_retrieve_subscriber(storage_mgr, env, sub_id);
+    axutil_allocator_switch_to_local_pool(env->allocator);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_get_subscriber_from_msg");
     
@@ -270,7 +272,9 @@ savan_util_get_subscriber_from_renew_msg(
         sub_id = savan_util_get_subscription_id_from_msg(env, msg_ctx);
     }
 
+    axutil_allocator_switch_to_global_pool(env->allocator);
     subscriber = savan_storage_mgr_retrieve_subscriber(storage_mgr, env, sub_id);
+    axutil_allocator_switch_to_local_pool(env->allocator);
     
     /* Get soap envelop and extract the subscription id */
 
@@ -353,6 +357,7 @@ savan_util_add_subscriber(
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_add_subscriber");
     
+    axutil_allocator_switch_to_global_pool(env->allocator);
     status = savan_storage_mgr_insert_subscriber(storage_mgr, env, subscriber);
     if(status)
     {
@@ -361,6 +366,7 @@ savan_util_add_subscriber(
             savan_subscriber_free_void_arg, subscriber);
         axis2_msg_ctx_set_property(msg_ctx, env, SAVAN_SUBSCRIBER, subs_prop);
     }
+    axutil_allocator_switch_to_local_pool(env->allocator);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_add_subscriber"); 
     return status;
@@ -375,7 +381,9 @@ savan_util_update_subscriber(
 {
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_update_subscriber");
 
+    axutil_allocator_switch_to_global_pool(env->allocator);
     savan_storage_mgr_update_subscriber(storage_mgr, env, subscriber);
+    axutil_allocator_switch_to_local_pool(env->allocator);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_update_subscriber"); 
     return AXIS2_SUCCESS;
@@ -388,17 +396,15 @@ savan_util_remove_subscriber(
     savan_storage_mgr_t *storage_mgr,
     savan_subscriber_t *subscriber)
 {
+    const axis2_char_t *subs_id = NULL;
+
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_remove_subscriber");
 
-    {
-        const axis2_char_t *subs_id = NULL;
+    axutil_allocator_switch_to_global_pool(env->allocator);
+    subs_id = savan_subscriber_get_id(subscriber, env);
 
-        subs_id = savan_subscriber_get_id(subscriber, env);
-
-        /* Extract the store from the svc and remove the given subscriber */
-
-        savan_storage_mgr_remove_subscriber(storage_mgr, env, subs_id);
-    }
+    savan_storage_mgr_remove_subscriber(storage_mgr, env, subs_id);
+    axutil_allocator_switch_to_local_pool(env->allocator);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_remove_subscriber");
     return AXIS2_SUCCESS;
@@ -910,6 +916,7 @@ savan_util_get_storage_mgr(
     axutil_property_t *storage_mgr_prop = NULL;
     savan_storage_mgr_t *storage_mgr = NULL;
 
+    axutil_allocator_switch_to_global_pool(env->allocator);
     if(conf_ctx)
     {
         storage_mgr_prop = axis2_conf_ctx_get_property(conf_ctx, env, SAVAN_STORAGE_MANAGER);
@@ -929,6 +936,8 @@ savan_util_get_storage_mgr(
             axis2_conf_ctx_set_property(conf_ctx, env, SAVAN_STORAGE_MANAGER, storage_mgr_prop);
         }
     }
+        
+    axutil_allocator_switch_to_local_pool(env->allocator);
 
     return storage_mgr;
 }
