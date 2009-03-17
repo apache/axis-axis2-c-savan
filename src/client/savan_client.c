@@ -178,7 +178,7 @@ savan_client_subscribe(
     return AXIS2_SUCCESS;
 }
 
-AXIS2_EXTERN axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_char_t *AXIS2_CALL
 savan_client_renew(
     savan_client_t *client,
     const axutil_env_t *env,
@@ -194,7 +194,8 @@ savan_client_renew(
     axiom_element_t *renew_elem = NULL;
     axiom_element_t *expires_elem = NULL;
     axis2_char_t *expires = NULL;
-    axis2_status_t status = AXIS2_FAILURE;
+    axis2_char_t *renew_elem_localname = NULL;
+    axutil_qname_t *qname = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_client_renew");
     
@@ -230,15 +231,38 @@ savan_client_renew(
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Failed to send renew request. Error: %d Reason: %s", 
                 env->error->error_number, AXIS2_ERROR_GET_MESSAGE(env->error));
-        status = AXIS2_FAILURE;
+        return NULL;
     }
-    else
+   
+    renew_elem = (axiom_element_t*)axiom_node_get_data_element(reply, env);
+    /* Check whether we have received a RenewResponse */
+    renew_elem_localname = axiom_element_get_localname(renew_elem, env);
+
+    if (axutil_strcmp(ELEM_NAME_RENEW_RESPONSE, renew_elem_localname))
     {
-        status = AXIS2_SUCCESS;
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to retrieve RenewResponse"\
+            "element. Error: %d Reason: %s", env->error->error_number,
+            AXIS2_ERROR_GET_MESSAGE(env->error));
+        return NULL;
     }
+
+    /* Get Expires element from RenewResponse element */
+    qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, NULL);
+    expires_elem = axiom_element_get_first_child_with_qname(renew_elem, env, qname, reply, 
+            &expires_node);
+    axutil_qname_free(qname, env);
+    if(!expires_node)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to retrieve Expires"\
+            "element. Error: %d Reason: %s", env->error->error_number,
+            AXIS2_ERROR_GET_MESSAGE(env->error));
+        return NULL;
+    }
+   
+    expires = axiom_element_get_text(expires_elem, env, expires_node);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_client_renew");
-    return status;
+    return expires;
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
@@ -255,8 +279,7 @@ savan_client_unsubscribe(
     axiom_element_t *unsub_elem = NULL;
     axis2_status_t status = AXIS2_FAILURE;
     
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] Start:savan_client_unsubscribe");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_client_unsubscribe");
     
     /* set wsa action as Unsub. remember the old action */
     wsa_options = (axis2_options_t*)axis2_svc_client_get_options(svc_client, env);
@@ -284,8 +307,7 @@ savan_client_unsubscribe(
     }
     else
         status = AXIS2_SUCCESS;
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-        "[savan] End:savan_client_unsubscribe");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_client_unsubscribe");
     return status;
 }
 
@@ -301,17 +323,14 @@ savan_client_get_status(
     axiom_namespace_t *ns = NULL;
     axiom_node_t *reply = NULL;
     axiom_node_t *status_node = NULL;
-    axiom_node_t *body_node = NULL;
-    axiom_node_t *response_node = NULL;
     axiom_node_t *expires_node = NULL;
     axiom_element_t *status_elem = NULL;
-    axiom_element_t *body_elem = NULL;
-    axiom_element_t *response_elem = NULL;
+    axiom_element_t *renew_elem = NULL;
     axiom_element_t *expires_elem = NULL;
     axis2_char_t *expires = NULL;
+    axis2_char_t *status_elem_localname = NULL;
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan][client] "
-        "get status...");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_client_get_status");
     
     /* Set wsa action as GetStatus. remember the old action */
     wsa_options = (axis2_options_t*)axis2_svc_client_get_options(svc_client, env);
@@ -338,27 +357,37 @@ savan_client_get_status(
         return NULL;
     }
     
-    /* Extract the expire string and return */
+    status_elem = (axiom_element_t*)axiom_node_get_data_element(reply, env);
     
-    /* Get Body element from body node */
-    body_elem = (axiom_element_t*)axiom_node_get_data_element(reply, env);
-    
-    /* Get Subscribe element from Body */
-    qname = axutil_qname_create(env, ELEM_NAME_GETSTATUS_RESPONSE, EVENTING_NAMESPACE, NULL);
-    response_elem = axiom_element_get_first_child_with_qname(body_elem, env, qname,
-        body_node, &response_node);
-    axutil_qname_free(qname, env);
+    /* Check whether we have received a GetStatusResponse */
+    status_elem_localname = axiom_element_get_localname(status_elem, env);
+
+    if (axutil_strcmp(ELEM_NAME_GETSTATUS_RESPONSE, status_elem_localname))
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to retrieve GetStatusResponse"\
+            "element. Error: %d Reason: %s", env->error->error_number,
+            AXIS2_ERROR_GET_MESSAGE(env->error));
+        return NULL;
+    }
     
     /* Now read Expires sub element */
-        
-    /* Expires */
     qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, NULL);
-    expires_elem = axiom_element_get_first_child_with_qname(response_elem, env, qname,
-        response_node, &expires_node);
+    expires_elem = axiom_element_get_first_child_with_qname(renew_elem, env, qname, reply, 
+            &expires_node);
     axutil_qname_free(qname, env);
-    
+    if(!expires_node)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to retrieve Expires"\
+            "element. Error: %d Reason: %s", env->error->error_number,
+            AXIS2_ERROR_GET_MESSAGE(env->error));
+        return NULL;
+    }
+   
+    expires_elem = (axiom_element_t *) axiom_node_get_data_element(expires_node, env);
+
     expires = axiom_element_get_text(expires_elem, env, expires_node);
     
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_client_get_status");
     return expires;
 }
 

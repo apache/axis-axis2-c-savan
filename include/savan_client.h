@@ -63,9 +63,9 @@ extern "C"
      * @param env pointer to environment struct
      * @param svc_client client for the publisher service
      * @param options map containing options for the Renew request
-     * @return AXIS2_SUCCESS on success, else AXIS2_FAILURE 
+     * @return new expiry date. 
      */
-    AXIS2_EXTERN axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_char_t *AXIS2_CALL
     savan_client_renew(
         savan_client_t *client,
         const axutil_env_t *env,

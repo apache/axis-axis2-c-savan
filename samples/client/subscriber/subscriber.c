@@ -100,16 +100,16 @@ int main(int argc, char** argv)
      * Following commented lines show how to use filtering when savan server side is
      * built and running with filtering enabled.
      */
-    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
+    /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
         "//weather_report");
 
     axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
-        XPATH_FILTER_DIALECT);
+        XPATH_FILTER_DIALECT);*/
     
-    /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING, "weather/4");
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING, "weather/4");
 
     axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
-        SYNAPSE_FILTER_DIALECT);*/
+        SYNAPSE_FILTER_DIALECT);
 
     /* Create a savan client */
     savan_client = savan_client_create(env);
@@ -144,6 +144,8 @@ int main(int argc, char** argv)
         }
         else if(2 == action)
         {
+            axis2_char_t *renew_status = NULL;
+
             printf("Renewing subscription...\n");
             address = savan_client_get_sub_url(savan_client);
             printf("address:%s\n", address); 
@@ -152,10 +154,11 @@ int main(int argc, char** argv)
             /*axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "2010-02-12T06:54Z");*/
             axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "2009-04-26T21:07:00.000-08:00");
             /*axutil_hash_set(savan_options, SAVAN_OP_KEY_EXPIRES, AXIS2_HASH_KEY_STRING, "P3Y6M4DT12H30M5S");*/
-            status = savan_client_renew(savan_client, env, svc_client, savan_options);
-            if (status == AXIS2_SUCCESS)
+            renew_status = savan_client_renew(savan_client, env, svc_client, savan_options);
+            if (renew_status)
             {
                 printf("Renew successful\n");
+                printf("Renewed Subscription expires on:%s\n", renew_status);
             }
         }
         else if(3 == action)
@@ -168,6 +171,7 @@ int main(int argc, char** argv)
             subs_status = savan_client_get_status(savan_client, env, svc_client);
             if (subs_status)
             {
+                printf("GetStatus successful\n");
                 printf("Subscription expires on:%s\n", subs_status);
             }
         }
