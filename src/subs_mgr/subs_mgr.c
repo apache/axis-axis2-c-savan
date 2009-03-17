@@ -102,7 +102,7 @@ savan_subs_mgr_add_subscriber(
     storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
     if(!storage_mgr)
     {
-        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
         return NULL;
     }
     if(savan_storage_mgr_insert_subscriber(storage_mgr, env, subscriber))
@@ -165,7 +165,7 @@ savan_subs_mgr_remove_subscriber(
     storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
     if(!storage_mgr)
     {
-        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
         return NULL;
     }
 
@@ -252,7 +252,7 @@ savan_subs_mgr_get_subscriber(
     storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
     if(!storage_mgr)
     {
-        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
         return NULL;
     }
     subscriber = savan_storage_mgr_retrieve_subscriber(storage_mgr, env, subs_id);
@@ -383,5 +383,14 @@ savan_subs_mgr_get_subscriber_list(
  
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_get_subscriber_list");
     return subs_list_node;
+}
+
+AXIS2_EXTERN axiom_node_t *AXIS2_CALL
+savan_subs_mgr_get_topic_list(
+    const axutil_env_t *env,
+    axiom_node_t *node,
+    axis2_msg_ctx_t *msg_ctx)
+{
+	return NULL;
 }
 

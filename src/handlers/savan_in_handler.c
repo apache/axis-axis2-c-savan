@@ -87,7 +87,7 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the database. Check \
             whether database path is correct and accessible. Exit loading the Savan module");
-        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
 
         return AXIS2_FAILURE;
     }

@@ -22,7 +22,9 @@ SAVAN_CODE = $(SAVANSRC)\src\core\*.c \
 		 $(SAVANSRC)\src\handlers\*.c \
 		 $(SAVANSRC)\src\util\*.c \
 		 $(SAVANSRC)\src\subscribers\*.c \
-		 $(SAVANSRC)\src\msgreceivers\*.c 
+		 $(SAVANSRC)\src\msgreceivers\*.c \
+		 $(SAVANSRC)\src\storage\common\*.c \
+		 $(SAVANSRC)\src\storage\inmemory\*.c 
 		
 #compiler options
 CC = @cl.exe
@@ -119,7 +121,7 @@ SAVAN_CLIENT_SRC = $(SAVANSRC)\src\client\*.c \
 $(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll :
 	if not exist $(SAVANINTDIR)\client mkdir $(SAVANINTDIR)\client
 	$(CC) $(CFLAGS) $(SAVAN_CLIENT_SRC) /Fo$(SAVANINTDIR)\client\ /c
-	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\client\*.obj /DLL \
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANDLL).lib $(SAVANINTDIR)\client\*.obj /DLL \
 	/OUT:$(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll /IMPLIB:$(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).lib
 	-@$(_VC_MANIFEST_EMBED_DLL)
 
@@ -130,7 +132,7 @@ savan_client: $(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll
 
 $(SAVANDISTDIR)\services\subscription\subscription.dll :
 	$(CC) $(CFLAGS) $(SAVANSRC)\src\subs_mgr\*.c /Fo$(SAVANINTDIR)\samples\subscription\ /c
-	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscription\*.obj  $(SAVAN_CLIENT).lib /DLL \
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANDLL).lib $(SAVANINTDIR)\samples\subscription\*.obj  $(SAVAN_CLIENT).lib /DLL \
 	/OUT:$(SAVANDISTDIR)\services\subscription\subscription.dll
 	-@$(_VC_MANIFEST_EMBED_DLL)
 	@copy $(SAVANSRC)\src\subs_mgr\services.xml $(SAVANDISTDIR)\services\subscription\
@@ -163,7 +165,7 @@ $(SAVANDISTDIR)\bin\samples\savan\subscriber.exe :
 
 subscriber: $(SAVANDISTDIR)\bin\samples\savan\subscriber.exe
 	
-dist: clean distdir intdir savan savan_client publisher listener subscription subscriber copy_include copy_samples copy_extra
+dist: clean distdir intdir savan savan_client listener subscription subscriber copy_include copy_samples copy_extra
 
 
 	 

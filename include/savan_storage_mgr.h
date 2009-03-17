@@ -112,7 +112,7 @@ savan_storage_mgr_create(
  * @param storage_mgr
  * @param env environment object
  */
-void AXIS2_CALL 
+AXIS2_EXTERN void AXIS2_CALL 
 savan_storage_mgr_free(
     savan_storage_mgr_t *storage_mgr,
     const axutil_env_t *envv);

@@ -22,6 +22,7 @@
 #include <axiom_soap_fault.h>
 #include <axutil_property.h>
 #include <axis2_addr.h>
+#include <axutil_error.h>
 
 #include <savan_util.h>
 #include <savan_constants.h>
@@ -362,7 +363,7 @@ savan_msg_recv_handle_renew_request(
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
             whether resource path is correct and accessible. Exit loading the Savan module");
-        AXIS2_LOG_HANDLE(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
 
         return AXIS2_FAILURE;
     }
