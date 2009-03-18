@@ -140,7 +140,6 @@ savan_msg_recv_invoke_business_logic_sync(
     {
         axis2_char_t *reason = NULL;
 
-        axutil_error_set_error_number(env->error, SAVAN_ERROR_REQUESTED_DELIVERY_MODE_NOT_SUPPORTED); 
         reason = (axis2_char_t *) axutil_error_get_message(env->error);
         savan_util_create_fault_envelope(msg_ctx, env,
                                          SAVAN_FAULT_ESUP_CODE, 
