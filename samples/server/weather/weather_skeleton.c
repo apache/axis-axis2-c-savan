@@ -53,12 +53,7 @@ weather_init(axis2_svc_skeleton_t *svc_skeleton,
           const axutil_env_t *env);
 
 static void
-start_weather_thread(
-    const axutil_env_t *env,
-    axis2_conf_t *conf);
-
-static void
-stop_weather_thread(
+send_weather_event(
     const axutil_env_t *env,
     axis2_conf_t *conf);
 
@@ -71,11 +66,6 @@ weather_init_with_conf(
 axiom_node_t* AXIS2_CALL
 weather_on_fault(axis2_svc_skeleton_t *svc_skeli, 
     const axutil_env_t *env, axiom_node_t *node);
-
-static void * AXIS2_THREAD_FUNC
-weather_worker_func(
-    axutil_thread_t *thrd,
-    void* data);
 
 static const axis2_svc_skeleton_ops_t weather_skeleton_ops_var = {
     weather_init,
@@ -116,8 +106,7 @@ weather_init(axis2_svc_skeleton_t *svc_skeleton,
      * the array list of functions 
      */
 
-    axutil_array_list_add(svc_skeleton->func_array, env, "start");
-    axutil_array_list_add(svc_skeleton->func_array, env, "stop");
+    axutil_array_list_add(svc_skeleton->func_array, env, "send");
 
     /* Any initialization stuff of service should go here */
 
@@ -131,7 +120,7 @@ weather_init_with_conf(
     axis2_conf_t *conf)
 {
     weather_init(svc_skeleton, env);
-    /*start_weather_thread(env, conf); */
+    /*send_weather_event(env, conf); */
     return AXIS2_SUCCESS;
 }
 
@@ -168,15 +157,10 @@ weather_invoke(
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "op_name:%s", op_name);
                 if (op_name)
                 {
-                    if (axutil_strcmp(op_name, "start") == 0)
+                    if (axutil_strcmp(op_name, "send") == 0)
                     {
-                        start_weather_thread(env, conf); 
-                        return axis2_weather_start(env, node);
-                    }
-                    if (axutil_strcmp(op_name, "stop") == 0)
-                    {
-                        stop_weather_thread(env, conf); 
-                        return axis2_weather_stop(env, node);
+                        send_weather_event(env, conf); 
+                        return axis2_weather_send(env, node);
                     }
                 }
             }
@@ -187,48 +171,6 @@ weather_invoke(
             "[savan] Weather service ERROR: invalid OM parameters in request");
 
     return NULL;
-}
-
-static void
-start_weather_thread(
-    const axutil_env_t *env,
-    axis2_conf_t *conf)
-{
-
-	axutil_thread_t *worker_thread = NULL;
-	weather_data_t *data = NULL;
-
-    /* Invoke the business logic.
-     * Depending on the function name invoke the correct impl method.
-     */
-
-    data = AXIS2_MALLOC(env->allocator, sizeof(weather_data_t));
-    data->env = (axutil_env_t*)env;
-    data->conf = conf;
-    
-    worker_thread = axutil_thread_pool_get_thread(env->thread_pool,
-        weather_worker_func, (void*)data);
-    if(! worker_thread)
-    {
-        return;
-    }
-    axutil_thread_pool_thread_detach(env->thread_pool, worker_thread);
-}
-
-static void
-stop_weather_thread(
-    const axutil_env_t *env,
-    axis2_conf_t *conf)
-{
-    axis2_svc_t *svc = NULL;
-    axutil_param_t *param = NULL;
-    
-    svc = axis2_conf_get_svc(conf, env, WEATHER);
-    param = axis2_svc_get_param(svc, env, WEATHER_STATUS);
-    if(param)
-    {
-        axutil_param_set_value(param, env, axutil_strdup(env, AXIS2_VALUE_FALSE));
-    }
 }
 
 /* On fault, handle the fault */
@@ -269,63 +211,33 @@ weather_free(axis2_svc_skeleton_t *svc_skeleton,
     return AXIS2_SUCCESS; 
 }
 
-static void * AXIS2_THREAD_FUNC
-weather_worker_func(
-    axutil_thread_t *thrd,
-    void* data)
+static void
+send_weather_event(
+    const axutil_env_t *env,
+    axis2_conf_t *conf)
 {
-    axutil_env_t *main_env = NULL;
-    axutil_env_t *env = NULL;
     axiom_namespace_t *test_ns = NULL;
     axiom_element_t* test_elem = NULL;
     axiom_node_t *test_node = NULL;
     axiom_element_t* test_elem1 = NULL;
     axiom_node_t *test_node1 = NULL;
-    axis2_conf_t *conf = NULL;
     axis2_svc_t *svc = NULL;
-    axis2_char_t *value = AXIS2_VALUE_TRUE;
-    axutil_param_t *param = NULL;
+    savan_publishing_client_t *pub_client = NULL;
     
-    weather_data_t *mydata = (weather_data_t*)data;
-    main_env = mydata->env;
-    conf = mydata->conf;
-    
-    env = axutil_init_thread_env(main_env);
-
     svc = axis2_conf_get_svc(conf, env, WEATHER);
-    param = axutil_param_create(env, WEATHER_STATUS, axutil_strdup(env, AXIS2_VALUE_TRUE));
-    if(!param)
-    {
-        AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
-        return NULL;
-    }
-    axis2_svc_add_param(svc, env, param);
-    while(!axutil_strcmp(value, AXIS2_VALUE_TRUE))
-    {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Inside while loop");
-        {
-            savan_publishing_client_t *pub_client = NULL;
 
-            pub_client = savan_publishing_client_create(env, conf, svc);
-            /* Build a payload and pass it to the savan publishing client */ 
-            test_ns = axiom_namespace_create (env, "http://www.wso2.com/savan/c/weather", "weather");
-            test_elem = axiom_element_create(env, NULL, "weather", test_ns, &test_node);
-            test_elem1 = axiom_element_create(env, test_node, "weather_report", NULL, &test_node1);
+    pub_client = savan_publishing_client_create(env, conf, svc);
+    /* Build a payload and pass it to the savan publishing client */ 
+    test_ns = axiom_namespace_create (env, "http://www.wso2.com/savan/c/weather", "weather");
+    test_elem = axiom_element_create(env, NULL, "weather", test_ns, &test_node);
+    test_elem1 = axiom_element_create(env, test_node, "weather_report", NULL, &test_node1);
 
-			axiom_element_set_text(test_elem1, env, "sunny day", test_node1);
+    axiom_element_set_text(test_elem1, env, "sunny day", test_node1);
 
-            savan_publishing_client_publish(pub_client, env, test_node, NULL);
-            savan_publishing_client_free(pub_client, env);
-            param = axis2_svc_get_param(svc, env, WEATHER_STATUS);
-            if(param)
-            {
-                value = axutil_param_get_value(param, env);
-                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] value:%s", value);
-            }
-        }
-        AXIS2_SLEEP(5);
-    }
-    return NULL;
+    savan_publishing_client_publish(pub_client, env, test_node, NULL);
+    savan_publishing_client_free(pub_client, env);
+    
+    return;
 }
 
 /**

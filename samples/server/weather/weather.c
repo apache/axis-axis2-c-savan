@@ -26,29 +26,16 @@ build_om_programatically(
         axis2_char_t *text);
 
 axiom_node_t *
-axis2_weather_start(
+axis2_weather_send(
         const axutil_env_t *env, 
         axiom_node_t *node)
 {
 	axiom_node_t *ret_node = NULL;
 
-    ret_node = build_om_programatically(env, "Weather event source started successfully");
+    ret_node = build_om_programatically(env, "Weather event source generated event successfully");
 
     return ret_node;
 }
-
-axiom_node_t *
-axis2_weather_stop(
-        const axutil_env_t *env, 
-        axiom_node_t *node)
-{
-	axiom_node_t *ret_node = NULL;
-
-    ret_node = build_om_programatically(env, "Weather event source stopped successfully");
-
-    return ret_node;
-}
-
 
 /* Builds the response content */
 axiom_node_t *

@@ -121,9 +121,8 @@ int main(int argc, char** argv)
                 "2 renew\n"\
                 "3 get status\n"\
                 "4 unsubscribe\n"\
-                "5 start weather event source\n"\
-                "6 stop weather event source\n"\
-                "7 quit\n\n");
+                "5 Generate event from weather event source\n"\
+                "6 quit\n\n");
 
         scanf("%d", &action);
 
@@ -191,20 +190,11 @@ int main(int argc, char** argv)
         else if(5 == action)
         {
             axis2_options_set_action(options, env,
-                "http://ws.apache.org/axis2/c/savan/samples/weather/start");
+                "http://ws.apache.org/axis2/c/savan/samples/weather/send");
             endpoint_ref = axis2_options_get_to(options, env);
             axis2_endpoint_ref_set_address(endpoint_ref, env, address);
             axis2_svc_client_remove_all_headers(svc_client, env);
-            event_source_handle_lifecycle((axutil_env_t*)env, svc_client, address, "start");
-        }
-        else if(6 == action)
-        {
-            axis2_options_set_action(options, env,
-                "http://ws.apache.org/axis2/c/savan/samples/weather/stop");
-            endpoint_ref = axis2_options_get_to(options, env);
-            axis2_endpoint_ref_set_address(endpoint_ref, env, address);
-            axis2_svc_client_remove_all_headers(svc_client, env);
-            event_source_handle_lifecycle((axutil_env_t*)env, svc_client, address, "stop");
+            event_source_handle_lifecycle((axutil_env_t*)env, svc_client, address, "send");
         }
         else if(7 == action)
         {
