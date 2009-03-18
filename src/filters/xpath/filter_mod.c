@@ -64,7 +64,7 @@ savan_xpath_filter_mod_free(
     savan_filter_mod_t *filtermod,
     const axutil_env_t *env);
 
-AXIS2_EXTERN axiom_node_t *AXIS2_CALL
+AXIS2_EXTERN axis2_bool_t AXIS2_CALL
 savan_xpath_filter_mod_apply(
     savan_filter_mod_t *filtermod,
     const axutil_env_t *env,
@@ -138,23 +138,18 @@ savan_xpath_filter_mod_free(
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_xpath_filter_mod_free");
 }
 
-AXIS2_EXTERN axiom_node_t *AXIS2_CALL
+AXIS2_EXTERN axis2_bool_t AXIS2_CALL
 savan_xpath_filter_mod_apply(
     savan_filter_mod_t *filtermod,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,
     axiom_node_t *payload)
 {
-    xmlChar *buffer = NULL;
-    int size = 0;
     axis2_char_t *payload_string = NULL;
     xmlDocPtr payload_doc = NULL;
     xsltStylesheetPtr xslt_template_filter = NULL;
-    axiom_xml_reader_t *reader = NULL;
-    axiom_stax_builder_t *om_builder = NULL;
-    axiom_document_t *document = NULL;
-    axiom_node_t *node = NULL;
     xmlChar *xfilter = NULL;
+    xmlDocPtr result_doc;
     savan_xpath_filter_mod_t *filtermodimpl = NULL;
 
     filtermodimpl = SAVAN_INTF_TO_IMPL(filtermod);
@@ -165,7 +160,7 @@ savan_xpath_filter_mod_apply(
 	xfilter = (xmlChar *) savan_subscriber_get_filter(subscriber, env);
 	if(!xfilter)
 	{
-		return payload;
+		return AXIS2_FALSE;
 	}
 
     payload_string = axiom_node_to_string(payload, env);
@@ -177,61 +172,17 @@ savan_xpath_filter_mod_apply(
     xslt_template_filter = (xsltStylesheetPtr) savan_xpath_filter_mod_get_filter_template(env, 
             filtermodimpl->filter_template_path, xfilter);
 
-    xmlDocPtr result_doc = (xmlDocPtr)xsltApplyStylesheet(xslt_template_filter, payload_doc, NULL);
+    result_doc = (xmlDocPtr)xsltApplyStylesheet(xslt_template_filter, payload_doc, NULL);
 
     if(result_doc)
     {
-        xmlDocDumpMemory(result_doc, &buffer, &size);
-    }
-
-    if(buffer)
-    {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
-            "[savan] payload_string after applying filter:%s", buffer);
-        reader = axiom_xml_reader_create_for_memory(env, 
-                (char*)buffer,axutil_strlen((char*)buffer), NULL, AXIS2_XML_PARSER_TYPE_BUFFER);
-    }
-
-    if(reader)
-    {
-        om_builder = axiom_stax_builder_create(env, reader);
-    }
-
-    if(om_builder)
-    {
-        document = axiom_stax_builder_get_document(om_builder, env);
-    }
-
-    if(document)
-    {
-        node = axiom_document_build_all(document, env);
-    }
-
-    if(om_builder)
-    {
-        axiom_stax_builder_free_self(om_builder, env);
-    }
-
-    /*free(payload_string);*/ /* In apache freeing this give seg fault:damitha */
-    if(result_doc)
-    {
+        /*free(payload_string);*/ /* In apache freeing this give seg fault:damitha */
 	    xmlFreeDoc(result_doc);
+        return AXIS2_TRUE;
     }
 
-	if(!node)
-	{
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Applying filter for payload failed");
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_APPLYING_FILTER_FAILED, AXIS2_FAILURE);
-		return NULL;
-	}
-	else
-	{
-		return node;
-	}
-
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_xpath_filter_mod_apply");
-    return NULL;
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_xpath_filter_mod_apply");
+    return AXIS2_FALSE;
 }
 
 static xsltStylesheetPtr 

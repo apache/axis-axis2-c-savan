@@ -868,7 +868,7 @@ savan_sqlite_storage_mgr_retrieve_subscriber(
     args->data = NULL;
 
     sprintf(sql_retrieve, "select id, end_to, notify_to, delivery_mode, "\
-        "expires, filter, renewed, topic_name from subscriber "\
+        "expires, filter, renewed from subscriber "\
         "where id='%s';", subcriber_id);
 
     rc = sqlite3_exec(dbconn, sql_retrieve, savan_sqlite_storage_mgr_subs_retrieve_callback, args, 

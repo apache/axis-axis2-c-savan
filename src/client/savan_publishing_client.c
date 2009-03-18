@@ -182,7 +182,7 @@ savan_publishing_client_publish_to_subscriber(
     axis2_status_t status = AXIS2_SUCCESS;
     axis2_endpoint_ref_t *to = NULL;
     const axis2_char_t *address = NULL;
-    axiom_node_t *filtered_payload = NULL;
+    axis2_bool_t filter_apply = AXIS2_TRUE;
     axis2_endpoint_ref_t *notifyto = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_publishing_client_publish_to_subscriber");
@@ -221,23 +221,20 @@ savan_publishing_client_publish_to_subscriber(
     if(filtermod && savan_subscriber_get_filter(subscriber, env))
     {
 	    /* Apply the filter, and check whether it evaluates to success */
-        filtered_payload = savan_filter_mod_apply(filtermod ,env, subscriber, payload);
-        if(!filtered_payload)
+        filter_apply = savan_filter_mod_apply(filtermod ,env, subscriber, payload);
+        if(!filter_apply)
         {
             status = axutil_error_get_status_code(env->error);
             if(AXIS2_SUCCESS != status)
             {
+                axiom_node_detach(payload, env);
                 return status;
             }
         }
     }
 #endif
 
-    if(filtered_payload)
-    {
-        axis2_svc_client_fire_and_forget(svc_client, env, filtered_payload);
-    }
-    else
+    if(filter_apply)
     {
         axis2_svc_client_fire_and_forget(svc_client, env, payload);
     }

@@ -52,7 +52,7 @@ AXIS2_DECLARE_DATA struct savan_filter_mod_ops
                 savan_filter_mod_t *filter,
                 const axutil_env_t *env);
 
-    axiom_node_t *(AXIS2_CALL *
+    axis2_bool_t (AXIS2_CALL *
             apply)(
                 savan_filter_mod_t *filter, 
                 const axutil_env_t *env,
@@ -95,9 +95,9 @@ savan_filter_mod_free(
  * @param env environment object
  * @param subscriber subscriber instant
  * @param payload payload to which the filter is applied
- * @return filtered payload
+ * @return filter apply or not
  */
-AXIS2_EXTERN axiom_node_t *AXIS2_CALL
+AXIS2_EXTERN axis2_bool_t AXIS2_CALL
 savan_filter_mod_apply(
     savan_filter_mod_t *filtermod, 
     const axutil_env_t *env,

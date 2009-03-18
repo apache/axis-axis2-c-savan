@@ -275,7 +275,12 @@ savan_util_get_subscriber_from_renew_msg(
     axutil_allocator_switch_to_global_pool(env->allocator);
     subscriber = savan_storage_mgr_retrieve_subscriber(storage_mgr, env, sub_id);
     axutil_allocator_switch_to_local_pool(env->allocator);
-    
+   
+    if(!subscriber)
+    {
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_RETRIEVE_ERROR, AXIS2_FAILURE);
+        return NULL;
+    }
     /* Get soap envelop and extract the subscription id */
 
     envelope =  axis2_msg_ctx_get_soap_envelope(msg_ctx, env);

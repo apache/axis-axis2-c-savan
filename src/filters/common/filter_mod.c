@@ -32,7 +32,7 @@ savan_filter_mod_free(
      return filtermod->ops->free(filtermod, env);
 }
 
-AXIS2_EXTERN axiom_node_t *AXIS2_CALL
+AXIS2_EXTERN axis2_bool_t AXIS2_CALL
 savan_filter_mod_apply(
     savan_filter_mod_t *filtermod, 
     const axutil_env_t *env,
