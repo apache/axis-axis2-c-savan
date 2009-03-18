@@ -106,6 +106,7 @@ savan_msg_recv_invoke_business_logic_sync(
     axis2_msg_ctx_t *new_msg_ctx)
 {
     savan_message_types_t msg_type = SAVAN_MSG_TYPE_UNKNOWN;
+    axis2_status_t status = AXIS2_SUCCESS;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_msg_recv_invoke_business_logic_sync");
@@ -114,31 +115,45 @@ savan_msg_recv_invoke_business_logic_sync(
     msg_type = savan_util_get_message_type(msg_ctx, env);
     if (msg_type == SAVAN_MSG_TYPE_SUB)
     {
-        savan_msg_recv_handle_sub_request(env, msg_ctx, new_msg_ctx);
+        status = savan_msg_recv_handle_sub_request(env, msg_ctx, new_msg_ctx);
     }
     else if (msg_type == SAVAN_MSG_TYPE_UNSUB)
     {
-        savan_msg_recv_handle_unsub_request(env, msg_ctx, new_msg_ctx);
+        status = savan_msg_recv_handle_unsub_request(env, msg_ctx, new_msg_ctx);
     }
     else if (msg_type == SAVAN_MSG_TYPE_RENEW)
     {
-        savan_msg_recv_handle_renew_request(env, msg_ctx, new_msg_ctx);
+        status = savan_msg_recv_handle_renew_request(env, msg_ctx, new_msg_ctx);
     }
     else if (msg_type == SAVAN_MSG_TYPE_GET_STATUS)
     {
-        savan_msg_recv_handle_get_status_request(env, msg_ctx, new_msg_ctx);
+        status = savan_msg_recv_handle_get_status_request(env, msg_ctx, new_msg_ctx); 
     }
     else
     {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Unhandled message type"); 
+        status = AXIS2_FAILURE;
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Unhandled message type");
         AXIS2_ERROR_SET(env->error, SAVAN_ERROR_UNHANDLED_MSG_TYPE, AXIS2_FAILURE);
-        return AXIS2_FAILURE;
     }
     
+    if(AXIS2_SUCCESS != status)
+    {
+        axis2_char_t *reason = NULL;
+
+        axutil_error_set_error_number(env->error, SAVAN_ERROR_REQUESTED_DELIVERY_MODE_NOT_SUPPORTED); 
+        reason = (axis2_char_t *) axutil_error_get_message(env->error);
+        savan_util_create_fault_envelope(msg_ctx, env,
+                                         SAVAN_FAULT_ESUP_CODE, 
+                                         SAVAN_FAULT_ESUP_SUB_CODE,
+                                         reason, 
+                                         SAVAN_FAULT_ESUP_DETAIL);
+        return status;
+    }
+
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_msg_recv_invoke_business_logic_sync");
 
-    return AXIS2_SUCCESS;    
+    return status;    
 }
 
 axis2_status_t AXIS2_CALL
