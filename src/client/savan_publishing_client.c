@@ -94,6 +94,7 @@ savan_publishing_client_publish(
     pubs_svc = client->svc;
 
     storage_mgr = savan_util_get_storage_mgr(env, NULL, conf);
+    axutil_allocator_switch_to_global_pool(env->allocator);
     if(storage_mgr)
     {
         subs_store = savan_storage_mgr_retrieve_all_subscribers(storage_mgr, env, filter);
@@ -101,6 +102,7 @@ savan_publishing_client_publish(
 
     if (!subs_store)
     {
+        axutil_allocator_switch_to_local_pool(env->allocator);
         AXIS2_LOG_WARNING(env->log, AXIS2_LOG_SI, "[savan] Subscriber store is NULL"); 
         return AXIS2_SUCCESS; /* returning FAILURE will break handler chain */
     }
@@ -110,6 +112,7 @@ savan_publishing_client_publish(
 
     if(!svc_client)
     {
+        axutil_allocator_switch_to_local_pool(env->allocator);
         AXIS2_LOG_ERROR (env->log, AXIS2_LOG_SI, 
             "[savan]svc_client creation failed, unable to continue");
         return AXIS2_SUCCESS;
@@ -163,6 +166,7 @@ savan_publishing_client_publish(
     {
         axis2_svc_client_free(svc_client, env);
     }
+    axutil_allocator_switch_to_local_pool(env->allocator);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_publishing_client_publish");
     
