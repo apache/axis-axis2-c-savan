@@ -29,6 +29,7 @@
 #include <savan_error.h>
 #include <savan_subscriber.h>
 #include <savan_storage_mgr.h>
+#include <savan_publisher_mod.h>
 #include <savan_msg_recv.h>
 
 axis2_status_t AXIS2_CALL
@@ -131,9 +132,9 @@ savan_msg_recv_invoke_business_logic_sync(
     }
     else
     {
-        status = AXIS2_FAILURE;
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Unhandled message type");
-        AXIS2_ERROR_SET(env->error, SAVAN_ERROR_UNHANDLED_MSG_TYPE, AXIS2_FAILURE);
+        /* Treat this as an event */
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Event received");
+        status = savan_msg_recv_handle_event(env, msg_ctx, new_msg_ctx); 
     }
     
     if(AXIS2_SUCCESS != status)
@@ -516,6 +517,30 @@ savan_msg_recv_handle_get_status_request(
     return AXIS2_SUCCESS;
 }
 
+axis2_status_t AXIS2_CALL
+savan_msg_recv_handle_event(
+    const axutil_env_t *env, 
+    axis2_msg_ctx_t *msg_ctx,
+    axis2_msg_ctx_t *new_msg_ctx)
+{
+    axis2_conf_t *conf = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+    savan_publisher_mod_t *pub_mod = NULL;
+    
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_event");
+   
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+
+    pub_mod = savan_publisher_mod_create(env, conf);
+
+    savan_publisher_mod_publish(pub_mod, env, msg_ctx);
+    savan_publisher_mod_free(pub_mod, env);
+    
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_event");
+    return AXIS2_SUCCESS;
+}
+
 axiom_soap_envelope_t *AXIS2_CALL
 savan_msg_recv_build_soap_envelope(
     const axutil_env_t *env,
@@ -558,5 +583,31 @@ savan_msg_recv_build_soap_envelope(
     }
 
     return default_envelope;
+}
+
+AXIS2_EXPORT int
+axis2_get_instance(
+    struct axis2_msg_recv **inst,
+    const axutil_env_t * env)
+{
+    *inst = savan_msg_recv_create(env);
+    if (!(*inst))
+    {
+        return AXIS2_FAILURE;
+    }
+
+    return AXIS2_SUCCESS;
+}
+
+AXIS2_EXPORT int
+axis2_remove_instance(
+    struct axis2_msg_recv *inst,
+    const axutil_env_t * env)
+{
+    if (inst)
+    {
+        axis2_msg_recv_free(inst, env);
+    }
+    return AXIS2_SUCCESS;
 }
 

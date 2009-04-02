@@ -20,6 +20,9 @@
     <!-- ================================================= -->
     <!-- This is the Deafult Message Receiver for the Request Response style Operations -->
     <!--messageReceiver mep="INOUT" class="axis2_receivers"/-->
+    
+    <!-- Savan message receiver -->
+    <messageReceiver mep="INOUT" class="savan_msgreceivers"/>
 
     <!-- ================================================= -->
     <!-- Transport Ins -->

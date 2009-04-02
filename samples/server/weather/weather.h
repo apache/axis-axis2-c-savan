@@ -19,9 +19,4 @@
 
 #include <axiom_node.h>
 
-axiom_node_t *
-axis2_weather_send(
-        const axutil_env_t *env, 
-        axiom_node_t *node);
-
 #endif /* PUBLISHER_H*/

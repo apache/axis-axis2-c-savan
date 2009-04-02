@@ -1,9 +1,6 @@
 <service name="listener">
     <parameter name="ServiceClass" locked="xsd:false">listener</parameter>
-    <operation name="weather" mep="http://www.w3.org/2004/08/wsdl/in-only">
-           <parameter name="wsamapping">http://ws.apache.org/axis2/c/samples/weather</parameter>
-   </operation>
-    <operation name="weather_report" mep="http://www.w3.org/2004/08/wsdl/in-only">
-           <parameter name="wsamapping">http://ws.apache.org/axis2/c/samples/weather</parameter>
+   <operation name="send" mep="http://www.w3.org/2004/08/wsdl/in-only">
+           <parameter name="wsamapping" >http://ws.apache.org/savan/samples/weather/send</parameter>
    </operation>
 </service>

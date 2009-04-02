@@ -25,14 +25,14 @@
 #include <savan_client.h>
 #include <savan_constants.h>
 
-static void event_source_handle_lifecycle(
+static void event_source_send_event(
         axutil_env_t* env, 
         axis2_svc_client_t *svc_client,
         axis2_char_t *address,
         axis2_char_t *action);
 
 axiom_node_t *
-build_om_payload_for_weather_svc(
+build_om_payload_for_weather_event(
         const axutil_env_t *env,
         axis2_char_t *node_name);
 
@@ -100,11 +100,11 @@ int main(int argc, char** argv)
      * Following commented lines show how to use filtering when savan server side is
      * built and running with filtering enabled.
      */
-    /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
         "//weather_report");
 
     axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
-        XPATH_FILTER_DIALECT);*/
+        XPATH_FILTER_DIALECT);
     
     /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING, "weather/4");
 
@@ -121,10 +121,14 @@ int main(int argc, char** argv)
                 "2 renew\n"\
                 "3 get status\n"\
                 "4 unsubscribe\n"\
-                "5 Generate event from weather event source\n"\
+                "5 Generate weather event\n"\
                 "6 quit\n\n");
 
-        scanf("%d", &action);
+        if(1 != scanf("%d", &action))
+        {
+            printf("Give correct input\n");
+            continue;
+        }
 
         if(1 == action) /* Send subscribe message */
         {
@@ -194,7 +198,7 @@ int main(int argc, char** argv)
             endpoint_ref = axis2_options_get_to(options, env);
             axis2_endpoint_ref_set_address(endpoint_ref, env, address);
             axis2_svc_client_remove_all_headers(svc_client, env);
-            event_source_handle_lifecycle((axutil_env_t*)env, svc_client, address, "send");
+            event_source_send_event((axutil_env_t*)env, svc_client, address, "send");
         }
         else if(7 == action)
         {
@@ -216,7 +220,7 @@ int main(int argc, char** argv)
 }
 
 
-static void event_source_handle_lifecycle(
+static void event_source_send_event(
         axutil_env_t* env, 
         axis2_svc_client_t *svc_client, 
         axis2_char_t *address,
@@ -227,7 +231,7 @@ static void event_source_handle_lifecycle(
 
     AXIS2_LOG_INFO(env->log, "[savan] event_source_handle_lifecycle");
 
-    payload = build_om_payload_for_weather_svc(env, action);
+    payload = build_om_payload_for_weather_event(env, action);
     
     /* Send request */
     ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
@@ -251,17 +255,23 @@ static void event_source_handle_lifecycle(
 }
 
 axiom_node_t *
-build_om_payload_for_weather_svc(
+build_om_payload_for_weather_event(
         const axutil_env_t *env,
         axis2_char_t *node_name)
 {
-    axiom_node_t *om_node = NULL;
-    axiom_element_t* om_ele = NULL;
-    axiom_namespace_t *ns = NULL;
+    axiom_namespace_t *test_ns = NULL;
+    axiom_element_t* test_elem = NULL;
+    axiom_node_t *test_node = NULL;
+    axiom_element_t* test_elem1 = NULL;
+    axiom_node_t *test_node1 = NULL;
+    
+    /* Build a payload and pass it to the savan publisher module */ 
+    test_ns = axiom_namespace_create(env, "http://ws.apache.org/savan/samples/weather", "weather");
+    test_elem = axiom_element_create(env, NULL, node_name, test_ns, &test_node);
+    test_elem1 = axiom_element_create(env, test_node, "weather_report", NULL, &test_node1);
 
-    ns = axiom_namespace_create(env, "http://ws.apache.org/axis2/c/savan/samples/weather", "ns");
-    om_ele = axiom_element_create(env, NULL, node_name, ns, &om_node);
-
-    return om_node;
+    axiom_element_set_text(test_elem1, env, "sunny day", test_node1);
+    
+    return test_node;
 }
-
+ 

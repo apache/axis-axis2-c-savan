@@ -17117,8 +17117,13 @@ static int unixRandomness(sqlite3_vfs *pVfs, int nBuf, char *zBuf){
       pid = getpid();
       memcpy(&zBuf[sizeof(t)], &pid, sizeof(pid));
     }else{
-      read(fd, zBuf, nBuf);
+      int ret = 0;
+
+      ret = read(fd, zBuf, nBuf);
       close(fd);
+      if(-1 == ret){
+          return SQLITE_IOERR_READ;
+      }
     }
   }
 #endif
@@ -50407,6 +50412,7 @@ SQLITE_PRIVATE void sqlite3DeleteFrom(
 #endif
 
   sContext.pParse = 0;
+  sContext.zAuthContext = 0;
   db = pParse->db;
   if( pParse->nErr || db->mallocFailed ){
     goto delete_from_cleanup;
@@ -61503,6 +61509,7 @@ SQLITE_PRIVATE void sqlite3Update(
   int oldIdx      = -1;  /* index of trigger "old" temp table       */
 
   sContext.pParse = 0;
+  sContext.zAuthContext = 0;
   db = pParse->db;
   if( pParse->nErr || db->mallocFailed ){
     goto update_cleanup;

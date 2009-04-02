@@ -406,6 +406,7 @@ savan_sqlite_storage_mgr_insert_subscriber(
     if(subscriber)
     {
         int i = 0;
+        axis2_char_t *temp = NULL;
 
         id = savan_subscriber_get_id(subscriber, env);
         endto_epr = savan_subscriber_get_end_to(subscriber, env);
@@ -414,7 +415,9 @@ savan_sqlite_storage_mgr_insert_subscriber(
             endto = (axis2_char_t *) axis2_endpoint_ref_get_address(endto_epr, env);
             if(endto)
             {
-                sprintf(sql_insert, "%s%s", sql_insert, ",end_to");
+                temp = axutil_strdup(env, sql_insert);
+                sprintf(sql_insert, "%s%s", temp, ",end_to");
+                AXIS2_FREE(env->allocator, temp);
                 counter++;
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
             }
@@ -426,7 +429,9 @@ savan_sqlite_storage_mgr_insert_subscriber(
             notifyto = (axis2_char_t *) axis2_endpoint_ref_get_address(notifyto_epr, env);
             if(notifyto)
             {
-                sprintf(sql_insert, "%s%s", sql_insert, ",notify_to");   
+                temp = axutil_strdup(env, sql_insert);
+                sprintf(sql_insert, "%s%s", temp, ",notify_to");   
+                AXIS2_FREE(env->allocator, temp);
                 counter++;
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
             }
@@ -435,29 +440,43 @@ savan_sqlite_storage_mgr_insert_subscriber(
         delivery_mode = savan_subscriber_get_delivery_mode(subscriber, env);
         if(delivery_mode)
         {
-            sprintf(sql_insert, "%s%s", sql_insert, ",delivery_mode");   
+            temp = axutil_strdup(env, sql_insert);
+            sprintf(sql_insert, "%s%s", temp, ",delivery_mode");   
+            AXIS2_FREE(env->allocator, temp);
             counter++;
         }
         expires = savan_subscriber_get_expires(subscriber, env);
         if(expires)
         {
-            sprintf(sql_insert, "%s%s", sql_insert, ",expires");   
+            temp = axutil_strdup(env, sql_insert);
+            sprintf(sql_insert, "%s%s", temp, ",expires");   
+            AXIS2_FREE(env->allocator, temp);
             counter++;
         }
         filter = savan_subscriber_get_filter(subscriber, env);
         if(filter)
         {
-            sprintf(sql_insert, "%s%s", sql_insert, ",filter");   
+            temp = axutil_strdup(env, sql_insert);
+            sprintf(sql_insert, "%s%s", temp, ",filter");   
+            AXIS2_FREE(env->allocator, temp);
             counter++;
         }
         renewed = (int) savan_subscriber_get_renew_status(subscriber, env);
-        sprintf(sql_insert, "%s%s", sql_insert, ",renewed");   
-        sprintf(sql_insert, "%s%s", sql_insert, ") values(?");
+        temp = axutil_strdup(env, sql_insert);
+        sprintf(sql_insert, "%s%s", temp, ",renewed");   
+        AXIS2_FREE(env->allocator, temp);
+        temp = axutil_strdup(env, sql_insert);
+        sprintf(sql_insert, "%s%s", temp, ") values(?");
+        AXIS2_FREE(env->allocator, temp);
         for(i = 0; i < counter; i++)
         {
-            sprintf(sql_insert, "%s%s", sql_insert, ",?");
+            temp = axutil_strdup(env, sql_insert);
+            sprintf(sql_insert, "%s%s", temp, ",?");
+            AXIS2_FREE(env->allocator, temp);
         }
-        sprintf(sql_insert, "%s%s", sql_insert, ");");
+        temp = axutil_strdup(env, sql_insert);
+        sprintf(sql_insert, "%s%s", temp, ");");
+        AXIS2_FREE(env->allocator, temp);
     }
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
@@ -472,11 +491,13 @@ savan_sqlite_storage_mgr_insert_subscriber(
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
             "[savan] Sql insert error: %s", sqlite3_errmsg(dbconn));
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql:%s", sql_insert);
     }
     if (sqlite3_bind_text(insertqry, counter, id, strlen(id), SQLITE_STATIC))
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
             "[savan] Sql insert error: %s", sqlite3_errmsg(dbconn));
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql:%s", sql_insert);
     }
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] id:%s", id);
@@ -488,6 +509,7 @@ savan_sqlite_storage_mgr_insert_subscriber(
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Sql insert error: %s", sqlite3_errmsg(dbconn));
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql:%s", sql_insert);
         }
     }
     if(notifyto)
@@ -498,6 +520,7 @@ savan_sqlite_storage_mgr_insert_subscriber(
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Sql insert error: %s", sqlite3_errmsg(dbconn));
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql:%s", sql_insert);
         }
     }
     if(delivery_mode)
@@ -508,6 +531,7 @@ savan_sqlite_storage_mgr_insert_subscriber(
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Sql insert error: %s", sqlite3_errmsg(dbconn));
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql:%s", sql_insert);
         }
     }
     if(expires)
@@ -518,6 +542,7 @@ savan_sqlite_storage_mgr_insert_subscriber(
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Sql insert error: %s", sqlite3_errmsg(dbconn));
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql:%s", sql_insert);
         }
     }
     if(filter)
@@ -527,20 +552,24 @@ savan_sqlite_storage_mgr_insert_subscriber(
         {
             AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Sql insert error: %s", sqlite3_errmsg(dbconn));
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql:%s", sql_insert);
         }
     }
 
     counter++;
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] renewed:%d", renewed);
     if (sqlite3_bind_int(insertqry, counter, renewed))
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
             "[savan] Sql insert error: %s", sqlite3_errmsg(dbconn));
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql:%s", sql_insert);
     }
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] renewed:%d", renewed);
     if (sqlite3_step(insertqry) == SQLITE_DONE)
     {
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Subscriber is added to the database");
+        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] sql:%s", sql_insert);
         sqlite3_reset(insertqry);
     }
     else
@@ -599,6 +628,8 @@ savan_sqlite_storage_mgr_update_subscriber(
 
     if(subscriber)
     {
+        axis2_char_t *temp = NULL;
+
         id = savan_subscriber_get_id(subscriber, env);
         endto_epr = savan_subscriber_get_end_to(subscriber, env);
         if(endto_epr)
@@ -606,7 +637,9 @@ savan_sqlite_storage_mgr_update_subscriber(
             endto = (axis2_char_t *) axis2_endpoint_ref_get_address(endto_epr, env);
             if(endto)
             {
-                sprintf(sql_update, "%s%s", sql_update, "end_to=?, ");
+                temp = axutil_strdup(env, sql_update);
+                sprintf(sql_update, "%s%s", temp, "end_to=?, ");
+                AXIS2_FREE(env->allocator, temp);
                 counter++;
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_update:%s", sql_update);
             }
@@ -618,7 +651,9 @@ savan_sqlite_storage_mgr_update_subscriber(
             notifyto = (axis2_char_t *) axis2_endpoint_ref_get_address(notifyto_epr, env);
             if(notifyto)
             {
-                sprintf(sql_update, "%s%s", sql_update, "notify_to=?, ");   
+                temp = axutil_strdup(env, sql_update);
+                sprintf(sql_update, "%s%s", temp, "notify_to=?, ");   
+                AXIS2_FREE(env->allocator, temp);
                 counter++;
                 AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_update:%s", sql_update);
             }
@@ -627,26 +662,34 @@ savan_sqlite_storage_mgr_update_subscriber(
         delivery_mode = savan_subscriber_get_delivery_mode(subscriber, env);
         if(delivery_mode)
         {
-            sprintf(sql_update, "%s%s", sql_update, "delivery_mode=?, ");   
+            temp = axutil_strdup(env, sql_update);
+            sprintf(sql_update, "%s%s", temp, "delivery_mode=?, ");   
+            AXIS2_FREE(env->allocator, temp);
             counter++;
         }
 
         expires = savan_subscriber_get_expires(subscriber, env);
         if(expires)
         {
-            sprintf(sql_update, "%s%s", sql_update, "expires=?, ");   
+            temp = axutil_strdup(env, sql_update);
+            sprintf(sql_update, "%s%s", temp, "expires=?, ");   
+            AXIS2_FREE(env->allocator, temp);
             counter++;
         }
 
         filter = savan_subscriber_get_filter(subscriber, env);
         if(filter)
         {
-            sprintf(sql_update, "%s%s", sql_update, "filter=?, ");   
+            temp = axutil_strdup(env, sql_update);
+            sprintf(sql_update, "%s%s", temp, "filter=?, ");   
+            AXIS2_FREE(env->allocator, temp);
             counter++;
         }
 
         renewed = (int) savan_subscriber_get_renew_status(subscriber, env);
-        sprintf(sql_update, "%s%s", sql_update, "renewed=? where id=?;");   
+        temp = axutil_strdup(env, sql_update);
+        sprintf(sql_update, "%s%s", temp, "renewed=? where id=?;");   
+        AXIS2_FREE(env->allocator, temp);
     }
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_update:%s", sql_update);
@@ -1131,7 +1174,10 @@ savan_sqlite_storage_mgr_create_db(
     {
         axis2_char_t permission_str[256];
         sprintf(permission_str, "chmod 777 %s", dbname);
-        system(permission_str);
+        if(-1 == system(permission_str))
+        {
+            return AXIS2_FAILURE;
+        }
     }
     #endif
 

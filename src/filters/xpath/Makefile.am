@@ -1,3 +1,4 @@
+datadir=$(prefix)/modules/savan
 noinst_LTLIBRARIES = libsavan_filter_mod.la
 
 libsavan_filter_mod_la_SOURCES = filter_mod.c

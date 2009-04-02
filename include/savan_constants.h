@@ -136,6 +136,7 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_FILTER_DIALECT "Dialect"
 #define SAVAN_SUBSCRIPTION_MANAGER "subscription"
 #define SAVAN_STORAGE_MANAGER "storage_mgr"
+#define SAVAN_PUBLISHER "publisher"
 #define SAVAN_FILTER "filter"
 #define SAVAN_SQLITE  "sqlite"
 #define SAVAN_INMEMORY_STORAGE  "inmemory"

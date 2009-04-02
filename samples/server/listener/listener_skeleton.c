@@ -82,7 +82,6 @@ listener_init(axis2_svc_skeleton_t *svc_skeleton,
      * the array list of functions 
      */
     axutil_array_list_add(svc_skeleton->func_array, env, "weather");
-    axutil_array_list_add(svc_skeleton->func_array, env, "weather_report");
 
     /* Any initialization stuff of service should go here */
 

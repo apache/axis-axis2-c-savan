@@ -16,7 +16,7 @@
 #include <axis2_util.h>
 #include <axis2_svc_skeleton.h>
 #include <axiom_element.h>
-#include <savan_publishing_client.h>
+#include <savan_publisher_mod.h>
 
 #include "weather.h"
 
@@ -49,13 +49,9 @@ weather_invoke(
         
 
 int AXIS2_CALL 
-weather_init(axis2_svc_skeleton_t *svc_skeleton,
-          const axutil_env_t *env);
-
-static void
-send_weather_event(
-    const axutil_env_t *env,
-    axis2_conf_t *conf);
+weather_init(
+        axis2_svc_skeleton_t *svc_skeleton,
+        const axutil_env_t *env);
 
 int AXIS2_CALL 
 weather_init_with_conf(
@@ -120,7 +116,6 @@ weather_init_with_conf(
     axis2_conf_t *conf)
 {
     weather_init(svc_skeleton, env);
-    /*send_weather_event(env, conf); */
     return AXIS2_SUCCESS;
 }
 
@@ -134,42 +129,6 @@ weather_invoke(
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx)
 {
-    axis2_conf_t *conf = NULL;
-    axis2_conf_ctx_t *conf_ctx = NULL;
-
-    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-    /* Depending on the function name invoke the
-     *  corresponding function
-     */
-    if (node)
-    {
-        AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "node:%s", axiom_node_to_string(node, env));
-        if (axiom_node_get_node_type(node, env) == AXIOM_ELEMENT)
-        {
-            axiom_element_t *element = NULL;
-            element =
-                (axiom_element_t *) axiom_node_get_data_element(node, env);
-            if (element)
-            {
-                axis2_char_t *op_name =
-                    axiom_element_get_localname(element, env);
-                AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "op_name:%s", op_name);
-                if (op_name)
-                {
-                    if (axutil_strcmp(op_name, "send") == 0)
-                    {
-                        send_weather_event(env, conf); 
-                        return axis2_weather_send(env, node);
-                    }
-                }
-            }
-        }
-    }
-
-    AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-            "[savan] Weather service ERROR: invalid OM parameters in request");
-
     return NULL;
 }
 
@@ -209,35 +168,6 @@ weather_free(axis2_svc_skeleton_t *svc_skeleton,
     }
 
     return AXIS2_SUCCESS; 
-}
-
-static void
-send_weather_event(
-    const axutil_env_t *env,
-    axis2_conf_t *conf)
-{
-    axiom_namespace_t *test_ns = NULL;
-    axiom_element_t* test_elem = NULL;
-    axiom_node_t *test_node = NULL;
-    axiom_element_t* test_elem1 = NULL;
-    axiom_node_t *test_node1 = NULL;
-    axis2_svc_t *svc = NULL;
-    savan_publishing_client_t *pub_client = NULL;
-    
-    svc = axis2_conf_get_svc(conf, env, WEATHER);
-
-    pub_client = savan_publishing_client_create(env, conf, svc);
-    /* Build a payload and pass it to the savan publishing client */ 
-    test_ns = axiom_namespace_create (env, "http://www.wso2.com/savan/c/weather", "weather");
-    test_elem = axiom_element_create(env, NULL, "weather", test_ns, &test_node);
-    test_elem1 = axiom_element_create(env, test_node, "weather_report", NULL, &test_node1);
-
-    axiom_element_set_text(test_elem1, env, "sunny day", test_node1);
-
-    savan_publishing_client_publish(pub_client, env, test_node, NULL);
-    savan_publishing_client_free(pub_client, env);
-    
-    return;
 }
 
 /**

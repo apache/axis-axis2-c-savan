@@ -9,8 +9,6 @@ libweather_la_SOURCES = weather.c weather_skeleton.c
 
 libweather_la_LIBADD  = -L$(AXIS2C_HOME)/lib -lsavan_client
 
-INCLUDES =  -I@AXIS2INC@ \
-		    	@AXIS2INC@ \
-				@SAVANINC@
+INCLUDES =  @AXIS2INC@ @SAVANINC@
 
 EXTRA_DIST=services.xml
