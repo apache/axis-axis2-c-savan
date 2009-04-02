@@ -226,7 +226,6 @@ static void event_source_send_event(
         axis2_char_t *address,
         axis2_char_t *action)
 {
-    axiom_node_t *ret_node = NULL;
     axiom_node_t *payload = NULL;
 
     AXIS2_LOG_INFO(env->log, "[savan] event_source_handle_lifecycle");
@@ -234,24 +233,7 @@ static void event_source_send_event(
     payload = build_om_payload_for_weather_event(env, action);
     
     /* Send request */
-    ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
-    
-    if(ret_node)
-    {
-        axis2_char_t *om_str = NULL;
-
-        om_str = axiom_node_to_string(ret_node, env);
-        if (om_str)
-        {
-            printf("\n%s\n", om_str);
-        }
-    }
-    else
-    {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Invoke FAILED: Error code:"
-            " %d :: %s", env->error->error_number, AXIS2_ERROR_GET_MESSAGE(env->error));
-        printf("\nWeather event source call failed\n");
-    }
+    axis2_svc_client_fire_and_forget(svc_client, env, payload);
 }
 
 axiom_node_t *
