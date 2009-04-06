@@ -100,7 +100,7 @@ extern "C"
     
     } savan_error_codes_t;
 
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_error_init();
 
 

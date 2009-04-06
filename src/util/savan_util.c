@@ -33,7 +33,7 @@
 #include <savan_error.h>
 #include <savan_storage_mgr.h>
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_util_create_fault_envelope(
     axis2_msg_ctx_t *msg_ctx,
     const axutil_env_t *env,
@@ -74,7 +74,7 @@ savan_util_create_fault_envelope(
     return AXIS2_SUCCESS;
 }
 
-axiom_node_t * AXIS2_CALL
+AXIS2_EXTERN axiom_node_t * AXIS2_CALL
 savan_util_build_fault_msg(
     const axutil_env_t *env,
     axis2_char_t * code,
@@ -118,7 +118,7 @@ savan_util_build_fault_msg(
     return fault_node;
 }
 
-savan_message_types_t AXIS2_CALL
+AXIS2_EXTERN savan_message_types_t AXIS2_CALL
 savan_util_get_message_type(
     axis2_msg_ctx_t *msg_ctx,
     const axutil_env_t *env)
@@ -161,7 +161,7 @@ savan_util_get_message_type(
     return SAVAN_MSG_TYPE_UNKNOWN;
 }
 
-axis2_char_t * AXIS2_CALL
+AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 savan_util_get_subscription_id_from_msg(
     const axutil_env_t *env,
     axis2_msg_ctx_t *msg_ctx)
@@ -213,7 +213,7 @@ savan_util_get_subscription_id_from_msg(
     return sub_id;    
 }
 
-savan_subscriber_t * AXIS2_CALL
+AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
 savan_util_get_subscriber_from_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
@@ -239,7 +239,7 @@ savan_util_get_subscriber_from_msg(
     return subscriber;
 }
 
-savan_subscriber_t * AXIS2_CALL
+AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
 savan_util_get_subscriber_from_renew_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
@@ -351,7 +351,7 @@ savan_util_get_subscriber_from_renew_msg(
     return subscriber;
 }
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_util_add_subscriber(
     const axutil_env_t *env,
     axis2_msg_ctx_t *msg_ctx,
@@ -377,7 +377,7 @@ savan_util_add_subscriber(
     return status;
 }
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_util_update_subscriber(
     const axutil_env_t *env,
     axis2_msg_ctx_t *msg_ctx,
@@ -394,7 +394,7 @@ savan_util_update_subscriber(
     return AXIS2_SUCCESS;
 }
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_util_remove_subscriber(
     const axutil_env_t *env,
     axis2_msg_ctx_t *msg_ctx,
@@ -415,7 +415,7 @@ savan_util_remove_subscriber(
     return AXIS2_SUCCESS;
 }
 
-axis2_status_t AXIS2_CALL 
+AXIS2_EXTERN axis2_status_t AXIS2_CALL 
 savan_util_set_store(
     axis2_svc_t *svc,
     const axutil_env_t *env,
@@ -450,7 +450,7 @@ savan_util_set_store(
     return AXIS2_SUCCESS;       
 }
 
-axis2_char_t * AXIS2_CALL
+AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 savan_util_get_expiry_time(
     const axutil_env_t *env)
 {
@@ -459,7 +459,7 @@ savan_util_get_expiry_time(
     return "*";
 }
 
-axis2_char_t * AXIS2_CALL
+AXIS2_EXTERN axis2_char_t * AXIS2_CALL
 savan_util_get_renewed_expiry_time(
     const axutil_env_t *env,
     axis2_char_t *expiry)
@@ -469,7 +469,7 @@ savan_util_get_renewed_expiry_time(
     return expiry;
 }
 
-axis2_char_t *AXIS2_CALL
+AXIS2_EXTERN axis2_char_t *AXIS2_CALL
 savan_util_get_topic_name_from_topic_url(
     const axutil_env_t *env,
     axis2_char_t *topic_url)
@@ -494,7 +494,7 @@ savan_util_get_topic_name_from_topic_url(
     return topic;
 }
 
-void *AXIS2_CALL
+AXIS2_EXTERN void *AXIS2_CALL
 savan_util_get_svc_client(
     const axutil_env_t *env)
 {
@@ -980,7 +980,7 @@ savan_util_get_filter_module(
     return filtermod;
 }
 
-axis2_bool_t AXIS2_CALL
+AXIS2_EXTERN axis2_bool_t AXIS2_CALL
 savan_util_is_valid_duration(
     const axutil_env_t *env,
     const axis2_char_t *duration)
@@ -988,7 +988,7 @@ savan_util_is_valid_duration(
     return AXIS2_TRUE;
 }
 
-axis2_bool_t AXIS2_CALL
+AXIS2_EXTERN axis2_bool_t AXIS2_CALL
 savan_util_is_valid_date_time(
     const axutil_env_t *env,
     const axis2_char_t *duration)

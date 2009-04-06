@@ -100,6 +100,30 @@ savan_msg_recv_create(
 }
 
 axis2_status_t AXIS2_CALL
+savan_msg_recv_handle_event(
+    const axutil_env_t *env, 
+    axis2_msg_ctx_t *msg_ctx,
+    axis2_msg_ctx_t *new_msg_ctx)
+{
+    axis2_conf_t *conf = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
+    savan_publisher_mod_t *pub_mod = NULL;
+    
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_event");
+   
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
+
+    pub_mod = savan_publisher_mod_create(env, conf);
+
+    savan_publisher_mod_publish(pub_mod, env, msg_ctx);
+    savan_publisher_mod_free(pub_mod, env);
+    
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_event");
+    return AXIS2_SUCCESS;
+}
+
+axis2_status_t AXIS2_CALL
 savan_msg_recv_invoke_business_logic_sync(
     axis2_msg_recv_t *msg_recv,
     const axutil_env_t *env,
@@ -517,29 +541,6 @@ savan_msg_recv_handle_get_status_request(
     return AXIS2_SUCCESS;
 }
 
-axis2_status_t AXIS2_CALL
-savan_msg_recv_handle_event(
-    const axutil_env_t *env, 
-    axis2_msg_ctx_t *msg_ctx,
-    axis2_msg_ctx_t *new_msg_ctx)
-{
-    axis2_conf_t *conf = NULL;
-    axis2_conf_ctx_t *conf_ctx = NULL;
-    savan_publisher_mod_t *pub_mod = NULL;
-    
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_event");
-   
-    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-
-    pub_mod = savan_publisher_mod_create(env, conf);
-
-    savan_publisher_mod_publish(pub_mod, env, msg_ctx);
-    savan_publisher_mod_free(pub_mod, env);
-    
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_event");
-    return AXIS2_SUCCESS;
-}
 
 axiom_soap_envelope_t *AXIS2_CALL
 savan_msg_recv_build_soap_envelope(

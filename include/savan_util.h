@@ -57,7 +57,7 @@ extern "C"
      * @param detail, fault deails.
 	*/
 
-	axis2_status_t AXIS2_CALL
+	AXIS2_EXTERN axis2_status_t AXIS2_CALL
 	savan_util_create_fault_envelope(
 		axis2_msg_ctx_t *msg_ctx,
 		const axutil_env_t *env,
@@ -97,7 +97,7 @@ extern "C"
  	* and solution to avoid.
  	*/ 
 
-	axiom_node_t * AXIS2_CALL
+	AXIS2_EXTERN axiom_node_t * AXIS2_CALL
 	savan_util_build_fault_msg(
 		const axutil_env_t *env,
 		axis2_char_t * code,
@@ -105,7 +105,7 @@ extern "C"
 		axis2_char_t * reason,
 		axis2_char_t * detail);
 
-    savan_message_types_t AXIS2_CALL
+    AXIS2_EXTERN savan_message_types_t AXIS2_CALL
     savan_util_get_message_type(
         axis2_msg_ctx_t *msg_ctx,
         const axutil_env_t *env);
@@ -118,7 +118,7 @@ extern "C"
     * @return the ID on success, else NULL
     */
 
-    axis2_char_t * AXIS2_CALL
+    AXIS2_EXTERN axis2_char_t * AXIS2_CALL
     savan_util_get_subscription_id_from_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx);
@@ -131,7 +131,7 @@ extern "C"
     * @return a pointer to subscriber on success, else NULL
     */
 
-    savan_subscriber_t * AXIS2_CALL
+    AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
     savan_util_get_subscriber_from_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
@@ -148,7 +148,7 @@ extern "C"
     * @return a pointer to subscriber on success, else NULL
     */
 
-    savan_subscriber_t * AXIS2_CALL
+    AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
     savan_util_get_subscriber_from_renew_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
@@ -165,7 +165,7 @@ extern "C"
     * @return the store on success, else NULL
     */
 
-    axutil_hash_t * AXIS2_CALL
+    AXIS2_EXTERN axutil_hash_t * AXIS2_CALL
     savan_util_get_subscriber_store(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx);
@@ -182,14 +182,14 @@ extern "C"
     * @return the store on success, else NULL
     */
 
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_util_add_subscriber(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
         savan_storage_mgr_t *storage_mgr,
         savan_subscriber_t *subscriber);
 
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_util_update_subscriber(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
@@ -208,7 +208,7 @@ extern "C"
     * @return the store on success, else NULL
     */
 
-    axis2_status_t AXIS2_CALL
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_util_remove_subscriber(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
@@ -221,7 +221,7 @@ extern "C"
     * @return the expiry time on success, else NULL
     */
 
-    axis2_char_t * AXIS2_CALL
+    AXIS2_EXTERN axis2_char_t * AXIS2_CALL
     savan_util_get_expiry_time(
         const axutil_env_t *env);
 
@@ -232,7 +232,7 @@ extern "C"
     * @param expiry current expiry time
     * @return the new expiry time on success, else NULL
     */
-    axis2_char_t * AXIS2_CALL
+    AXIS2_EXTERN axis2_char_t * AXIS2_CALL
     savan_util_get_renewed_expiry_time(
         const axutil_env_t *env,
         axis2_char_t *expiry);
@@ -303,13 +303,13 @@ extern "C"
     * @param subs_mgr_url url of the subscription manager
     * @return subscribers in a array list
     */
-    axutil_array_list_t *AXIS2_CALL
+    AXIS2_EXTERN axutil_array_list_t *AXIS2_CALL
     savan_util_get_topic_list_from_remote_subs_mgr(
         const axutil_env_t *env,
         axis2_char_t *subs_mgr_url,
         void *s_client);
 
-    savan_subscriber_t *AXIS2_CALL
+    AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
     savan_util_get_subscriber_from_remote_subs_mgr(
         const axutil_env_t *env,
         axis2_char_t *subs_id,
@@ -317,7 +317,7 @@ extern "C"
         void *s_client,
         axis2_conf_t *conf);
 
-    void *AXIS2_CALL
+    AXIS2_EXTERN void *AXIS2_CALL
     savan_util_get_svc_client(
         const axutil_env_t *env);
 

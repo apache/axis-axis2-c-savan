@@ -20,7 +20,7 @@
 
 AXIS2_IMPORT extern const axis2_char_t* axutil_error_messages[];
 
-axis2_status_t AXIS2_CALL
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_error_init()
 {
     axutil_error_messages[SAVAN_ERROR_SOAP_ACTION_NULL] = 

@@ -14,17 +14,22 @@ AUTOCONF = configure.in
 SAVANSRC = ..\..
 SAVANDISTDIR = ..\savanc
 SAVANINTDIR = .\int.msvc
-SAVANDLL = mod_savan
+SAVANDLL = savan
+MODSAVANDLL = mod_savan
 SAVAN_CLIENT = savan_client
+SAVAN_MSG_RECV = savan_msgreceivers
 
-SAVAN_CODE = $(SAVANSRC)\src\core\*.c \
-		 $(SAVANSRC)\src\client\*.c \
-		 $(SAVANSRC)\src\handlers\*.c \
+SAVAN_CODE = $(SAVANSRC)\src\client\*.c \
 		 $(SAVANSRC)\src\util\*.c \
 		 $(SAVANSRC)\src\subscribers\*.c \
-		 $(SAVANSRC)\src\msgreceivers\*.c \
 		 $(SAVANSRC)\src\storage\common\*.c \
-		 $(SAVANSRC)\src\storage\inmemory\*.c 
+		 $(SAVANSRC)\src\storage\inmemory\*.c \
+		 $(SAVANSRC)\src\publisher\common\*.c 
+
+MOD_SAVAN_CODE = $(SAVANSRC)\src\core\*.c \
+		 $(SAVANSRC)\src\handlers\*.c \
+
+SAVAN_MSG_RECV_CODE = $(SAVANSRC)\src\msgreceivers\*.c
 		
 #compiler options
 CC = @cl.exe
@@ -34,7 +39,7 @@ CFLAGS = /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "AXIS2_DECLARE_EXPORT" /D_WIN32_
 
 #linker options 
 LD = @link.exe
-LDFLAGS = /nologo /LIBPATH:$(AXIS2_BIN_DIR)\lib /LIBPATH:$(SAVANDISTDIR)\modules\savan /LIBPATH:$(SAVANDISTDIR)\lib
+LDFLAGS = /nologo /LIBPATH:$(AXIS2_BIN_DIR)\lib /LIBPATH:$(SAVANDISTDIR)\lib
 LIBS = axutil.lib axiom.lib axis2_parser.lib axis2_engine.lib axis2_http_receiver.lib axis2_http_sender.lib
 
 #debug symbols
@@ -106,14 +111,23 @@ copy_samples:
 copy_include:
 	@xcopy /E $(SAVANSRC)\include $(SAVANDISTDIR)\include
 
-$(SAVANDISTDIR)\modules\savan\$(SAVANDLL).dll:
+$(SAVANDISTDIR)\lib\$(SAVANDLL).dll:
 	$(CC) $(CFLAGS) $(SAVAN_CODE) /Fo$(SAVANINTDIR)\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\*.obj /DLL \
-	/OUT:$(SAVANDISTDIR)\modules\savan\$(SAVANDLL).dll /IMPLIB:$(SAVANDISTDIR)\modules\savan\$(SAVANDLL).lib
+	/OUT:$(SAVANDISTDIR)\lib\$(SAVANDLL).dll /IMPLIB:$(SAVANDISTDIR)\lib\$(SAVANDLL).lib
+	-@$(_VC_MANIFEST_EMBED_DLL)
+
+savan: $(SAVANDISTDIR)\lib\$(SAVANDLL).dll
+
+$(SAVANDISTDIR)\modules\savan\$(MODSAVANDLL).dll:
+	if not exist $(SAVANINTDIR)\mod_savan mkdir $(SAVANINTDIR)\mod_savan
+	$(CC) $(CFLAGS) $(MOD_SAVAN_CODE) /Fo$(SAVANINTDIR)\mod_savan\ /c
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANDLL).lib $(SAVAN_MSG_RECV).lib $(SAVANINTDIR)\mod_savan\*.obj /DLL \
+	/OUT:$(SAVANDISTDIR)\modules\savan\$(MODSAVANDLL).dll /IMPLIB:$(SAVANDISTDIR)\modules\savan\$(MODSAVANDLL).lib
 	-@$(_VC_MANIFEST_EMBED_DLL)
 	@copy $(SAVANSRC)\src\data\module.xml $(SAVANDISTDIR)\modules\savan\module.xml
 
-savan: $(SAVANDISTDIR)\modules\savan\$(SAVANDLL).dll
+mod_savan: $(SAVANDISTDIR)\modules\savan\$(MODSAVANDLL).dll
 
 ##### savan client
 SAVAN_CLIENT_SRC = $(SAVANSRC)\src\client\*.c \
@@ -128,6 +142,15 @@ $(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll :
 	-@$(_VC_MANIFEST_EMBED_DLL)
 
 savan_client: $(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll
+
+$(SAVANDISTDIR)\lib\$(SAVAN_MSG_RECV).dll :
+	if not exist $(SAVANINTDIR)\msg_recv mkdir $(SAVANINTDIR)\msg_recv
+	$(CC) $(CFLAGS) $(SAVAN_MSG_RECV_CODE) /Fo$(SAVANINTDIR)\msg_recv\ /c
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANDLL).lib $(SAVAN_CLIENT).lib $(SAVANINTDIR)\msg_recv\*.obj /DLL \
+	/OUT:$(SAVANDISTDIR)\lib\$(SAVAN_MSG_RECV).dll /IMPLIB:$(SAVANDISTDIR)\lib\$(SAVAN_MSG_RECV).lib
+	-@$(_VC_MANIFEST_EMBED_DLL)
+
+savan_msg_recv: $(SAVANDISTDIR)\lib\$(SAVAN_MSG_RECV).dll
 
 
 ###samples
@@ -167,7 +190,7 @@ $(SAVANDISTDIR)\samples\bin\savanc\subscriber.exe :
 
 subscriber: $(SAVANDISTDIR)\samples\bin\savanc\subscriber.exe
 	
-dist: clean distdir intdir savan savan_client listener weather subscription subscriber copy_include copy_samples copy_extra
+dist: clean distdir intdir savan savan_client savan_msg_recv mod_savan listener weather subscription subscriber copy_include copy_samples copy_extra
 
 
 	 

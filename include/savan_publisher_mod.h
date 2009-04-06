@@ -82,10 +82,10 @@ savan_publisher_mod_create(
  * @param publisher
  * @param env environment object
  */
-void AXIS2_CALL 
+AXIS2_EXTERN void AXIS2_CALL 
 savan_publisher_mod_free(
     savan_publisher_mod_t *publishermod,
-    const axutil_env_t *envv);
+    const axutil_env_t *env);
 
 /**
  * Apply publisher to payload.
