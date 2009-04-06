@@ -56,7 +56,7 @@ AXIS2_DECLARE_DATA struct savan_publisher_mod_ops
             publish)(
                 savan_publisher_mod_t *publisher, 
                 const axutil_env_t *env,
-                axis2_msg_ctx_t *msg_ctx);
+                void *msg_ctx);
 
 };
 
@@ -97,7 +97,7 @@ AXIS2_EXTERN void AXIS2_CALL
 savan_publisher_mod_publish(
     savan_publisher_mod_t *publishermod, 
     const axutil_env_t *env,
-    axis2_msg_ctx_t *msg_ctx);
+    void *msg_ctx);
 
 /** @} */
 #ifdef __cplusplus

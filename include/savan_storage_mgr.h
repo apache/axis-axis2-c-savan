@@ -107,6 +107,14 @@ savan_storage_mgr_create(
     const axutil_env_t *env,
     axis2_conf_t *conf);
 
+AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
+savan_storage_mgr_create_with_connection_info(
+    const axutil_env_t *env,
+    axis2_conf_t *conf,
+    axis2_char_t *connection_string,
+    axis2_char_t *username,
+    axis2_char_t *password);
+
 /**
  * Deallocate the storage.
  * @param storage_mgr

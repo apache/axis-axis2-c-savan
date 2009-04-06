@@ -30,6 +30,8 @@
 #include <axiom_soap_envelope.h>
 #include <axiom_element.h>
 #include <axiom_node.h>
+#include <esb_sender.h>
+#include <esb_runtime.h>
 
 /**
  *
@@ -46,6 +48,14 @@ typedef struct savan_esb_publisher_mod
 
 #define SAVAN_INTF_TO_IMPL(publishermod) ((savan_esb_publisher_mod_t *) publishermod)
 
+static axis2_status_t
+savan_esb_publisher_mod_publish_to_subscriber(
+    savan_publisher_mod_t *publishermod,
+    const axutil_env_t *env,
+    void *msg_ctx,
+    savan_subscriber_t *subscriber,
+    savan_filter_mod_t *filtermod);
+
 AXIS2_EXTERN void AXIS2_CALL
 savan_esb_publisher_mod_free(
     savan_publisher_mod_t *publishermod,
@@ -55,7 +65,7 @@ AXIS2_EXTERN void AXIS2_CALL
 savan_esb_publisher_mod_publish(
     savan_publisher_mod_t *publishermod,
     const axutil_env_t *env,
-    axis2_msg_ctx_t *msg_ctx);
+    void *msg_ctx);
 
 static const savan_publisher_mod_ops_t savan_publisher_mod_ops = 
 {
@@ -69,7 +79,6 @@ savan_publisher_mod_create(
     axis2_conf_t *conf)
 {
     savan_esb_publisher_mod_t *publishermodimpl = NULL;
-    axis2_char_t *publisher_template_path = NULL;
     
     publishermodimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_esb_publisher_mod_t));
     if (!publishermodimpl)
@@ -80,17 +89,6 @@ savan_publisher_mod_create(
 
     memset ((void *) publishermodimpl, 0, sizeof(savan_esb_publisher_mod_t));
 
-    publisher_template_path = savan_util_get_module_param(env, conf, SAVAN_FILTER_TEMPLATE_PATH);
-    if(!publisher_template_path)
-    {
-        savan_esb_publisher_mod_free((savan_publisher_mod_t *) publishermodimpl, env);
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Publisher template path not set");
-        return NULL;
-    }
-
-    publishermodimpl->publisher_template_path = publisher_template_path;
-
-    publishermodimpl->dialect = NULL;
     publishermodimpl->conf = conf;
     publishermodimpl->publishermod.ops = &savan_publisher_mod_ops;
 
@@ -107,12 +105,6 @@ savan_esb_publisher_mod_free(
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_esb_publisher_mod_free");
 
-    if(publishermodimpl->dialect)
-    {
-        AXIS2_FREE(env->allocator, publishermodimpl->dialect);
-        publishermodimpl->dialect = NULL;
-    }
-
     publishermodimpl->conf = NULL;
 
     if(publishermodimpl)
@@ -128,15 +120,148 @@ AXIS2_EXTERN void AXIS2_CALL
 savan_esb_publisher_mod_publish(
     savan_publisher_mod_t *publishermod,
     const axutil_env_t *env,
-    axis2_msg_ctx_t *msg_ctx)
+    void *esb_ctx)
 {
     savan_esb_publisher_mod_t *publishermodimpl = NULL;
+
+    axutil_array_list_t *subs_store = NULL;
+    int i = 0, size = 0;
+    savan_storage_mgr_t *storage_mgr = NULL;
+    savan_filter_mod_t *filtermod = NULL;
+    axis2_char_t *filter = NULL;
 
     publishermodimpl = SAVAN_INTF_TO_IMPL(publishermod);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_esb_publisher_mod_publish");
 
+    storage_mgr = savan_util_get_storage_mgr(env, NULL, publishermodimpl->conf);
+    axutil_allocator_switch_to_global_pool(env->allocator);
+    if(storage_mgr)
+    {
+        subs_store = savan_storage_mgr_retrieve_all_subscribers(storage_mgr, env, filter);
+    }
+
+    if (!subs_store)
+    {
+        axutil_allocator_switch_to_local_pool(env->allocator);
+        AXIS2_LOG_WARNING(env->log, AXIS2_LOG_SI, "[savan] Subscriber store is NULL"); 
+    }
+
+    size = axutil_array_list_size(subs_store, env);
+    for(i = 0; i < size; i++)
+    {
+        savan_subscriber_t *sub = NULL;
+
+        sub = (savan_subscriber_t *)axutil_array_list_get(subs_store, env, i);
+        if (sub)
+        {
+            axis2_char_t *id = savan_subscriber_get_id(sub, env);
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Publishing to:%s", id);
+
+            filtermod = savan_util_get_filter_module(env, publishermodimpl->conf);
+            /* Ideally publishing to each subscriber should happen within a thread for each 
+             * subscriber. However until Axis2/C provide a good thread pool to handle
+             * such tasks I use this sequential publishing to subscribers.
+             */
+            if(!savan_esb_publisher_mod_publish_to_subscriber(publishermod, env, esb_ctx, sub, 
+                        filtermod))
+            {
+                axis2_endpoint_ref_t *notifyto = savan_subscriber_get_notify_to(sub, env);
+                const axis2_char_t *address = NULL;
+
+                if(notifyto)
+                {
+                    address = axis2_endpoint_ref_get_address(notifyto, env);
+                }
+
+                AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                        "Publishing to the Data Sink:%s proviced by subscriber:%s Failed. Check "\
+                        "whether the Data Sink url is correct", address, id);
+            }
+        }
+    }
+
+    axutil_allocator_switch_to_local_pool(env->allocator);
+
+
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_esb_publisher_mod_publish");
-    return AXIS2_FALSE;
+}
+
+static axis2_status_t
+savan_esb_publisher_mod_publish_to_subscriber(
+    savan_publisher_mod_t *publishermod,
+    const axutil_env_t *env,
+    void *esb_ctx,
+    savan_subscriber_t *subscriber,
+    savan_filter_mod_t *filtermod)
+{
+    axis2_status_t status = AXIS2_SUCCESS;
+    const axis2_char_t *address = NULL;
+    axis2_bool_t filter_apply = AXIS2_TRUE;
+    axis2_endpoint_ref_t *notifyto = NULL;
+    esb_rt_epr_t *epr = NULL;
+    axiom_soap_envelope_t *envelope = NULL;
+    axiom_soap_body_t *body = NULL;
+    axiom_node_t *body_node = NULL;
+    axiom_node_t *payload = NULL;
+    axis2_msg_ctx_t *msg_ctx = NULL;
+    msg_ctx = ((esb_ctx_t *) esb_ctx)->in_in_msg_ctx;
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_esb_publisher_mod_publish_to_subscriber");
+
+    notifyto = savan_subscriber_get_notify_to(subscriber, env);
+    if(notifyto)
+    {
+        address = axis2_endpoint_ref_get_address(notifyto, env);
+        if(address)
+        {
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Publishing to:%s", address);
+            epr = esb_rt_epr_create(env);
+            epr->uri = axutil_strdup(env, address);
+        }
+    }
+
+    envelope = axis2_msg_ctx_get_soap_envelope(msg_ctx, env);    
+    body = axiom_soap_envelope_get_body(envelope, env);
+    body_node = axiom_soap_body_get_base_node(body, env);
+    payload = axiom_node_get_first_element(body_node, env);
+
+    /* If this is a filtering request and we cannot find any filter module to filter then error */
+    if(savan_subscriber_get_filter(subscriber, env) && !filtermod)
+    {
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FILTER_MODULE_COULD_NOT_BE_RETRIEVED, AXIS2_FAILURE);
+        return AXIS2_FAILURE;
+    }
+
+#ifdef SAVAN_FILTERING
+    /* If this is a filtering request and filter module is defined then filter the request.
+     */
+    if(filtermod && savan_subscriber_get_filter(subscriber, env))
+    {
+	    /* Apply the filter, and check whether it evaluates to success */
+        filter_apply = savan_filter_mod_apply(filtermod ,env, subscriber, payload);
+        if(!filter_apply)
+        {
+            status = axutil_error_get_status_code(env->error);
+            if(AXIS2_SUCCESS != status)
+            {
+                axiom_node_detach(payload, env);
+                return status;
+            }
+        }
+    }
+#endif
+
+    if(filter_apply)
+    {
+        esb_send_on_out_only(env, epr, (esb_ctx_t *) esb_ctx);
+    }
+	
+    axiom_node_detach(payload, env); /*insert this to prevent payload corruption in subsequent 
+                                       "publish" calls with some payload.*/
+
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_esb_publisher_mod_publish_to_subscriber");
+
+    return status;
 }
 

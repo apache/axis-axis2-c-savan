@@ -142,6 +142,7 @@ typedef struct savan_subs_mgr_info
 #define SAVAN_INMEMORY_STORAGE  "inmemory"
 #define SAVAN_SERVICE_STORAGE  "service"
 #define SAVAN_REGISTRY_STORAGE  "registry"
+#define SAVAN_MESSAGE_RECEIVER  "savan_msgreceivers"
 
 #define SAVAN_SUBS_MGR_ADD_SUBSCRIBER_URL "http://ws.apache.org/axis2/c/subscription/add_subscriber"
 #define SAVAN_SUBS_MGR_GET_SUBSCRIBER_URL "http://ws.apache.org/axis2/c/subscription/add_subscriber"

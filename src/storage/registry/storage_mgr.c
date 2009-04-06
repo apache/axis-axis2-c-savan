@@ -158,6 +158,42 @@ savan_storage_mgr_create(
     return (savan_storage_mgr_t *) storagemgrimpl;
 }
 
+AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
+savan_storage_mgr_create_with_connection_info(
+    const axutil_env_t *env,
+    axis2_conf_t *conf,
+    axis2_char_t *connection_string,
+    axis2_char_t *username,
+    axis2_char_t *password)
+{
+    savan_registry_storage_mgr_t *storagemgrimpl = NULL;
+    axis2_status_t status = AXIS2_FAILURE;
+    
+    storagemgrimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_registry_storage_mgr_t));
+    if (!storagemgrimpl)
+    {
+        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_STORAGE_MANAGER_CREATION_FAILED, AXIS2_FAILURE);
+        return NULL;
+    }
+
+    memset ((void *) storagemgrimpl, 0, sizeof(savan_registry_storage_mgr_t));
+
+    storagemgrimpl->remote_registry = NULL;
+    storagemgrimpl->reg_url = axutil_strdup(env, connection_string);
+    storagemgrimpl->username = axutil_strdup(env, username);
+    storagemgrimpl->password = axutil_strdup(env, password);
+    storagemgrimpl->conf = conf;
+    storagemgrimpl->storagemgr.ops = &storage_mgr_ops;
+
+    status = savan_registry_storage_mgr_init_resource((savan_storage_mgr_t *) storagemgrimpl, env);
+    if(status != AXIS2_SUCCESS)
+    {
+        savan_registry_storage_mgr_free((savan_storage_mgr_t *) storagemgrimpl, env);
+        return NULL;
+    }
+    return (savan_storage_mgr_t *) storagemgrimpl;
+}
+
 AXIS2_EXTERN void AXIS2_CALL
 savan_registry_storage_mgr_free(
     savan_storage_mgr_t *storagemgr,

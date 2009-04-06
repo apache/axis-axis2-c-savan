@@ -160,8 +160,16 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     if (to_msg_recv)
     {
         axis2_op_t *op =  axis2_msg_ctx_get_op(msg_ctx, env);
-        axis2_msg_recv_t* msg_recv = savan_msg_recv_create(env);
-        axis2_op_set_msg_recv(op, env, msg_recv);
+        axis2_msg_recv_t* msg_recv = axis2_conf_get_msg_recv(conf, env, SAVAN_MESSAGE_RECEIVER);
+        if(msg_recv)
+        {
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "msg_recv not null");
+            axis2_op_set_msg_recv(op, env, msg_recv);
+        }
+        else
+        {
+            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "msg_recv null");
+        }
     }
     
     savan_sub_processor_free(processor, env);
