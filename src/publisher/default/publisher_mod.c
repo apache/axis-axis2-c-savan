@@ -30,7 +30,6 @@
 #include <savan_subscriber.h>
 #include <savan_storage_mgr.h>
 #include <savan_error.h>
-#include <libxslt/xsltutils.h>
 #include <axiom_soap.h>
 #include <axiom_soap_const.h>
 #include <axiom_soap_envelope.h>
@@ -61,7 +60,7 @@ AXIS2_EXTERN void AXIS2_CALL
 savan_default_publisher_mod_publish(
     savan_publisher_mod_t *publishermod,
     const axutil_env_t *env,
-    axis2_msg_ctx_t *msg_ctx);
+    void *msg_ctx);
 
 static axis2_status_t
 savan_default_publisher_mod_publish_to_subscriber(
@@ -125,7 +124,7 @@ AXIS2_EXTERN void AXIS2_CALL
 savan_default_publisher_mod_publish(
     savan_publisher_mod_t *publishermod,
     const axutil_env_t *env,
-    axis2_msg_ctx_t *msg_ctx)
+    void *msg_ctx)
 {
     savan_default_publisher_mod_t *publishermodimpl = NULL;
     axutil_array_list_t *subs_store = NULL;
@@ -172,7 +171,7 @@ savan_default_publisher_mod_publish(
     client_conf_ctx = axis2_svc_client_get_conf_ctx(svc_client, env);
     client_svc = axis2_svc_client_get_svc(svc_client, env);
 
-    envelope =  axis2_msg_ctx_get_soap_envelope(msg_ctx, env);
+    envelope =  axis2_msg_ctx_get_soap_envelope((axis2_msg_ctx_t *) msg_ctx, env);
     if (!envelope)
     {
         axutil_allocator_switch_to_local_pool(env->allocator);
