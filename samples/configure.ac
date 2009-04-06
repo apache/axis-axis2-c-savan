@@ -80,7 +80,7 @@ AC_ARG_WITH(axis2,
         axis2inc="-I$withval"
     dnl else find the axiom include dir in $(AXIS2C_HOME)/include
     elif test -d '$(AXIS2C_HOME)/include'; then
-        axiominc="-I$(AXIS2C_HOME)/include/axis2-1.4.0"
+        axiominc="-I$(AXIS2C_HOME)/include/axis2-1.6.0"
     else
         AC_MSG_ERROR(could not find axis2. stop)
     fi
