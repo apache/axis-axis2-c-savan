@@ -68,7 +68,7 @@ AC_ARG_WITH(axis2,
 [  --with-axis2[=PATH]     Find the AXIS2 header files in 'PATH'.
     'PATH' should point to AXIS2 include files location.
     If you omit the '=PATH' part completely, the configure script will search
-    '$(AXIS2C_HOME)/include/axis2-1.4.0' for AXIS2 headers.],
+    '$(AXIS2C_HOME)/include/axis2-1.6.0' for AXIS2 headers.],
 [ case "$withval" in
   no)
     AC_MSG_RESULT(no)
