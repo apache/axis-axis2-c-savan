@@ -67,10 +67,12 @@ distdir:
 	if not exist $(SAVANDISTDIR)\lib mkdir $(SAVANDISTDIR)\lib
 	if not exist $(SAVANDISTDIR)\include mkdir $(SAVANDISTDIR)\include
 	if not exist $(SAVANDISTDIR)\samples mkdir $(SAVANDISTDIR)\samples
-	if not exist $(SAVANDISTDIR)\bin\samples mkdir $(SAVANDISTDIR)\bin\samples
-	if not exist $(SAVANDISTDIR)\bin\samples\savan mkdir $(SAVANDISTDIR)\bin\samples\savan
+	if not exist $(SAVANDISTDIR)\samples\bin mkdir $(SAVANDISTDIR)\samples\bin
+	if not exist $(SAVANDISTDIR)\samples\bin\savanc mkdir $(SAVANDISTDIR)\samples\bin\savanc
+	if not exist $(SAVANDISTDIR)\samples\src mkdir $(SAVANDISTDIR)\samples\src
+	if not exist $(SAVANDISTDIR)\samples\src\savanc mkdir $(SAVANDISTDIR)\samples\src\savanc
 	if not exist $(SAVANDISTDIR)\services\listener mkdir $(SAVANDISTDIR)\services\listener
-	if not exist $(SAVANDISTDIR)\services\publisher mkdir $(SAVANDISTDIR)\services\publisher
+	if not exist $(SAVANDISTDIR)\services\weather mkdir $(SAVANDISTDIR)\services\weather
 	if not exist $(SAVANDISTDIR)\services\subscription mkdir $(SAVANDISTDIR)\services\subscription
 
 
@@ -80,7 +82,7 @@ intdir:
 	if not exist $(SAVANINTDIR)\samples mkdir $(SAVANINTDIR)\samples
 	if not exist $(SAVANINTDIR)\samples\subscriber mkdir $(SAVANINTDIR)\samples\subscriber
 	if not exist $(SAVANINTDIR)\samples\listener mkdir $(SAVANINTDIR)\samples\listener
-	if not exist $(SAVANINTDIR)\samples\publisher mkdir $(SAVANINTDIR)\samples\publisher
+	if not exist $(SAVANINTDIR)\samples\weather mkdir $(SAVANINTDIR)\samples\weather
 	if not exist $(SAVANINTDIR)\samples\subscription mkdir $(SAVANINTDIR)\samples\subscription
 	
 clean :
@@ -96,10 +98,10 @@ copy_extra:
 	@if exist  $(SAVANSRC)\AUTHORS copy $(SAVANSRC)\AUTHORS $(SAVANDISTDIR)
 	
 copy_samples:
-	@xcopy /E $(SAVANSRC)\samples $(SAVANDISTDIR)\samples
-	@del /s /q $(SAVANDISTDIR)\samples\*.am
-	@del /q $(SAVANDISTDIR)\samples\*.*
-	@copy $(SAVANSRC)\src\data\axis2.xml $(SAVANDISTDIR)\samples\server
+	@xcopy /E $(SAVANSRC)\samples $(SAVANDISTDIR)\samples\src\savanc
+	@del /s /q $(SAVANDISTDIR)\samples\src\savanc\*.am
+	@del /q $(SAVANDISTDIR)\samples\src\savanc\*.*
+	@copy $(SAVANSRC)\src\data\axis2.xml $(SAVANDISTDIR)\samples\src\savanc\server
 
 copy_include:
 	@xcopy /E $(SAVANSRC)\include $(SAVANDISTDIR)\include
@@ -139,14 +141,14 @@ $(SAVANDISTDIR)\services\subscription\subscription.dll :
 
 subscription: $(SAVANDISTDIR)\services\subscription\subscription.dll
 
-$(SAVANDISTDIR)\services\publisher\publisher.dll :
-	$(CC) $(CFLAGS) $(SAVANSRC)\samples\server\publisher\*.c /Fo$(SAVANINTDIR)\samples\publisher\ /c
-	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\publisher\*.obj  $(SAVAN_CLIENT).lib /DLL \
-	/OUT:$(SAVANDISTDIR)\services\publisher\publisher.dll
+$(SAVANDISTDIR)\services\weather\weather.dll :
+	$(CC) $(CFLAGS) $(SAVANSRC)\samples\server\weather\*.c /Fo$(SAVANINTDIR)\samples\weather\ /c
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\weather\*.obj  $(SAVAN_CLIENT).lib /DLL \
+	/OUT:$(SAVANDISTDIR)\services\weather\weather.dll
 	-@$(_VC_MANIFEST_EMBED_DLL)
-	@copy $(SAVANSRC)\samples\server\publisher\services.xml $(SAVANDISTDIR)\services\publisher\
+	@copy $(SAVANSRC)\samples\server\weather\services.xml $(SAVANDISTDIR)\services\weather\
 
-publisher: $(SAVANDISTDIR)\services\publisher\publisher.dll
+weather: $(SAVANDISTDIR)\services\weather\weather.dll
 
 $(SAVANDISTDIR)\services\listener\listener.dll :
 	$(CC) $(CFLAGS) $(SAVANSRC)\samples\server\listener\*.c /Fo$(SAVANINTDIR)\samples\listener\ /c
@@ -157,15 +159,15 @@ $(SAVANDISTDIR)\services\listener\listener.dll :
 
 listener: $(SAVANDISTDIR)\services\listener\listener.dll
 		
-$(SAVANDISTDIR)\bin\samples\savan\subscriber.exe :
+$(SAVANDISTDIR)\samples\bin\savanc\subscriber.exe :
 	$(CC) $(CFLAGS) $(SAVANSRC)\samples\client\subscriber\*.c /Fo$(SAVANINTDIR)\samples\subscriber\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\samples\subscriber\*.obj $(SAVAN_CLIENT).lib \
-	/OUT:$(SAVANDISTDIR)\bin\samples\savan\subscriber.exe
+	/OUT:$(SAVANDISTDIR)\samples\bin\savanc\subscriber.exe
 	-@$(_VC_MANIFEST_EMBED_EXE)
 
-subscriber: $(SAVANDISTDIR)\bin\samples\savan\subscriber.exe
+subscriber: $(SAVANDISTDIR)\samples\bin\savanc\subscriber.exe
 	
-dist: clean distdir intdir savan savan_client listener subscription subscriber copy_include copy_samples copy_extra
+dist: clean distdir intdir savan savan_client listener weather subscription subscriber copy_include copy_samples copy_extra
 
 
 	 
