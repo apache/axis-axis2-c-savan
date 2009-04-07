@@ -181,7 +181,7 @@ savan_storage_mgr_create_with_connection_info(
     storagemgrimpl->reg_url = axutil_strdup(env, connection_string);
     storagemgrimpl->username = axutil_strdup(env, username);
     storagemgrimpl->password = axutil_strdup(env, password);
-    storagemgrimpl->conf = conf;
+    storagemgrimpl->conf = NULL;
     storagemgrimpl->storagemgr.ops = &storage_mgr_ops;
 
     status = savan_registry_storage_mgr_init_resource((savan_storage_mgr_t *) storagemgrimpl, env);
