@@ -1,4 +1,4 @@
-noinst_LTLIBRARIES = libsavan_storage.la
+lib_LTLIBRARIES = libsavan_storage.la
 
 libsavan_storage_la_SOURCES = storage_mgr.c sqlite3.c
 

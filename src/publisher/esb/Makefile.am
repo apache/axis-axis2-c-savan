@@ -1,4 +1,4 @@
-noinst_LTLIBRARIES = libsavan_publisher_mod.la
+lib_LTLIBRARIES = libsavan_publisher_mod.la
 
 libsavan_publisher_mod_la_SOURCES = publisher_mod.c
 libsavan_publisher_mod_la_LIBADD =

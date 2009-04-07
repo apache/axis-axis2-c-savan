@@ -1,5 +1,5 @@
 datadir=$(prefix)/modules/savan
-noinst_LTLIBRARIES = libsavan_filter_mod.la
+lib_LTLIBRARIES = libsavan_filter_mod.la
 
 libsavan_filter_mod_la_SOURCES = filter_mod.c
 libsavan_filter_mod_la_LIBADD = ../common/libsavan_common_filter_mod.la -lxml2
