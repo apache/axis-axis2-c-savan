@@ -37,8 +37,9 @@ AXIS2_EXTERN void AXIS2_CALL
 savan_publisher_mod_publish(
     savan_publisher_mod_t *publishermod, 
     const axutil_env_t *env,
-    void *msg_ctx)
+    void *msg_ctx,
+    savan_storage_mgr_t *storage_mgr)
 {
-    publishermod->ops->publish(publishermod, env, msg_ctx);
+    publishermod->ops->publish(publishermod, env, msg_ctx, storage_mgr);
 }
 

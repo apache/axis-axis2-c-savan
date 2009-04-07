@@ -27,6 +27,7 @@
 #include <axis2_conf.h>
 #include <axis2_msg_ctx.h>
 #include <axiom_node.h>
+#include <savan_storage_mgr.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -56,7 +57,8 @@ AXIS2_DECLARE_DATA struct savan_publisher_mod_ops
             publish)(
                 savan_publisher_mod_t *publisher, 
                 const axutil_env_t *env,
-                void *msg_ctx);
+                void *msg_ctx,
+                savan_storage_mgr_t *storage_mgr);
 
 };
 
@@ -73,9 +75,18 @@ AXIS2_DECLARE_DATA struct savan_publisher_mod
  * @return status of the operation
  */
 AXIS2_EXTERN savan_publisher_mod_t * AXIS2_CALL
-savan_publisher_mod_create(
+savan_publisher_mod_create_with_conf(
     const axutil_env_t *env,
     axis2_conf_t *conf);
+
+/**
+ * Create the savan publisher.
+ * @param env environment object
+ * @return status of the operation
+ */
+AXIS2_EXTERN savan_publisher_mod_t * AXIS2_CALL
+savan_publisher_mod_create(
+    const axutil_env_t *env);
 
 /**
  * Deallocate the publisher.
@@ -97,7 +108,8 @@ AXIS2_EXTERN void AXIS2_CALL
 savan_publisher_mod_publish(
     savan_publisher_mod_t *publishermod, 
     const axutil_env_t *env,
-    void *msg_ctx);
+    void *msg_ctx,
+    savan_storage_mgr_t *storage_mgr);
 
 /** @} */
 #ifdef __cplusplus

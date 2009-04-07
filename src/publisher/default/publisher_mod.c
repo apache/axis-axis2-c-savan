@@ -60,7 +60,8 @@ AXIS2_EXTERN void AXIS2_CALL
 savan_default_publisher_mod_publish(
     savan_publisher_mod_t *publishermod,
     const axutil_env_t *env,
-    void *msg_ctx);
+    void *msg_ctx,
+    savan_storage_mgr_t *storage_mgr);
 
 static axis2_status_t
 savan_default_publisher_mod_publish_to_subscriber(
@@ -78,7 +79,7 @@ static const savan_publisher_mod_ops_t savan_publisher_mod_ops =
 };
 
 AXIS2_EXTERN savan_publisher_mod_t * AXIS2_CALL
-savan_publisher_mod_create(
+savan_publisher_mod_create_with_conf(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
@@ -97,6 +98,13 @@ savan_publisher_mod_create(
     publishermodimpl->publishermod.ops = &savan_publisher_mod_ops;
 
     return (savan_publisher_mod_t *) publishermodimpl;
+}
+
+AXIS2_EXTERN savan_publisher_mod_t * AXIS2_CALL
+savan_publisher_mod_create(
+    const axutil_env_t *env)
+{
+    return NULL;
 }
 
 AXIS2_EXTERN void AXIS2_CALL
@@ -124,12 +132,12 @@ AXIS2_EXTERN void AXIS2_CALL
 savan_default_publisher_mod_publish(
     savan_publisher_mod_t *publishermod,
     const axutil_env_t *env,
-    void *msg_ctx)
+    void *msg_ctx,
+    savan_storage_mgr_t *storage_mgr)
 {
     savan_default_publisher_mod_t *publishermodimpl = NULL;
     axutil_array_list_t *subs_store = NULL;
     int i = 0, size = 0;
-    savan_storage_mgr_t *storage_mgr = NULL;
     savan_filter_mod_t *filtermod = NULL;
     axis2_char_t *path = NULL;
     axis2_conf_ctx_t *client_conf_ctx = NULL;
@@ -145,7 +153,6 @@ savan_default_publisher_mod_publish(
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_default_publisher_mod_publish");
 
-    storage_mgr = savan_util_get_storage_mgr(env, NULL, publishermodimpl->conf);
     axutil_allocator_switch_to_global_pool(env->allocator);
     if(storage_mgr)
     {

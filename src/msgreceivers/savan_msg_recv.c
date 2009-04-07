@@ -114,15 +114,17 @@ savan_msg_recv_handle_event(
     axis2_conf_t *conf = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
     savan_publisher_mod_t *pub_mod = NULL;
+    savan_storage_mgr_t *storage_mgr = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_event");
    
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
 
-    pub_mod = savan_publisher_mod_create(env, conf);
+    pub_mod = savan_publisher_mod_create_with_conf(env, conf);
 
-    savan_publisher_mod_publish(pub_mod, env, msg_ctx);
+    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
+    savan_publisher_mod_publish(pub_mod, env, msg_ctx, storage_mgr);
     savan_publisher_mod_free(pub_mod, env);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_event");
