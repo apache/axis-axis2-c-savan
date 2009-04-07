@@ -69,7 +69,7 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     savan_message_types_t msg_type = SAVAN_MSG_TYPE_UNKNOWN;
     savan_sub_processor_t *processor = NULL;
     axis2_status_t status = AXIS2_SUCCESS;
-    axis2_bool_t to_msg_recv = AXIS2_FALSE;
+    /*axis2_bool_t to_msg_recv = AXIS2_FALSE;*/
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     int type;
@@ -113,17 +113,17 @@ savan_in_handler_invoke(struct axis2_handler *handler,
             {
                 status = AXIS2_FAILURE;
             }
-            else
+            /*else
             {
                 to_msg_recv = AXIS2_TRUE;
-            }
+            }*/
             break;
         }
 
         case SAVAN_MSG_TYPE_UNSUB:
         {
             status = savan_sub_processor_unsubscribe(processor, env, msg_ctx);
-            to_msg_recv = AXIS2_TRUE;
+            /*to_msg_recv = AXIS2_TRUE;*/
             break;
         }
 
@@ -131,20 +131,20 @@ savan_in_handler_invoke(struct axis2_handler *handler,
         {
             if(savan_sub_processor_renew_subscription(processor, env, msg_ctx) == AXIS2_FAILURE)
             {
-                to_msg_recv = AXIS2_FALSE;
+                /*to_msg_recv = AXIS2_FALSE;*/
                 status = AXIS2_FAILURE;
             }
-            else
+            /*else
             {
                 to_msg_recv = AXIS2_TRUE;
-            }
+            }*/
             break;
         }
 
         case SAVAN_MSG_TYPE_GET_STATUS:
         {
             status = savan_sub_processor_get_status(processor, env, msg_ctx);
-            to_msg_recv = AXIS2_TRUE;
+            /*to_msg_recv = AXIS2_TRUE;*/
             break;
         }
 
@@ -157,20 +157,15 @@ savan_in_handler_invoke(struct axis2_handler *handler,
         }
     }    
     
-    if (to_msg_recv)
+    /*if (to_msg_recv)
     {
         axis2_op_t *op =  axis2_msg_ctx_get_op(msg_ctx, env);
-        axis2_msg_recv_t* msg_recv = axis2_conf_get_msg_recv(conf, env, SAVAN_MESSAGE_RECEIVER);
+        axis2_msg_recv_t* msg_recv = savan_msg_recv_create(env);
         if(msg_recv)
         {
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "msg_recv not null");
             axis2_op_set_msg_recv(op, env, msg_recv);
         }
-        else
-        {
-            AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "msg_recv null");
-        }
-    }
+    }*/
     
     savan_sub_processor_free(processor, env);
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] End:savan_in_handler_invoke");

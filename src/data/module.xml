@@ -13,18 +13,22 @@
     </inflow>
 
     <operation name="Subscribe">
+            <messageReceiver class="savan_msgreceivers" />
            <parameter name="wsamapping" >http://schemas.xmlsoap.org/ws/2004/08/eventing/Subscribe</parameter>
     </operation>
 
     <operation name="Renew">
+            <messageReceiver class="savan_msgreceivers" />
            <parameter name="wsamapping" >http://schemas.xmlsoap.org/ws/2004/08/eventing/Renew</parameter>
     </operation>
 
     <operation name="Unsubscribe">
+            <messageReceiver class="savan_msgreceivers" />
            <parameter name="wsamapping" >http://schemas.xmlsoap.org/ws/2004/08/eventing/Unsubscribe</parameter>
     </operation>
 
     <operation name="GetStatus">
+            <messageReceiver class="savan_msgreceivers" />
            <parameter name="wsamapping" >http://schemas.xmlsoap.org/ws/2004/08/eventing/GetStatus</parameter>
     </operation>
 

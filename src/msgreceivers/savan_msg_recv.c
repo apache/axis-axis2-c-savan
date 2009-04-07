@@ -39,6 +39,12 @@ savan_msg_recv_invoke_business_logic_sync(
     axis2_msg_ctx_t *msg_ctx,
     axis2_msg_ctx_t *new_msg_ctx);
     
+static axis2_status_t
+savan_msg_recv_handle_event(
+    const axutil_env_t *env, 
+    axis2_msg_ctx_t *msg_ctx,
+    axis2_msg_ctx_t *new_msg_ctx);
+
 axis2_status_t AXIS2_CALL
 savan_msg_recv_handle_sub_request(
     const axutil_env_t *env,
@@ -99,7 +105,7 @@ savan_msg_recv_create(
     return msg_recv;
 }
 
-axis2_status_t AXIS2_CALL
+static axis2_status_t
 savan_msg_recv_handle_event(
     const axutil_env_t *env, 
     axis2_msg_ctx_t *msg_ctx,
@@ -132,7 +138,7 @@ savan_msg_recv_invoke_business_logic_sync(
 {
     savan_message_types_t msg_type = SAVAN_MSG_TYPE_UNKNOWN;
     axis2_status_t status = AXIS2_SUCCESS;
-    
+
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_msg_recv_invoke_business_logic_sync");
     
