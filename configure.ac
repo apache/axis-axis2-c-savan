@@ -69,9 +69,9 @@ AC_ARG_WITH(axis2,
   AC_MSG_RESULT(no)
 )
 
-AC_MSG_CHECKING(whether to build sqlite based storage)
+AC_MSG_CHECKING(whether to build sqlite based subscription manager)
 AC_ARG_ENABLE(sqlite, [  --enable-sqlite
-                          build Sqlite based storage (default=yes)],
+                          build Sqlite based subscription manager (default=yes)],
 [ case "${enableval}" in
   no)
     AC_MSG_RESULT(no)
@@ -87,9 +87,9 @@ AC_ARG_ENABLE(sqlite, [  --enable-sqlite
 )
 
 
-AC_MSG_CHECKING(whether to build service based storage)
+AC_MSG_CHECKING(whether to build service based subscription manager)
 AC_ARG_ENABLE(service, [  --enable-service    
-                          build service based storage (default=no)],
+                          build service based subscription manager (default=no)],
 [ case "${enableval}" in
   no)
     AC_MSG_RESULT(no)
@@ -105,7 +105,7 @@ AC_ARG_ENABLE(service, [  --enable-service
   AC_MSG_RESULT(no)
 )
 
-AC_MSG_CHECKING(To Use Registry based storage manager . This is an optional module to build Savan C)
+AC_MSG_CHECKING(To Use Registry based subscription manager. This is an optional module to build Savan C)
 AC_ARG_WITH(registry,
 [  --with-registry[=PATH]     Find the REGISTRY header files in 'PATH'.
     'PATH' should point to REGISTRY include files location.
@@ -241,13 +241,13 @@ AC_CONFIG_FILES([Makefile \
     src/handlers/Makefile \
     src/msgreceivers/Makefile\
     src/subscribers/Makefile\
-    src/storage/Makefile\
-    src/storage/common/Makefile\
-    src/storage/sqlite/Makefile\
-    src/storage/registry/Makefile\
-    src/storage/registry/test/Makefile\
-    src/storage/service/Makefile\
-    src/storage/service/subs_mgr_svc/Makefile\
+    src/subs_mgrs/Makefile\
+    src/subs_mgrs/common/Makefile\
+    src/subs_mgrs/sqlite/Makefile\
+    src/subs_mgrs/registry/Makefile\
+    src/subs_mgrs/registry/test/Makefile\
+    src/subs_mgrs/service/Makefile\
+    src/subs_mgrs/service/subs_mgr_svc/Makefile\
     src/filters/Makefile\
     src/filters/common/Makefile\
     src/filters/xpath/Makefile\
