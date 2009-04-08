@@ -99,7 +99,7 @@ AC_ARG_ENABLE(service, [  --enable-service
   *)
     AC_MSG_RESULT(yes)
     SAVAN_STORAGE="service"
-    SVC_DIR="subs_mgr"
+    SVC_DIR="subs_mgr_svc"
     ;;
   esac ],
   AC_MSG_RESULT(no)
@@ -247,6 +247,7 @@ AC_CONFIG_FILES([Makefile \
     src/storage/registry/Makefile\
     src/storage/registry/test/Makefile\
     src/storage/service/Makefile\
+    src/storage/service/subs_mgr_svc/Makefile\
     src/filters/Makefile\
     src/filters/common/Makefile\
     src/filters/xpath/Makefile\
@@ -254,7 +255,6 @@ AC_CONFIG_FILES([Makefile \
     src/publisher/common/Makefile\
     src/publisher/esb/Makefile\
     src/publisher/default/Makefile\
-    src/subs_mgr/Makefile\
     src/data/Makefile\
     src/util/Makefile
     ])

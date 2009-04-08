@@ -1,3 +1,4 @@
+SUBDIRS = subs_mgr_svc
 noinst_LTLIBRARIES = libsavan_storage.la
 
 libsavan_storage_la_SOURCES = service_storage_mgr.c
