@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 #include <axis2_util.h>
+#include <axis2_conf.h>
 #include <axis2_svc_skeleton.h>
 #include <axiom_element.h>
-#include <savan_publisher_mod.h>
 
 #include "weather.h"
 
