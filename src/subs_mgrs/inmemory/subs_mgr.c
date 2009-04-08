@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-#include <savan_storage_mgr.h>
+#include <savan_subs_mgr.h>
 
 AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
 savan_subs_mgr_create(

@@ -32,7 +32,7 @@
 
 #include "savan_subs_mgr_svc.h"
 #include <savan_constants.h>
-#include <savan_storage_mgr.h>
+#include <savan_subs_mgr.h>
 #include <savan_util.h>
 #include <savan_error.h>
 
@@ -119,7 +119,7 @@ savan_subs_mgr_svc_init_with_conf(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
-    /*savan_storage_mgr_t *storage_mgr = NULL;
+    /*savan_subs_mgr_t *subs_mgr = NULL;
     axutil_array_list_t *topic_param_list = NULL;
     axis2_svc_t *subs_svc = NULL;
     axis2_op_t *op = NULL;
@@ -127,8 +127,8 @@ savan_subs_mgr_svc_init_with_conf(
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_svc_init_with_conf");
 
-    /*storage_mgr = savan_util_get_storage_mgr(env, NULL, conf);
-    if(!storage_mgr)
+    /*subs_mgr = savan_util_get_subs_mgr(env, NULL, conf);
+    if(!subs_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the database. Check \
             whether database path is correct and accessible. Exit loading the Savan module");

@@ -25,7 +25,7 @@
 #include <savan_constants.h>
 
 #include "savan_subs_mgr_svc.h"
-#include <savan_storage_mgr.h>
+#include <savan_subs_mgr.h>
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
 savan_subs_mgr_svc_add_subscriber(
@@ -46,7 +46,7 @@ savan_subs_mgr_svc_add_subscriber(
     axiom_element_t *sub_elem = NULL;
     axiom_element_t *id_elem = NULL;
     axiom_element_t *add_sub_elem = NULL;
-    savan_storage_mgr_t *storage_mgr = NULL;
+    savan_subs_mgr_t *subs_mgr = NULL;
     
     axis2_char_t *id = NULL;
 
@@ -99,13 +99,13 @@ savan_subs_mgr_svc_add_subscriber(
         }
     }
 
-    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
-    if(!storage_mgr)
+    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    if(!subs_mgr)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
         return NULL;
     }
-    if(savan_storage_mgr_insert_subscriber(storage_mgr, env, subscriber))
+    if(savan_subs_mgr_insert_subscriber(subs_mgr, env, subscriber))
     {
         AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
             "[savan] Subscriber %s added", id);
@@ -137,7 +137,7 @@ savan_subs_mgr_svc_remove_subscriber(
     axis2_char_t sql_remove[256];
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
-    savan_storage_mgr_t *storage_mgr = NULL;
+    savan_subs_mgr_t *subs_mgr = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_svc_remove_subscriber");
 
@@ -162,14 +162,14 @@ savan_subs_mgr_svc_remove_subscriber(
     
     sprintf(sql_remove, "delete from subscriber where id='%s'", subscriber_id);
 
-    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
-    if(!storage_mgr)
+    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    if(!subs_mgr)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
         return NULL;
     }
 
-    savan_storage_mgr_remove_subscriber(storage_mgr, env, subscriber_id);
+    savan_subs_mgr_remove_subscriber(subs_mgr, env, subscriber_id);
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, 
         "[savan] Subscriber %s removed", subscriber_id);
@@ -194,7 +194,7 @@ savan_subs_mgr_svc_get_subscriber(
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     axis2_status_t status = AXIS2_SUCCESS;
-    savan_storage_mgr_t *storage_mgr = NULL;
+    savan_subs_mgr_t *subs_mgr = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
         "[savan] Entry:savan_subs_mgr_svc_get_subscriber");
@@ -249,13 +249,13 @@ savan_subs_mgr_svc_get_subscriber(
         return NULL;
     }
 
-    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
-    if(!storage_mgr)
+    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    if(!subs_mgr)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
         return NULL;
     }
-    subscriber = savan_storage_mgr_retrieve_subscriber(storage_mgr, env, subs_id);
+    subscriber = savan_subs_mgr_retrieve_subscriber(subs_mgr, env, subs_id);
     
     subs_node = savan_util_create_savan_specific_subscriber_node(env, subscriber, NULL);
     if(!subs_node)
@@ -284,7 +284,7 @@ savan_subs_mgr_svc_get_subscriber_list(
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     int i = 0, size = 0;
-    savan_storage_mgr_t *storage_mgr = NULL;
+    savan_subs_mgr_t *subs_mgr = NULL;
     axiom_node_t *filter_parent_node = NULL;
     axiom_node_t *filter_node = NULL;
     axis2_char_t *filter = NULL;
@@ -342,13 +342,13 @@ savan_subs_mgr_svc_get_subscriber_list(
         return NULL;
     }
 
-    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
-    if(!storage_mgr)
+    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    if(!subs_mgr)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
         return NULL;
     }
-    subs_store = savan_storage_mgr_retrieve_all_subscribers(storage_mgr, env, filter);
+    subs_store = savan_subs_mgr_retrieve_all_subscribers(subs_mgr, env, filter);
 
     /* create the body of the subscribers element */
     ns1 = axiom_namespace_create (env, SAVAN_NAMESPACE, SAVAN_NS_PREFIX);
