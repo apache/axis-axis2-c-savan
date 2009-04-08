@@ -58,7 +58,7 @@ AXIS2_DECLARE_DATA struct savan_publisher_mod_ops
                 savan_publisher_mod_t *publisher, 
                 const axutil_env_t *env,
                 void *msg_ctx,
-                savan_storage_mgr_t *storage_mgr);
+                savan_subs_mgr_t *subs_mgr);
 
 };
 
@@ -109,7 +109,7 @@ savan_publisher_mod_publish(
     savan_publisher_mod_t *publishermod, 
     const axutil_env_t *env,
     void *msg_ctx,
-    savan_storage_mgr_t *storage_mgr);
+    savan_subs_mgr_t *subs_mgr);
 
 /** @} */
 #ifdef __cplusplus

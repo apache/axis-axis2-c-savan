@@ -217,7 +217,7 @@ AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
 savan_util_get_subscriber_from_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_storage_mgr_t *storage_mgr,
+        savan_subs_mgr_t *subs_mgr,
         const axis2_char_t *sub_id)
 {
     savan_subscriber_t *subscriber = NULL;
@@ -231,7 +231,7 @@ savan_util_get_subscriber_from_msg(
     }
 
     axutil_allocator_switch_to_global_pool(env->allocator);
-    subscriber = savan_storage_mgr_retrieve_subscriber(storage_mgr, env, sub_id);
+    subscriber = savan_subs_mgr_retrieve_subscriber(subs_mgr, env, sub_id);
     axutil_allocator_switch_to_local_pool(env->allocator);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_get_subscriber_from_msg");
@@ -243,7 +243,7 @@ AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
 savan_util_get_subscriber_from_renew_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_storage_mgr_t *storage_mgr,
+        savan_subs_mgr_t *subs_mgr,
         const axis2_char_t *sub_id)
 {
     savan_subscriber_t *subscriber = NULL;
@@ -273,7 +273,7 @@ savan_util_get_subscriber_from_renew_msg(
     }
 
     axutil_allocator_switch_to_global_pool(env->allocator);
-    subscriber = savan_storage_mgr_retrieve_subscriber(storage_mgr, env, sub_id);
+    subscriber = savan_subs_mgr_retrieve_subscriber(subs_mgr, env, sub_id);
     axutil_allocator_switch_to_local_pool(env->allocator);
    
     if(!subscriber)
@@ -355,7 +355,7 @@ AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_util_add_subscriber(
     const axutil_env_t *env,
     axis2_msg_ctx_t *msg_ctx,
-    savan_storage_mgr_t *storage_mgr,
+    savan_subs_mgr_t *subs_mgr,
     savan_subscriber_t *subscriber)
 {
     axis2_status_t status = AXIS2_FAILURE;
@@ -363,7 +363,7 @@ savan_util_add_subscriber(
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_add_subscriber");
     
     axutil_allocator_switch_to_global_pool(env->allocator);
-    status = savan_storage_mgr_insert_subscriber(storage_mgr, env, subscriber);
+    status = savan_subs_mgr_insert_subscriber(subs_mgr, env, subscriber);
     if(status)
     {
         axutil_property_t *subs_prop = NULL;
@@ -381,13 +381,13 @@ AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_util_update_subscriber(
     const axutil_env_t *env,
     axis2_msg_ctx_t *msg_ctx,
-    savan_storage_mgr_t *storage_mgr,
+    savan_subs_mgr_t *subs_mgr,
     savan_subscriber_t *subscriber)
 {
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_util_update_subscriber");
 
     axutil_allocator_switch_to_global_pool(env->allocator);
-    savan_storage_mgr_update_subscriber(storage_mgr, env, subscriber);
+    savan_subs_mgr_update_subscriber(subs_mgr, env, subscriber);
     axutil_allocator_switch_to_local_pool(env->allocator);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_update_subscriber"); 
@@ -398,7 +398,7 @@ AXIS2_EXTERN axis2_status_t AXIS2_CALL
 savan_util_remove_subscriber(
     const axutil_env_t *env,
     axis2_msg_ctx_t *msg_ctx,
-    savan_storage_mgr_t *storage_mgr,
+    savan_subs_mgr_t *subs_mgr,
     savan_subscriber_t *subscriber)
 {
     const axis2_char_t *subs_id = NULL;
@@ -408,7 +408,7 @@ savan_util_remove_subscriber(
     axutil_allocator_switch_to_global_pool(env->allocator);
     subs_id = savan_subscriber_get_id(subscriber, env);
 
-    savan_storage_mgr_remove_subscriber(storage_mgr, env, subs_id);
+    savan_subs_mgr_remove_subscriber(subs_mgr, env, subs_id);
     axutil_allocator_switch_to_local_pool(env->allocator);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_remove_subscriber");
@@ -912,39 +912,39 @@ savan_util_create_savan_specific_subscriber_node(
     return subs_node;
 }
 
-AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-savan_util_get_storage_mgr(
+AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+savan_util_get_subs_mgr(
     const axutil_env_t *env,
     axis2_conf_ctx_t *conf_ctx,
     axis2_conf_t *conf)
 {
-    axutil_property_t *storage_mgr_prop = NULL;
-    savan_storage_mgr_t *storage_mgr = NULL;
+    axutil_property_t *subs_mgr_prop = NULL;
+    savan_subs_mgr_t *subs_mgr = NULL;
 
     axutil_allocator_switch_to_global_pool(env->allocator);
     if(conf_ctx)
     {
-        storage_mgr_prop = axis2_conf_ctx_get_property(conf_ctx, env, SAVAN_STORAGE_MANAGER);
-        if(storage_mgr_prop)
+        subs_mgr_prop = axis2_conf_ctx_get_property(conf_ctx, env, SAVAN_STORAGE_MANAGER);
+        if(subs_mgr_prop)
         {
-            storage_mgr = (savan_storage_mgr_t *) axutil_property_get_value(storage_mgr_prop, env);
+            subs_mgr = (savan_subs_mgr_t *) axutil_property_get_value(subs_mgr_prop, env);
         }
     }
 
-    if(!storage_mgr)
+    if(!subs_mgr)
     {
-        storage_mgr = savan_storage_mgr_create(env, conf);
+        subs_mgr = savan_subs_mgr_create(env, conf);
 
-        if(storage_mgr && conf_ctx)
+        if(subs_mgr && conf_ctx)
         {
-            storage_mgr_prop = axutil_property_create_with_args(env, 0, 0, 0, storage_mgr);
-            axis2_conf_ctx_set_property(conf_ctx, env, SAVAN_STORAGE_MANAGER, storage_mgr_prop);
+            subs_mgr_prop = axutil_property_create_with_args(env, 0, 0, 0, subs_mgr);
+            axis2_conf_ctx_set_property(conf_ctx, env, SAVAN_STORAGE_MANAGER, subs_mgr_prop);
         }
     }
         
     axutil_allocator_switch_to_local_pool(env->allocator);
 
-    return storage_mgr;
+    return subs_mgr;
 }
 
 AXIS2_EXTERN savan_filter_mod_t * AXIS2_CALL

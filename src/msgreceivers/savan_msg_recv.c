@@ -114,7 +114,7 @@ savan_msg_recv_handle_event(
     axis2_conf_t *conf = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
     savan_publisher_mod_t *pub_mod = NULL;
-    savan_storage_mgr_t *storage_mgr = NULL;
+    savan_subs_mgr_t *subs_mgr = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_event");
    
@@ -123,8 +123,8 @@ savan_msg_recv_handle_event(
 
     pub_mod = savan_publisher_mod_create_with_conf(env, conf);
 
-    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
-    savan_publisher_mod_publish(pub_mod, env, msg_ctx, storage_mgr);
+    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    savan_publisher_mod_publish(pub_mod, env, msg_ctx, subs_mgr);
     savan_publisher_mod_free(pub_mod, env);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_event");
@@ -281,7 +281,7 @@ savan_msg_recv_handle_sub_request(
     axiom_element_set_text(id_elem, env, id, id_node);
     
     /* Expires element. Get expiry time from subscriber and set */
-    /*subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, storage_mgr, id);*/
+    /*subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, subs_mgr, id);*/
     subs_prop = axis2_msg_ctx_get_property(msg_ctx, env, SAVAN_SUBSCRIBER);
     if(subs_prop)
     {
@@ -325,7 +325,7 @@ savan_msg_recv_handle_unsub_request(
     axiom_node_t *response_node = NULL;
     axiom_element_t *response_elem = NULL;
     savan_subscriber_t *subscriber = NULL;
-    savan_storage_mgr_t *storage_mgr = NULL;
+    savan_subs_mgr_t *subs_mgr = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     
@@ -336,8 +336,8 @@ savan_msg_recv_handle_unsub_request(
      * the store */
     
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
-    if(!storage_mgr)
+    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    if(!subs_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
             whether resource path is correct and accessible. Exit loading the Savan module");
@@ -346,7 +346,7 @@ savan_msg_recv_handle_unsub_request(
         return AXIS2_FAILURE;
     }
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, storage_mgr, NULL);
+    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
     if (subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
@@ -398,15 +398,15 @@ savan_msg_recv_handle_renew_request(
     axiom_element_t *expires_elem = NULL;
     axis2_char_t *expires = NULL;
     savan_subscriber_t *subscriber = NULL;
-    savan_storage_mgr_t *storage_mgr = NULL;
+    savan_subs_mgr_t *subs_mgr = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_renew_request");
 
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
-    if(!storage_mgr)
+    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    if(!subs_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
             whether resource path is correct and accessible. Exit loading the Savan module");
@@ -415,7 +415,7 @@ savan_msg_recv_handle_renew_request(
         return AXIS2_FAILURE;
     }
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, storage_mgr, NULL);
+    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
     if (!subscriber)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
@@ -483,7 +483,7 @@ savan_msg_recv_handle_get_status_request(
     axiom_element_t *expires_elem = NULL;
     axis2_char_t *expires = NULL;
     savan_subscriber_t *subscriber = NULL;
-    savan_storage_mgr_t *storage_mgr = NULL;
+    savan_subs_mgr_t *subs_mgr = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     
@@ -495,8 +495,8 @@ savan_msg_recv_handle_get_status_request(
     axis2_msg_info_headers_set_action(info_header, env, SAVAN_ACTIONS_GET_STATUS_RESPONSE);
     
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
-    if(!storage_mgr)
+    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    if(!subs_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
             whether resource path is correct and accessible. Exit loading the Savan module");
@@ -524,11 +524,11 @@ savan_msg_recv_handle_get_status_request(
 
     /* Expires element */
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, storage_mgr, NULL);
+    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
     if(!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "[savan] Failed get subscriber using msg from storage manager"); 
+                "[savan] Failed get subscriber using msg from subs manager"); 
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
 
         return AXIS2_FAILURE;

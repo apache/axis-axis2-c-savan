@@ -32,7 +32,7 @@
 struct savan_sub_processor
 {
     int dummy;
-    savan_storage_mgr_t *storage_mgr;
+    savan_subs_mgr_t *subs_mgr;
 };
 
 savan_subscriber_t * AXIS2_CALL 
@@ -64,7 +64,7 @@ savan_sub_processor_validate_subscription(
 AXIS2_EXTERN savan_sub_processor_t *AXIS2_CALL
 savan_sub_processor_create(
     const axutil_env_t *env,
-    savan_storage_mgr_t *storage_mgr)
+    savan_subs_mgr_t *subs_mgr)
 {
     savan_sub_processor_t *sub_processor = NULL;
     
@@ -81,7 +81,7 @@ savan_sub_processor_create(
     }
     
     memset ((void *) sub_processor, 0, sizeof(savan_sub_processor_t));
-    sub_processor->storage_mgr = storage_mgr;
+    sub_processor->subs_mgr = subs_mgr;
     
     return sub_processor;
 }
@@ -138,7 +138,7 @@ savan_sub_processor_subscribe(
 	}
 
     if(AXIS2_SUCCESS != (status = savan_util_add_subscriber(env, msg_ctx, 
-                    sub_processor->storage_mgr, subscriber)))
+                    sub_processor->subs_mgr, subscriber)))
 	{
         savan_subscriber_free(subscriber, env);
 		return status;
@@ -160,7 +160,7 @@ savan_sub_processor_unsubscribe(
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sub_processor_unsubscribe");
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, sub_processor->storage_mgr, NULL);
+    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, sub_processor->subs_mgr, NULL);
     if (!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to find the subscriber"); 
@@ -172,7 +172,7 @@ savan_sub_processor_unsubscribe(
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);
 
     /* Remove from store */
-    status = savan_util_remove_subscriber(env, msg_ctx, sub_processor->storage_mgr, subscriber);
+    status = savan_util_remove_subscriber(env, msg_ctx, sub_processor->subs_mgr, subscriber);
     if (status != AXIS2_SUCCESS)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to remove the subscriber"); 
@@ -214,7 +214,7 @@ savan_sub_processor_renew_subscription(
         return AXIS2_FAILURE;
     }
 
-    subscriber = savan_util_get_subscriber_from_renew_msg(env, msg_ctx, sub_processor->storage_mgr, NULL);
+    subscriber = savan_util_get_subscriber_from_renew_msg(env, msg_ctx, sub_processor->subs_mgr, NULL);
     if (!subscriber)
     {
         axis2_char_t *reason = NULL;
@@ -233,7 +233,7 @@ savan_sub_processor_renew_subscription(
 
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
-    status = savan_storage_mgr_update_subscriber(sub_processor->storage_mgr, env, subscriber);
+    status = savan_subs_mgr_update_subscriber(sub_processor->subs_mgr, env, subscriber);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_sub_processor_renew_subscription");
 
@@ -523,7 +523,7 @@ savan_sub_processor_free(
     savan_sub_processor_t * sub_processor,
     const axutil_env_t * env)
 {
-    sub_processor->storage_mgr = NULL;
+    sub_processor->subs_mgr = NULL;
 
     if (sub_processor)
     {

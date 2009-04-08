@@ -24,11 +24,11 @@
 #include <savan_error.h>
 #include <savan_constants.h>
 
-#include "savan_subs_mgr.h"
+#include "savan_subs_mgr_svc.h"
 #include <savan_storage_mgr.h>
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_subs_mgr_add_subscriber(
+savan_subs_mgr_svc_add_subscriber(
     const axutil_env_t *env,
     axiom_node_t *add_sub_node,
     axis2_msg_ctx_t *msg_ctx)
@@ -50,7 +50,7 @@ savan_subs_mgr_add_subscriber(
     
     axis2_char_t *id = NULL;
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_add_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_svc_add_subscriber");
 
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
@@ -116,12 +116,12 @@ savan_subs_mgr_add_subscriber(
                 "[savan] Subscriber %s could not be added", id);
     }
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_add_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_svc_add_subscriber");
     return NULL;   
 }
 
 AXIS2_EXTERN void * AXIS2_CALL
-savan_subs_mgr_remove_subscriber(
+savan_subs_mgr_svc_remove_subscriber(
     const axutil_env_t *env,
     axiom_node_t *remove_sub_node,
     axis2_msg_ctx_t *msg_ctx)
@@ -139,7 +139,7 @@ savan_subs_mgr_remove_subscriber(
     axis2_conf_t *conf = NULL;
     savan_storage_mgr_t *storage_mgr = NULL;
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_remove_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_svc_remove_subscriber");
 
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
@@ -175,13 +175,13 @@ savan_subs_mgr_remove_subscriber(
         "[savan] Subscriber %s removed", subscriber_id);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-        "[savan] Exit:savan_subs_mgr_remove_subscriber");
+        "[savan] Exit:savan_subs_mgr_svc_remove_subscriber");
 
     return NULL;   
 }
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_subs_mgr_get_subscriber(
+savan_subs_mgr_svc_get_subscriber(
     const axutil_env_t *env,
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx)
@@ -197,7 +197,7 @@ savan_subs_mgr_get_subscriber(
     savan_storage_mgr_t *storage_mgr = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-        "[savan] Entry:savan_subs_mgr_get_subscriber");
+        "[savan] Entry:savan_subs_mgr_svc_get_subscriber");
 
     /* Expected request format is :-
      * <ns1:get_subscriber xmlns:ns1="http://ws.apache.org/savan">
@@ -267,12 +267,12 @@ savan_subs_mgr_get_subscriber(
         }
     }
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_get_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_svc_get_subscriber");
     return subs_node;
 }
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_subs_mgr_get_subscriber_list(
+savan_subs_mgr_svc_get_subscriber_list(
     const axutil_env_t *env,
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx)
@@ -289,7 +289,7 @@ savan_subs_mgr_get_subscriber_list(
     axiom_node_t *filter_node = NULL;
     axis2_char_t *filter = NULL;
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_get_subscriber_list");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_subs_mgr_svc_get_subscriber_list");
     /* Expected request format is :-
      * <ns1:get_subscriber_list xmlns:ns1="http://ws.apache.org/savan">
      *      <ns:Susbscriber xmlns:ns="http://schemas.xmlsoap.org/ws/2004/08/eventing">
@@ -381,12 +381,12 @@ savan_subs_mgr_get_subscriber_list(
         }
     }
  
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_get_subscriber_list");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_subs_mgr_svc_get_subscriber_list");
     return subs_list_node;
 }
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_subs_mgr_get_topic_list(
+savan_subs_mgr_svc_get_topic_list(
     const axutil_env_t *env,
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx)

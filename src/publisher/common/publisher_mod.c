@@ -38,8 +38,8 @@ savan_publisher_mod_publish(
     savan_publisher_mod_t *publishermod, 
     const axutil_env_t *env,
     void *msg_ctx,
-    savan_storage_mgr_t *storage_mgr)
+    savan_subs_mgr_t *subs_mgr)
 {
-    publishermod->ops->publish(publishermod, env, msg_ctx, storage_mgr);
+    publishermod->ops->publish(publishermod, env, msg_ctx, subs_mgr);
 }
 

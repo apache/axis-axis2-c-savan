@@ -27,7 +27,7 @@
 #include <axis2_svc_client.h>
 
 /**
- * Savan service based storage manager communicate with the savan subscription manager service for
+ * Savan service based subscription manager communicate with the savan subscription manager service for
  * resources subscriber and topic.
  *
  */
@@ -35,139 +35,139 @@
  * @brief Savan Permanent Storage Manager Struct Impl
  *   Savan Permanent Storage Manager 
  */
-typedef struct savan_service_storage_mgr
+typedef struct savan_service_subs_mgr
 {
-    savan_storage_mgr_t storage_mgr;
+    savan_subs_mgr_t subs_mgr;
     axis2_char_t *subs_mgr_url;
     axis2_conf_t *conf;
-} savan_service_storage_mgr_t;
+} savan_service_subs_mgr_t;
 
-typedef AXIS2_DECLARE_DATA struct savan_service_storage_mgr_args
+typedef AXIS2_DECLARE_DATA struct savan_service_subs_mgr_args
 {
     const axutil_env_t *env;
     void *data;
-} savan_service_storage_mgr_args_t;
+} savan_service_subs_mgr_args_t;
 
-#define SAVAN_INTF_TO_IMPL(trans) ((savan_service_storage_mgr_t *) trans)
+#define SAVAN_INTF_TO_IMPL(trans) ((savan_service_subs_mgr_t *) trans)
 
 static axis2_status_t
-savan_service_storage_mgr_add_subscriber_to_subs_mgr(
+savan_service_subs_mgr_add_subscriber_to_subs_mgr(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,
     axis2_char_t *subs_mgr_url);
 
 static axiom_node_t *
-savan_service_storage_mgr_build_add_subscriber_om_payload(
+savan_service_subs_mgr_build_add_subscriber_om_payload(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
 static axutil_array_list_t *
-savan_service_storage_mgr_process_subscriber_list_node(
+savan_service_subs_mgr_process_subscriber_list_node(
     const axutil_env_t *env,
     axiom_node_t *subs_list_node);
 
 static savan_subscriber_t *AXIS2_CALL
-savan_service_storage_mgr_process_savan_specific_subscriber_node(
+savan_service_subs_mgr_process_savan_specific_subscriber_node(
     const axutil_env_t *env,
     axiom_node_t *subs_node);
 
 static axiom_node_t *
-savan_service_storage_mgr_build_subscriber_request_om_payload(
+savan_service_subs_mgr_build_subscriber_request_om_payload(
     const axutil_env_t *env,
     const axis2_char_t *subs_id);
 
 static axiom_node_t *
-savan_service_storage_mgr_build_subscribers_request_om_payload(
+savan_service_subs_mgr_build_subscribers_request_om_payload(
     const axutil_env_t *env,
     const axis2_char_t *topic);
 
 static axiom_node_t *
-savan_service_storage_mgr_build_topics_request_om_payload(
+savan_service_subs_mgr_build_topics_request_om_payload(
     const axutil_env_t *env);
 
 static axutil_array_list_t *
-savan_service_storage_mgr_process_topic_list_node(
+savan_service_subs_mgr_process_topic_list_node(
     const axutil_env_t *env,
     axiom_node_t *topic_list_node);
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_service_storage_mgr_free(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_free(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_service_storage_mgr_insert_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_insert_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_service_storage_mgr_update_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_update_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_service_storage_mgr_remove_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_remove_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *subscriber_id);
 
 AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
-savan_service_storage_mgr_retrieve_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_retrieve_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *subcriber_id);
 
 AXIS2_EXTERN axutil_array_list_t * AXIS2_CALL
-savan_service_storage_mgr_retrieve_all_subscribers(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_retrieve_all_subscribers(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *filter);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_service_storage_mgr_insert_topic(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_insert_topic(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *topic_name,
     const axis2_char_t *topic_url);
 
-static const savan_storage_mgr_ops_t storage_mgr_ops = 
+static const savan_subs_mgr_ops_t subs_mgr_ops = 
 {
-    savan_service_storage_mgr_free,
-    savan_service_storage_mgr_insert_subscriber,
-    savan_service_storage_mgr_update_subscriber,
-    savan_service_storage_mgr_remove_subscriber,
-    savan_service_storage_mgr_retrieve_subscriber,
-    savan_service_storage_mgr_retrieve_all_subscribers,
-    savan_service_storage_mgr_insert_topic
+    savan_service_subs_mgr_free,
+    savan_service_subs_mgr_insert_subscriber,
+    savan_service_subs_mgr_update_subscriber,
+    savan_service_subs_mgr_remove_subscriber,
+    savan_service_subs_mgr_retrieve_subscriber,
+    savan_service_subs_mgr_retrieve_all_subscribers,
+    savan_service_subs_mgr_insert_topic
 };
 
-AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-savan_storage_mgr_create(
+AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+savan_subs_mgr_create(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
-    savan_service_storage_mgr_t *storage_mgr_impl = NULL;
+    savan_service_subs_mgr_t *subs_mgr_impl = NULL;
     
-    storage_mgr_impl = AXIS2_MALLOC(env->allocator, sizeof(savan_service_storage_mgr_t));
-    if (!storage_mgr_impl)
+    subs_mgr_impl = AXIS2_MALLOC(env->allocator, sizeof(savan_service_subs_mgr_t));
+    if (!subs_mgr_impl)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_STORAGE_MANAGER_CREATION_FAILED, AXIS2_FAILURE);
         return NULL;
     }
 
-    memset ((void *) storage_mgr_impl, 0, sizeof(savan_service_storage_mgr_t));
+    memset ((void *) subs_mgr_impl, 0, sizeof(savan_service_subs_mgr_t));
 
-    storage_mgr_impl->subs_mgr_url = axutil_strdup(env, savan_util_get_resource_connection_string(env, conf));
-    storage_mgr_impl->conf = conf;
-    storage_mgr_impl->storage_mgr.ops = &storage_mgr_ops;
+    subs_mgr_impl->subs_mgr_url = axutil_strdup(env, savan_util_get_resource_connection_string(env, conf));
+    subs_mgr_impl->conf = conf;
+    subs_mgr_impl->subs_mgr.ops = &subs_mgr_ops;
 
-    return (savan_storage_mgr_t *) storage_mgr_impl;
+    return (savan_subs_mgr_t *) subs_mgr_impl;
 }
 
-AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-savan_storage_mgr_create_with_connection_info(
+AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+savan_subs_mgr_create_with_connection_info(
     const axutil_env_t *env,
     axis2_char_t *connection_string,
     axis2_char_t *username,
@@ -176,88 +176,88 @@ savan_storage_mgr_create_with_connection_info(
 }
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_service_storage_mgr_free(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_free(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env)
 {
-    savan_service_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_service_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_service_storage_mgr_free");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_service_subs_mgr_free");
 
-    if(storage_mgr_impl->subs_mgr_url)
+    if(subs_mgr_impl->subs_mgr_url)
     {
-        AXIS2_FREE(env->allocator, storage_mgr_impl->subs_mgr_url);
-        storage_mgr_impl->subs_mgr_url = NULL;
+        AXIS2_FREE(env->allocator, subs_mgr_impl->subs_mgr_url);
+        subs_mgr_impl->subs_mgr_url = NULL;
     }
 
-    storage_mgr_impl->conf = NULL;
+    subs_mgr_impl->conf = NULL;
 
-    if(storage_mgr_impl)
+    if(subs_mgr_impl)
     {
-        AXIS2_FREE(env->allocator, storage_mgr_impl);
-        storage_mgr_impl = NULL;
+        AXIS2_FREE(env->allocator, subs_mgr_impl);
+        subs_mgr_impl = NULL;
     }
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_service_storage_mgr_free");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_service_subs_mgr_free");
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_service_storage_mgr_insert_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_insert_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber)
 {
     axis2_status_t status = AXIS2_FAILURE;
-    savan_service_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_service_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
-    status = savan_service_storage_mgr_add_subscriber_to_subs_mgr(env, subscriber, 
-            storage_mgr_impl->subs_mgr_url);
+    status = savan_service_subs_mgr_add_subscriber_to_subs_mgr(env, subscriber, 
+            subs_mgr_impl->subs_mgr_url);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_service_storage_mgr_insert_subscriber");
+            "[savan] Exit:savan_service_subs_mgr_insert_subscriber");
     return status;
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_service_storage_mgr_update_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_update_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber)
 {
-    savan_service_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_service_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_service_storage_mgr_update_subscriber");
+            "[savan] Entry:savan_service_subs_mgr_update_subscriber");
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_service_storage_mgr_update_subscriber");
+            "[savan] Entry:savan_service_subs_mgr_update_subscriber");
     return AXIS2_SUCCESS;
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_service_storage_mgr_remove_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_remove_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *subscriber_id)
 {
-    savan_service_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_service_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_service_storage_mgr_remove_subscriber");
+            "[savan] Entry:savan_service_subs_mgr_remove_subscriber");
 
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_service_storage_mgr_remove_subscriber");
+            "[savan] Exit:savan_service_subs_mgr_remove_subscriber");
     return AXIS2_SUCCESS;
 }
 
 AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
-savan_service_storage_mgr_retrieve_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_retrieve_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *subs_id)
 {
@@ -268,22 +268,22 @@ savan_service_storage_mgr_retrieve_subscriber(
     axiom_node_t *ret_node = NULL;
     savan_subscriber_t *subscriber = NULL;
 
-    savan_service_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_service_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-        "[savan] Entry:savan_service_storage_mgr_retrieve_subscriber");
+        "[savan] Entry:savan_service_subs_mgr_retrieve_subscriber");
 
     svc_client = (axis2_svc_client_t *) savan_util_get_svc_client(env);
     options = (axis2_options_t *) axis2_svc_client_get_options(svc_client, env);
-    endpoint_ref = axis2_endpoint_ref_create(env, storage_mgr_impl->subs_mgr_url);
+    endpoint_ref = axis2_endpoint_ref_create(env, subs_mgr_impl->subs_mgr_url);
     axis2_options_set_to(options, env, endpoint_ref);
     
-    payload = savan_service_storage_mgr_build_subscriber_request_om_payload(env, subs_id);
+    payload = savan_service_subs_mgr_build_subscriber_request_om_payload(env, subs_id);
     ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
     if (ret_node)
     {
-        subscriber = savan_service_storage_mgr_process_savan_specific_subscriber_node(env, ret_node);
+        subscriber = savan_service_subs_mgr_process_savan_specific_subscriber_node(env, ret_node);
     }
     else
     {
@@ -292,18 +292,18 @@ savan_service_storage_mgr_retrieve_subscriber(
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_service_storage_mgr_retrieve_subscriber");
+            "[savan] Exit:savan_service_subs_mgr_retrieve_subscriber");
     return subscriber;
 }
 
 AXIS2_EXTERN axutil_array_list_t * AXIS2_CALL
-savan_service_storage_mgr_retrieve_all_subscribers(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_retrieve_all_subscribers(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *filter)
 {
-    savan_service_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_service_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     
     axis2_endpoint_ref_t* endpoint_ref = NULL;
     axis2_options_t *options = NULL;
@@ -313,18 +313,18 @@ savan_service_storage_mgr_retrieve_all_subscribers(
     axutil_array_list_t *subscriber_list = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_service_storage_mgr_retrieve_all_subscribers");
+            "[savan] Entry:savan_service_subs_mgr_retrieve_all_subscribers");
     
     svc_client = (axis2_svc_client_t *) savan_util_get_svc_client(env);
     options = (axis2_options_t *)axis2_svc_client_get_options(svc_client, env);
-    endpoint_ref = axis2_endpoint_ref_create(env, storage_mgr_impl->subs_mgr_url);
+    endpoint_ref = axis2_endpoint_ref_create(env, subs_mgr_impl->subs_mgr_url);
     axis2_options_set_to(options, env, endpoint_ref);
     
-    payload = savan_service_storage_mgr_build_subscribers_request_om_payload(env, filter);
+    payload = savan_service_subs_mgr_build_subscribers_request_om_payload(env, filter);
     ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
     if (ret_node)
     {
-        subscriber_list = savan_service_storage_mgr_process_subscriber_list_node(env, ret_node);
+        subscriber_list = savan_service_subs_mgr_process_subscriber_list_node(env, ret_node);
     }
     else
     {
@@ -333,25 +333,25 @@ savan_service_storage_mgr_retrieve_all_subscribers(
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_service_storage_mgr_retrieve_all_subscribers");
+            "[savan] Exit:savan_service_subs_mgr_retrieve_all_subscribers");
     return subscriber_list;
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_service_storage_mgr_insert_topic(
-    savan_storage_mgr_t *storage_mgr,
+savan_service_subs_mgr_insert_topic(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *topic_name,
     const axis2_char_t *topic_url)
 {
-    savan_service_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_service_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_service_storage_mgr_insert_topic");
+            "[savan] Entry:savan_service_subs_mgr_insert_topic");
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_service_storage_mgr_insert_topic");
+            "[savan] Exit:savan_service_subs_mgr_insert_topic");
     return AXIS2_SUCCESS;
 }
 
@@ -386,7 +386,7 @@ remove_subscriber_from_subs_mgr(
 }*/
 
 axutil_array_list_t *AXIS2_CALL
-savan_service_storage_mgr_get_topic_list_from_subs_mgr(
+savan_service_subs_mgr_get_topic_list_from_subs_mgr(
     const axutil_env_t *env,
     axis2_char_t *subs_mgr_url,
     void *s_client)
@@ -399,7 +399,7 @@ savan_service_storage_mgr_get_topic_list_from_subs_mgr(
     axutil_array_list_t *topic_list = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-        "[savan] Entry:savan_service_storage_mgr_get_topic_list_from_subs_mgr");
+        "[savan] Entry:savan_service_subs_mgr_get_topic_list_from_subs_mgr");
 
     if(!s_client)
     {
@@ -413,11 +413,11 @@ savan_service_storage_mgr_get_topic_list_from_subs_mgr(
     endpoint_ref = axis2_endpoint_ref_create(env, subs_mgr_url);
     axis2_options_set_to(options, env, endpoint_ref);
     
-    payload = savan_service_storage_mgr_build_topics_request_om_payload(env);
+    payload = savan_service_subs_mgr_build_topics_request_om_payload(env);
     ret_node = axis2_svc_client_send_receive(svc_client, env, payload);
     if (ret_node)
     {
-        topic_list = savan_service_storage_mgr_process_topic_list_node(env, ret_node);
+        topic_list = savan_service_subs_mgr_process_topic_list_node(env, ret_node);
     }
     else
     {
@@ -431,12 +431,12 @@ savan_service_storage_mgr_get_topic_list_from_subs_mgr(
         /*axis2_svc_client_free(svc_client, env);*/
     }
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-        "[savan] Exit:savan_service_storage_mgr_get_topic_list_from_subs_mgr");
+        "[savan] Exit:savan_service_subs_mgr_get_topic_list_from_subs_mgr");
     return topic_list;
 }
 
 static axis2_status_t
-savan_service_storage_mgr_add_subscriber_to_subs_mgr(
+savan_service_subs_mgr_add_subscriber_to_subs_mgr(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber,
     axis2_char_t *subs_mgr_url)
@@ -454,7 +454,7 @@ savan_service_storage_mgr_add_subscriber_to_subs_mgr(
     axis2_options_set_to(options, env, endpoint_ref);
     axis2_options_set_action(options, env, SAVAN_SUBS_MGR_ADD_SUBSCRIBER_URL);
 
-    payload = savan_service_storage_mgr_build_add_subscriber_om_payload(env, subscriber);
+    payload = savan_service_subs_mgr_build_add_subscriber_om_payload(env, subscriber);
     /* Send request */
     axis2_svc_client_send_robust(svc_client, env, payload);
     if(svc_client)
@@ -466,7 +466,7 @@ savan_service_storage_mgr_add_subscriber_to_subs_mgr(
 }
 
 static axiom_node_t *
-savan_service_storage_mgr_build_add_subscriber_om_payload(
+savan_service_subs_mgr_build_add_subscriber_om_payload(
     const axutil_env_t *env,
     savan_subscriber_t *subscriber)
 {
@@ -548,7 +548,7 @@ savan_service_storage_mgr_build_add_subscriber_om_payload(
 }
 
 static axutil_array_list_t *
-savan_service_storage_mgr_process_subscriber_list_node(
+savan_service_subs_mgr_process_subscriber_list_node(
     const axutil_env_t *env,
     axiom_node_t *subs_list_node)
 {
@@ -559,7 +559,7 @@ savan_service_storage_mgr_process_subscriber_list_node(
     axis2_status_t status = AXIS2_SUCCESS;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-        "[savan] Entry:savan_service_storage_mgr_process_subscriber_list_node");
+        "[savan] Entry:savan_service_subs_mgr_process_subscriber_list_node");
     subs_list_element = axiom_node_get_data_element(subs_list_node, env); 
          
     /* Get Subscriber elements from subscriber list */
@@ -587,7 +587,7 @@ savan_service_storage_mgr_process_subscriber_list_node(
         if(subs_node) /* Iterate Savan specific subscriber elements */
         {
             /* Now read Savan specific Subscribe element */
-            subscriber = savan_service_storage_mgr_process_savan_specific_subscriber_node(env, subs_node);
+            subscriber = savan_service_subs_mgr_process_savan_specific_subscriber_node(env, subs_node);
             if(!subscriber)
             {
                 AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
@@ -602,12 +602,12 @@ savan_service_storage_mgr_process_subscriber_list_node(
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] savan_service_storage_mgr_process_subscriber_list_node");
+            "[savan] savan_service_subs_mgr_process_subscriber_list_node");
     return subscriber_list;
 }
 
 static savan_subscriber_t *AXIS2_CALL
-savan_service_storage_mgr_process_savan_specific_subscriber_node(
+savan_service_subs_mgr_process_savan_specific_subscriber_node(
     const axutil_env_t *env,
     axiom_node_t *subs_node)
 {
@@ -624,7 +624,7 @@ savan_service_storage_mgr_process_savan_specific_subscriber_node(
     axis2_status_t status = AXIS2_SUCCESS;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_service_storage_mgr_process_savan_specific_subscriber_node");
+            "[savan] Entry:savan_service_subs_mgr_process_savan_specific_subscriber_node");
 
     AXIS2_PARAM_CHECK(env->error, subs_node, AXIS2_FAILURE);
 
@@ -685,12 +685,12 @@ savan_service_storage_mgr_process_savan_specific_subscriber_node(
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_service_storage_mgr_process_savan_specific_subscriber_node");
+            "[savan] Exit:savan_service_subs_mgr_process_savan_specific_subscriber_node");
     return subscriber;
 }
 
 static axiom_node_t *
-savan_service_storage_mgr_build_subscriber_request_om_payload(
+savan_service_subs_mgr_build_subscriber_request_om_payload(
     const axutil_env_t *env,
     const axis2_char_t *subs_id)
 {
@@ -718,7 +718,7 @@ savan_service_storage_mgr_build_subscriber_request_om_payload(
 }
 
 static axiom_node_t *
-savan_service_storage_mgr_build_subscribers_request_om_payload(
+savan_service_subs_mgr_build_subscribers_request_om_payload(
     const axutil_env_t *env,
     const axis2_char_t *topic)
 {
@@ -784,7 +784,7 @@ build_remove_subscriber_om_payload(
 }*/
 
 static axiom_node_t *
-savan_service_storage_mgr_build_topics_request_om_payload(
+savan_service_subs_mgr_build_topics_request_om_payload(
     const axutil_env_t *env)
 {
     axiom_node_t *om_node = NULL;
@@ -806,7 +806,7 @@ savan_service_storage_mgr_build_topics_request_om_payload(
 }
 
 static axutil_array_list_t *
-savan_service_storage_mgr_process_topic_list_node(
+savan_service_subs_mgr_process_topic_list_node(
     const axutil_env_t *env,
     axiom_node_t *topic_list_node)
 {
@@ -816,7 +816,7 @@ savan_service_storage_mgr_process_topic_list_node(
     axutil_array_list_t *topic_list = NULL;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_service_storage_mgr_process_topic_list_node");
+            "[savan] Entry:savan_service_subs_mgr_process_topic_list_node");
 
     topic_list_element = axiom_node_get_data_element(topic_list_node, env); 
          
@@ -854,7 +854,7 @@ savan_service_storage_mgr_process_topic_list_node(
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_service_storage_mgr_process_topic_list_node");
+            "[savan] Exit:savan_service_subs_mgr_process_topic_list_node");
     return topic_list;
 }
 

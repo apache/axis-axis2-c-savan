@@ -1,9 +1,9 @@
 SUBDIRS = subs_mgr_svc
-noinst_LTLIBRARIES = libsavan_storage.la
+noinst_LTLIBRARIES = libsavan_subs_mgr.la
 
-libsavan_storage_la_SOURCES = service_storage_mgr.c
+libsavan_subs_mgr_la_SOURCES = service_storage_mgr.c
 
-libsavan_storage_la_LIBADD = ../common/libsavan_common_storage.la
+libsavan_subs_mgr_la_LIBADD = ../common/libsavan_common_subs_mgr.la
 
 INCLUDES = -I$(top_builddir)/include \
 			-I$(top_builddir)/include/savan \

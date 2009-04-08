@@ -73,7 +73,7 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     axis2_conf_ctx_t *conf_ctx = NULL;
     axis2_conf_t *conf = NULL;
     int type;
-    savan_storage_mgr_t *storage_mgr = NULL;
+    savan_subs_mgr_t *subs_mgr = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Start:savan_in_handler_invoke");
 
@@ -82,8 +82,8 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
 
-    storage_mgr = savan_util_get_storage_mgr(env, conf_ctx, conf);
-    if(!storage_mgr)
+    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    if(!subs_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the database. Check \
             whether database path is correct and accessible. Exit loading the Savan module");
@@ -93,7 +93,7 @@ savan_in_handler_invoke(struct axis2_handler *handler,
     }
     
     /* create a subscription processor */
-    processor = savan_sub_processor_create(env, storage_mgr);
+    processor = savan_sub_processor_create(env, subs_mgr);
     if (!processor)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to create subscription processor");

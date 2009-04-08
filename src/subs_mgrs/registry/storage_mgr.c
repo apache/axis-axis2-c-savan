@@ -39,7 +39,7 @@
 #define TOPIC_INDEX "/eventing/index/TopicIndex"
 
 /**
- * Savan registry based storage manager dependes on the WSO2 registry for subscription storation.
+ * Savan registry based subscription manager dependes on the WSO2 registry for subscription storation.
  * This use WSF/C registry cache client to communicate with the WSO2 registry. Registry cache
  * client reduce the overhead of each time fetching records from the registry which is very 
  * expensive by caching the records locally.
@@ -48,193 +48,193 @@
  * @brief Savan Registry Storage Manager Struct Impl
  *   Savan Registry Storage Manager 
  */
-typedef struct savan_registry_storage_mgr
+typedef struct savan_registry_subs_mgr
 {
-    savan_storage_mgr_t storagemgr;
+    savan_subs_mgr_t subsmgr;
     axis2_char_t *reg_url;
     axis2_char_t *username;
     axis2_char_t *password;
     axis2_conf_t *conf;
     remote_registry_t *remote_registry;
-} savan_registry_storage_mgr_t;
+} savan_registry_subs_mgr_t;
 
-typedef AXIS2_DECLARE_DATA struct savan_registry_storage_mgr_args
+typedef AXIS2_DECLARE_DATA struct savan_registry_subs_mgr_args
 {
     const axutil_env_t *env;
     void *data;
-} savan_registry_storage_mgr_args_t;
+} savan_registry_subs_mgr_args_t;
 
-#define SAVAN_INTF_TO_IMPL(storagemgr) ((savan_registry_storage_mgr_t *) storagemgr)
+#define SAVAN_INTF_TO_IMPL(subsmgr) ((savan_registry_subs_mgr_t *) subsmgr)
 
-static savan_subscriber_t *savan_registry_storage_mgr_extract_subscriber(
+static savan_subscriber_t *savan_registry_subs_mgr_extract_subscriber(
         const axutil_env_t *env,
         remote_registry_resource_t *resource);
 
-static axis2_char_t *savan_registry_storage_mgr_serialize_endpoint(
+static axis2_char_t *savan_registry_subs_mgr_serialize_endpoint(
         const axutil_env_t *env,
         const savan_subscriber_t *subscriber);
 
 static axis2_status_t
-savan_registry_storage_mgr_init_resource(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_init_resource(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env);
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_registry_storage_mgr_free(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_free(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_registry_storage_mgr_insert_subscriber(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_insert_subscriber(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_registry_storage_mgr_update_subscriber(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_update_subscriber(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_registry_storage_mgr_remove_subscriber(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_remove_subscriber(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env,
     const axis2_char_t *subscriber_id);
 
 AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
-savan_registry_storage_mgr_retrieve_subscriber(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_retrieve_subscriber(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env,
     const axis2_char_t *subscriber_id);
 
 AXIS2_EXTERN axutil_array_list_t * AXIS2_CALL
-savan_registry_storage_mgr_retrieve_all_subscribers(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_retrieve_all_subscribers(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env,
     const axis2_char_t *filter);
 
-static const savan_storage_mgr_ops_t storage_mgr_ops = 
+static const savan_subs_mgr_ops_t subs_mgr_ops = 
 {
-    savan_registry_storage_mgr_free,
-    savan_registry_storage_mgr_insert_subscriber,
-    savan_registry_storage_mgr_update_subscriber,
-    savan_registry_storage_mgr_remove_subscriber,
-    savan_registry_storage_mgr_retrieve_subscriber,
-    savan_registry_storage_mgr_retrieve_all_subscribers,
+    savan_registry_subs_mgr_free,
+    savan_registry_subs_mgr_insert_subscriber,
+    savan_registry_subs_mgr_update_subscriber,
+    savan_registry_subs_mgr_remove_subscriber,
+    savan_registry_subs_mgr_retrieve_subscriber,
+    savan_registry_subs_mgr_retrieve_all_subscribers,
     NULL
 };
 
-AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-savan_storage_mgr_create(
+AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+savan_subs_mgr_create(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
-    savan_registry_storage_mgr_t *storagemgrimpl = NULL;
+    savan_registry_subs_mgr_t *subsmgrimpl = NULL;
     axis2_status_t status = AXIS2_FAILURE;
     
-    storagemgrimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_registry_storage_mgr_t));
-    if (!storagemgrimpl)
+    subsmgrimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_registry_subs_mgr_t));
+    if (!subsmgrimpl)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_STORAGE_MANAGER_CREATION_FAILED, AXIS2_FAILURE);
         return NULL;
     }
 
-    memset ((void *) storagemgrimpl, 0, sizeof(savan_registry_storage_mgr_t));
+    memset ((void *) subsmgrimpl, 0, sizeof(savan_registry_subs_mgr_t));
 
-    storagemgrimpl->remote_registry = NULL;
-    storagemgrimpl->reg_url = axutil_strdup(env, savan_util_get_resource_connection_string(env, conf));
-    storagemgrimpl->username = axutil_strdup(env, savan_util_get_resource_username(env, conf));
-    storagemgrimpl->password = axutil_strdup(env, savan_util_get_resource_password(env, conf));
-    storagemgrimpl->conf = conf;
-    storagemgrimpl->storagemgr.ops = &storage_mgr_ops;
+    subsmgrimpl->remote_registry = NULL;
+    subsmgrimpl->reg_url = axutil_strdup(env, savan_util_get_resource_connection_string(env, conf));
+    subsmgrimpl->username = axutil_strdup(env, savan_util_get_resource_username(env, conf));
+    subsmgrimpl->password = axutil_strdup(env, savan_util_get_resource_password(env, conf));
+    subsmgrimpl->conf = conf;
+    subsmgrimpl->subsmgr.ops = &subs_mgr_ops;
 
-    status = savan_registry_storage_mgr_init_resource((savan_storage_mgr_t *) storagemgrimpl, env);
+    status = savan_registry_subs_mgr_init_resource((savan_subs_mgr_t *) subsmgrimpl, env);
     if(status != AXIS2_SUCCESS)
     {
-        savan_registry_storage_mgr_free((savan_storage_mgr_t *) storagemgrimpl, env);
+        savan_registry_subs_mgr_free((savan_subs_mgr_t *) subsmgrimpl, env);
         return NULL;
     }
-    return (savan_storage_mgr_t *) storagemgrimpl;
+    return (savan_subs_mgr_t *) subsmgrimpl;
 }
 
-AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-savan_storage_mgr_create_with_connection_info(
+AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+savan_subs_mgr_create_with_connection_info(
     const axutil_env_t *env,
     axis2_char_t *connection_string,
     axis2_char_t *username,
     axis2_char_t *password)
 {
-    savan_registry_storage_mgr_t *storagemgrimpl = NULL;
+    savan_registry_subs_mgr_t *subsmgrimpl = NULL;
     axis2_status_t status = AXIS2_FAILURE;
     
-    storagemgrimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_registry_storage_mgr_t));
-    if (!storagemgrimpl)
+    subsmgrimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_registry_subs_mgr_t));
+    if (!subsmgrimpl)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_STORAGE_MANAGER_CREATION_FAILED, AXIS2_FAILURE);
         return NULL;
     }
 
-    memset ((void *) storagemgrimpl, 0, sizeof(savan_registry_storage_mgr_t));
+    memset ((void *) subsmgrimpl, 0, sizeof(savan_registry_subs_mgr_t));
 
-    storagemgrimpl->remote_registry = NULL;
-    storagemgrimpl->reg_url = axutil_strdup(env, connection_string);
-    storagemgrimpl->username = axutil_strdup(env, username);
-    storagemgrimpl->password = axutil_strdup(env, password);
-    storagemgrimpl->conf = NULL;
-    storagemgrimpl->storagemgr.ops = &storage_mgr_ops;
+    subsmgrimpl->remote_registry = NULL;
+    subsmgrimpl->reg_url = axutil_strdup(env, connection_string);
+    subsmgrimpl->username = axutil_strdup(env, username);
+    subsmgrimpl->password = axutil_strdup(env, password);
+    subsmgrimpl->conf = NULL;
+    subsmgrimpl->subsmgr.ops = &subs_mgr_ops;
 
-    status = savan_registry_storage_mgr_init_resource((savan_storage_mgr_t *) storagemgrimpl, env);
+    status = savan_registry_subs_mgr_init_resource((savan_subs_mgr_t *) subsmgrimpl, env);
     if(status != AXIS2_SUCCESS)
     {
-        savan_registry_storage_mgr_free((savan_storage_mgr_t *) storagemgrimpl, env);
+        savan_registry_subs_mgr_free((savan_subs_mgr_t *) subsmgrimpl, env);
         return NULL;
     }
-    return (savan_storage_mgr_t *) storagemgrimpl;
+    return (savan_subs_mgr_t *) subsmgrimpl;
 }
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_registry_storage_mgr_free(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_free(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env)
 {
-    savan_registry_storage_mgr_t *storagemgrimpl = NULL;
-    storagemgrimpl = SAVAN_INTF_TO_IMPL(storagemgr);
+    savan_registry_subs_mgr_t *subsmgrimpl = NULL;
+    subsmgrimpl = SAVAN_INTF_TO_IMPL(subsmgr);
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_registry_storage_mgr_free");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_registry_subs_mgr_free");
 
-    if(storagemgrimpl->reg_url)
+    if(subsmgrimpl->reg_url)
     {
-        AXIS2_FREE(env->allocator, storagemgrimpl->reg_url);
-        storagemgrimpl->reg_url = NULL;
+        AXIS2_FREE(env->allocator, subsmgrimpl->reg_url);
+        subsmgrimpl->reg_url = NULL;
     }
     
-    if(storagemgrimpl->username)
+    if(subsmgrimpl->username)
     {
-        AXIS2_FREE(env->allocator, storagemgrimpl->username);
-        storagemgrimpl->username = NULL;
+        AXIS2_FREE(env->allocator, subsmgrimpl->username);
+        subsmgrimpl->username = NULL;
     }
     
-    if(storagemgrimpl->password)
+    if(subsmgrimpl->password)
     {
-        AXIS2_FREE(env->allocator, storagemgrimpl->password);
-        storagemgrimpl->password = NULL;
+        AXIS2_FREE(env->allocator, subsmgrimpl->password);
+        subsmgrimpl->password = NULL;
     }
 
-    storagemgrimpl->conf = NULL;
+    subsmgrimpl->conf = NULL;
 
-    if(storagemgrimpl)
+    if(subsmgrimpl)
     {
-        AXIS2_FREE(env->allocator, storagemgrimpl);
-        storagemgrimpl = NULL;
+        AXIS2_FREE(env->allocator, subsmgrimpl);
+        subsmgrimpl = NULL;
     }
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_registry_storage_mgr_free");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_registry_subs_mgr_free");
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_registry_storage_mgr_insert_subscriber(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_insert_subscriber(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber)
 {
@@ -247,22 +247,22 @@ savan_registry_storage_mgr_insert_subscriber(
     axutil_hash_t *properties = NULL;
     char *content = NULL;
     
-    savan_registry_storage_mgr_t *storagemgrimpl = NULL;
-    storagemgrimpl = SAVAN_INTF_TO_IMPL(storagemgr);
+    savan_registry_subs_mgr_t *subsmgrimpl = NULL;
+    subsmgrimpl = SAVAN_INTF_TO_IMPL(subsmgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_registry_storage_mgr_insert_subscriber");
+            "[savan] Entry:savan_registry_subs_mgr_insert_subscriber");
 	
     subscription_id = savan_subscriber_get_id(subscriber, env);
     filter = savan_subscriber_get_filter(subscriber, env);
     path = axutil_strcat(env, AXIS2_PATH_SEP_STR, filter, AXIS2_PATH_SEP_STR, 
             SUBSCRIPTION_COLLECTION_NAME, AXIS2_PATH_SEP_STR, subscription_id, NULL);
-    id = axutil_strcat(env, storagemgrimpl->reg_url, AXIS2_PATH_SEP_STR, filter, 
+    id = axutil_strcat(env, subsmgrimpl->reg_url, AXIS2_PATH_SEP_STR, filter, 
             AXIS2_PATH_SEP_STR, SUBSCRIPTION_COLLECTION_NAME, AXIS2_PATH_SEP_STR, subscription_id, 
             NULL);
 
     res = remote_registry_resource_create(env);
-    content = savan_registry_storage_mgr_serialize_endpoint(env, subscriber);
+    content = savan_registry_subs_mgr_serialize_endpoint(env, subscriber);
     remote_registry_resource_set_content(res, env, content);
     remote_registry_resource_set_content_len(res, env, axutil_strlen(content));
     remote_registry_resource_set_media_type(res, env, EPR_TYPE);
@@ -314,7 +314,7 @@ savan_registry_storage_mgr_insert_subscriber(
         remote_registry_resource_set_properties(res, env, properties);
     }
 
-    remote_registry_put(storagemgrimpl->remote_registry, env, path, res);
+    remote_registry_put(subsmgrimpl->remote_registry, env, path, res);
     if(id)
     {
         AXIS2_FREE(env->allocator, id);
@@ -330,14 +330,14 @@ savan_registry_storage_mgr_insert_subscriber(
         res = NULL;
     }
 
-    res = remote_registry_get(storagemgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
+    res = remote_registry_get(subsmgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
     if(!res)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_INSERT_ERROR, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not retrive resource TopicIndex");
         return AXIS2_FAILURE;
     }
-    id = axutil_strcat(env, storagemgrimpl->reg_url, TOPIC_INDEX, NULL);
+    id = axutil_strcat(env, subsmgrimpl->reg_url, TOPIC_INDEX, NULL);
     properties = remote_registry_resource_get_properties(res, env);
     if(properties)
     {
@@ -349,7 +349,7 @@ savan_registry_storage_mgr_insert_subscriber(
 
     remote_registry_resource_set_content(res, env, NULL);
     remote_registry_resource_set_content_len(res, env, 0);
-    remote_registry_put(storagemgrimpl->remote_registry, env, TOPIC_INDEX, res);
+    remote_registry_put(subsmgrimpl->remote_registry, env, TOPIC_INDEX, res);
 
     if(id)
     {
@@ -362,13 +362,13 @@ savan_registry_storage_mgr_insert_subscriber(
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_registry_storage_mgr_insert_subscriber");
+            "[savan] Exit:savan_registry_subs_mgr_insert_subscriber");
     return AXIS2_SUCCESS;
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_registry_storage_mgr_update_subscriber(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_update_subscriber(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber)
 {
@@ -381,13 +381,13 @@ savan_registry_storage_mgr_update_subscriber(
     axutil_hash_t *properties = NULL;
     axis2_char_t *val = NULL;
  
-    savan_registry_storage_mgr_t *storagemgrimpl = NULL;
-    storagemgrimpl = SAVAN_INTF_TO_IMPL(storagemgr);
+    savan_registry_subs_mgr_t *subsmgrimpl = NULL;
+    subsmgrimpl = SAVAN_INTF_TO_IMPL(subsmgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_registry_storage_mgr_update_subscriber");
+            "[savan] Entry:savan_registry_subs_mgr_update_subscriber");
 
-    index_res = remote_registry_get(storagemgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
+    index_res = remote_registry_get(subsmgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
     if(!index_res)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_INSERT_ERROR, AXIS2_FAILURE);
@@ -403,7 +403,7 @@ savan_registry_storage_mgr_update_subscriber(
         path = axutil_strcat(env, val, AXIS2_PATH_SEP_STR, subscriber_id, NULL);
     }
 
-    res = remote_registry_get(storagemgrimpl->remote_registry, env, path, NULL);
+    res = remote_registry_get(subsmgrimpl->remote_registry, env, path, NULL);
     if(!res)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_UPDATE_ERROR, AXIS2_FAILURE);
@@ -453,7 +453,7 @@ savan_registry_storage_mgr_update_subscriber(
         remote_registry_resource_set_properties(res, env, properties);
     }
 
-    remote_registry_put(storagemgrimpl->remote_registry, env, path, res);
+    remote_registry_put(subsmgrimpl->remote_registry, env, path, res);
     
     if(path)
     {
@@ -468,13 +468,13 @@ savan_registry_storage_mgr_update_subscriber(
 
     savan_subscriber_set_renew_status(subscriber, env, AXIS2_TRUE);
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_registry_storage_mgr_update_subscriber");
+            "[savan] Exit:savan_registry_subs_mgr_update_subscriber");
     return AXIS2_SUCCESS;
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_registry_storage_mgr_remove_subscriber(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_remove_subscriber(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env,
     const axis2_char_t *subscriber_id)
 {
@@ -483,13 +483,13 @@ savan_registry_storage_mgr_remove_subscriber(
     axis2_status_t status = AXIS2_FAILURE;
     axis2_char_t *path = NULL;
 
-    savan_registry_storage_mgr_t *storagemgrimpl = NULL;
-    storagemgrimpl = SAVAN_INTF_TO_IMPL(storagemgr);
+    savan_registry_subs_mgr_t *subsmgrimpl = NULL;
+    subsmgrimpl = SAVAN_INTF_TO_IMPL(subsmgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_registry_storage_mgr_remove_subscriber");
+            "[savan] Entry:savan_registry_subs_mgr_remove_subscriber");
 
-    res = remote_registry_get(storagemgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
+    res = remote_registry_get(subsmgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
     if(!res)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_UPDATE_ERROR, AXIS2_FAILURE);
@@ -502,7 +502,7 @@ savan_registry_storage_mgr_remove_subscriber(
     if(val)
     {
         path = axutil_strcat(env, val, AXIS2_PATH_SEP_STR, subscriber_id, NULL);
-        status = remote_registry_delete(storagemgrimpl->remote_registry, env, path);
+        status = remote_registry_delete(subsmgrimpl->remote_registry, env, path);
     }
     
     remote_registry_resource_free(res, env);
@@ -514,7 +514,7 @@ savan_registry_storage_mgr_remove_subscriber(
         return AXIS2_FAILURE;
     }
 
-    res = remote_registry_get(storagemgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
+    res = remote_registry_get(subsmgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
     if(!res)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_UPDATE_ERROR, AXIS2_FAILURE);
@@ -524,17 +524,17 @@ savan_registry_storage_mgr_remove_subscriber(
     }
 
     remote_registry_resource_remove_property(res, env, subscriber_id);
-    remote_registry_put(storagemgrimpl->remote_registry, env, TOPIC_INDEX, res);
+    remote_registry_put(subsmgrimpl->remote_registry, env, TOPIC_INDEX, res);
     remote_registry_resource_free(res, env);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_registry_storage_mgr_remove_subscriber");
+            "[savan] Exit:savan_registry_subs_mgr_remove_subscriber");
     return AXIS2_SUCCESS;
 }
 
 AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
-savan_registry_storage_mgr_retrieve_subscriber(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_retrieve_subscriber(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env,
     const axis2_char_t *subscriber_id)
 {
@@ -544,14 +544,14 @@ savan_registry_storage_mgr_retrieve_subscriber(
     axis2_char_t *path = NULL;
     savan_subscriber_t *subscriber = NULL;
 
-    savan_registry_storage_mgr_t *storagemgrimpl = NULL;
-    storagemgrimpl = SAVAN_INTF_TO_IMPL(storagemgr);
+    savan_registry_subs_mgr_t *subsmgrimpl = NULL;
+    subsmgrimpl = SAVAN_INTF_TO_IMPL(subsmgr);
 
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_registry_storage_mgr_retrieve_subscriber");
+            "[savan] Entry:savan_registry_subs_mgr_retrieve_subscriber");
 
-    root_res = remote_registry_get(storagemgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
+    root_res = remote_registry_get(subsmgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
     if(!root_res)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_UPDATE_ERROR, AXIS2_FAILURE);
@@ -564,12 +564,12 @@ savan_registry_storage_mgr_retrieve_subscriber(
     if(val)
     {
         path = axutil_strcat(env, val, AXIS2_PATH_SEP_STR, subscriber_id, NULL);
-        res = remote_registry_get(storagemgrimpl->remote_registry, env, path, NULL);
+        res = remote_registry_get(subsmgrimpl->remote_registry, env, path, NULL);
     }
 
     if(res)
     {
-        subscriber = savan_registry_storage_mgr_extract_subscriber(env, res);
+        subscriber = savan_registry_subs_mgr_extract_subscriber(env, res);
         if(subscriber)
         {
             savan_subscriber_set_id(subscriber, env, subscriber_id);
@@ -577,13 +577,13 @@ savan_registry_storage_mgr_retrieve_subscriber(
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_registry_storage_mgr_retrieve_subscriber");
+            "[savan] Exit:savan_registry_subs_mgr_retrieve_subscriber");
     return subscriber;
 }
 
 AXIS2_EXTERN axutil_array_list_t * AXIS2_CALL
-savan_registry_storage_mgr_retrieve_all_subscribers(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_retrieve_all_subscribers(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env,
     const axis2_char_t *filter)
 {
@@ -591,16 +591,16 @@ savan_registry_storage_mgr_retrieve_all_subscribers(
     axis2_char_t *path = NULL;
     axutil_array_list_t *data_list = NULL;
 
-    savan_registry_storage_mgr_t *storagemgrimpl = NULL;
-    storagemgrimpl = SAVAN_INTF_TO_IMPL(storagemgr);
+    savan_registry_subs_mgr_t *subsmgrimpl = NULL;
+    subsmgrimpl = SAVAN_INTF_TO_IMPL(subsmgr);
  
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_registry_storage_mgr_retrieve_all_subscribers");
+            "[savan] Entry:savan_registry_subs_mgr_retrieve_all_subscribers");
 
     /* Get subscribers for the filter from registry. Eg. /weather/4/system.subscriptions */
     if(filter)
     {
-        root_res = remote_registry_get(storagemgrimpl->remote_registry, env, 
+        root_res = remote_registry_get(subsmgrimpl->remote_registry, env, 
                 (axis2_char_t *) filter, NULL);
         if(root_res)
         {
@@ -622,7 +622,7 @@ savan_registry_storage_mgr_retrieve_all_subscribers(
                     {
                         savan_subscriber_t *subscriber = NULL;
 
-                        subscriber = savan_registry_storage_mgr_extract_subscriber(env, res);
+                        subscriber = savan_registry_subs_mgr_extract_subscriber(env, res);
                         axutil_array_list_add(data_list, env, subscriber);
                     }
                 }
@@ -633,7 +633,7 @@ savan_registry_storage_mgr_retrieve_all_subscribers(
     {
         axutil_hash_t *properties = NULL;
 
-        root_res = remote_registry_get(storagemgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
+        root_res = remote_registry_get(subsmgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
         if(!root_res)
         {
             AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_UPDATE_ERROR, AXIS2_FAILURE);
@@ -659,12 +659,12 @@ savan_registry_storage_mgr_retrieve_all_subscribers(
                 axutil_hash_this(hi, (const void**)&key, NULL, &val);
                 subscriber_id = (axis2_char_t *) key;
                 path = axutil_strcat(env, val, AXIS2_PATH_SEP_STR, key, NULL);
-                res = remote_registry_get(storagemgrimpl->remote_registry, env, path, NULL);
+                res = remote_registry_get(subsmgrimpl->remote_registry, env, path, NULL);
                 if(res)
                 {
                     if(res)
                     {
-                        subscriber = savan_registry_storage_mgr_extract_subscriber(env, res);
+                        subscriber = savan_registry_subs_mgr_extract_subscriber(env, res);
                         savan_subscriber_set_id(subscriber, env, subscriber_id);
                         axutil_array_list_add(data_list, env, subscriber);
                     }
@@ -674,26 +674,26 @@ savan_registry_storage_mgr_retrieve_all_subscribers(
     }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_registry_storage_mgr_retrieve_all_subscribers");
+            "[savan] Exit:savan_registry_subs_mgr_retrieve_all_subscribers");
     return data_list;
 }
 
 static axis2_status_t
-savan_registry_storage_mgr_init_resource(
-    savan_storage_mgr_t *storagemgr,
+savan_registry_subs_mgr_init_resource(
+    savan_subs_mgr_t *subsmgr,
     const axutil_env_t *env)
 {
     remote_registry_resource_t *res = NULL;
     axis2_char_t *id = NULL;
     
-    savan_registry_storage_mgr_t *storagemgrimpl = NULL;
-    storagemgrimpl = SAVAN_INTF_TO_IMPL(storagemgr);
+    savan_registry_subs_mgr_t *subsmgrimpl = NULL;
+    subsmgrimpl = SAVAN_INTF_TO_IMPL(subsmgr);
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_registry_storage_mgr_init_resource");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_registry_subs_mgr_init_resource");
 
-    storagemgrimpl->remote_registry = remote_registry_create(env, storagemgrimpl->reg_url, 
-            storagemgrimpl->username, storagemgrimpl->password);
-    if(!storagemgrimpl->remote_registry)
+    subsmgrimpl->remote_registry = remote_registry_create(env, subsmgrimpl->reg_url, 
+            subsmgrimpl->username, subsmgrimpl->password);
+    if(!subsmgrimpl->remote_registry)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
@@ -701,14 +701,14 @@ savan_registry_storage_mgr_init_resource(
         return AXIS2_FAILURE;
     }
 
-    res = remote_registry_get(storagemgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
+    res = remote_registry_get(subsmgrimpl->remote_registry, env, TOPIC_INDEX, NULL);
     if(!res)
     {
         res = remote_registry_resource_create(env);
-        id = axutil_strcat(env, storagemgrimpl->reg_url, TOPIC_INDEX, NULL);
+        id = axutil_strcat(env, subsmgrimpl->reg_url, TOPIC_INDEX, NULL);
         remote_registry_resource_set_properties(res, env, axutil_hash_make(env));
         remote_registry_resource_set_description(res, env, "");
-        remote_registry_put(storagemgrimpl->remote_registry, env, TOPIC_INDEX, res);
+        remote_registry_put(subsmgrimpl->remote_registry, env, TOPIC_INDEX, res);
     }
 
     if(id)
@@ -720,12 +720,12 @@ savan_registry_storage_mgr_init_resource(
         remote_registry_resource_free(res, env);
     }
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_registry_storage_mgr_init_resource");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_registry_subs_mgr_init_resource");
 
     return AXIS2_SUCCESS;
 }
 
-static axis2_char_t *savan_registry_storage_mgr_serialize_endpoint(
+static axis2_char_t *savan_registry_subs_mgr_serialize_endpoint(
         const axutil_env_t *env,
         const savan_subscriber_t *subscriber)
 {
@@ -741,7 +741,7 @@ static axis2_char_t *savan_registry_storage_mgr_serialize_endpoint(
     char *content = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_registry_storage_mgr_serialize_endpoint");
+            "[savan] Entry:savan_registry_subs_mgr_serialize_endpoint");
     
     /* Format of the message is as 
      * <subscription><syn:endpoint xmlns:syn="http://ws.apache.org/ns/synapse"><syn:address uri=
@@ -767,12 +767,12 @@ static axis2_char_t *savan_registry_storage_mgr_serialize_endpoint(
 
     content = (char *) axiom_node_to_string(subs_node, env);
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_registry_storage_mgr_serialize_endpoint");
+            "[savan] Exit:savan_registry_subs_mgr_serialize_endpoint");
 
     return content; 
 }
 
-static savan_subscriber_t *savan_registry_storage_mgr_extract_subscriber(
+static savan_subscriber_t *savan_registry_subs_mgr_extract_subscriber(
         const axutil_env_t *env,
         remote_registry_resource_t *resource)
 {

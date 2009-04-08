@@ -13,4 +13,4 @@ INCLUDES = -I$(top_builddir)/include \
 libmod_savan_la_LIBADD = \
                         ../handlers/libsavan_handlers.la\
 						../util/libsavan_util.la \
-						../subs_mgrs/@SAVAN_SUBS_MGR@/libsavan_storage.la
+						../subs_mgrs/@SAVAN_SUBS_MGR@/libsavan_subs_mgr.la

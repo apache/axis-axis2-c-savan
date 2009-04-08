@@ -135,7 +135,7 @@ extern "C"
     savan_util_get_subscriber_from_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_storage_mgr_t *storage_mgr,
+        savan_subs_mgr_t *subs_mgr,
         const axis2_char_t *sub_id);
 
     /**
@@ -152,7 +152,7 @@ extern "C"
     savan_util_get_subscriber_from_renew_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_storage_mgr_t *storage_mgr,
+        savan_subs_mgr_t *subs_mgr,
         const axis2_char_t *sub_id);
 
     /**
@@ -177,7 +177,7 @@ extern "C"
     * must be set in the publishers services.xml
     * @param env pointer to environment struct
     * @param msg_ctx pointer to message context
-    * @param storage_mgr pointer to storage_mgr
+    * @param subs_mgr pointer to subs_mgr
     * @param subscriber
     * @return the store on success, else NULL
     */
@@ -186,14 +186,14 @@ extern "C"
     savan_util_add_subscriber(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_storage_mgr_t *storage_mgr,
+        savan_subs_mgr_t *subs_mgr,
         savan_subscriber_t *subscriber);
 
     AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_util_update_subscriber(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_storage_mgr_t *storage_mgr,
+        savan_subs_mgr_t *subs_mgr,
         savan_subscriber_t *subscriber);
 
     /**
@@ -203,7 +203,7 @@ extern "C"
     * must be set in the publishers services.xml
     * @param env pointer to environment struct
     * @param msg_ctx pointer to message context
-    * @param storage_mgr pointer to storage_mgr
+    * @param subs_mgr pointer to subs_mgr
     * @param subscriber
     * @return the store on success, else NULL
     */
@@ -212,7 +212,7 @@ extern "C"
     savan_util_remove_subscriber(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_storage_mgr_t *storage_mgr,
+        savan_subs_mgr_t *subs_mgr,
         savan_subscriber_t *subscriber);
 
     /**
@@ -238,7 +238,7 @@ extern "C"
         axis2_char_t *expiry);
     
     /**
-    * Create storage hash and set as a service parameter.
+    * Create subs hash and set as a service parameter.
     * @param env pointer to environment struct
     * @param svc subscription service
     * @return AXIS2_SUCCESS on success, else AXIS2_FAILURE 
@@ -341,16 +341,16 @@ extern "C"
         axiom_node_t *parent_node);
 
     /**
-     * Retrieve storage mgr. If it is already created for this request scope then it should be 
+     * Retrieve subs mgr. If it is already created for this request scope then it should be 
      * available as a message context property. Otherwise create it and set as message context
      * property.
      * @param env environment object
      * @param conf_ctx configuration context instance
      * @param conf Axis2 main configuration instance
-     * @return storage manager
+     * @return subs manager
      */
-    AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-    savan_util_get_storage_mgr(
+    AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+    savan_util_get_subs_mgr(
         const axutil_env_t *env,
         axis2_conf_ctx_t *conf_ctx,
         axis2_conf_t *conf);

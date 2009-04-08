@@ -1,6 +1,6 @@
-noinst_LTLIBRARIES = libsavan_storage.la
+noinst_LTLIBRARIES = libsavan_subs_mgr.la
 
-libsavan_storage_la_SOURCES =
+libsavan_subs_mgr_la_SOURCES =
 
 INCLUDES = -I$(top_builddir)/include \
 			-I$(top_builddir)/include/savan \

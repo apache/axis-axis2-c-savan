@@ -30,19 +30,19 @@
 #include <axis2_svc_client.h>
 #include <axis2_options.h>
 
-#include "savan_subs_mgr.h"
+#include "savan_subs_mgr_svc.h"
 #include <savan_constants.h>
 #include <savan_storage_mgr.h>
 #include <savan_util.h>
 #include <savan_error.h>
 
 int AXIS2_CALL
-savan_subs_mgr_free(
+savan_subs_mgr_svc_free(
     axis2_svc_skeleton_t *svc_skeleton,
     const axutil_env_t *env);
 
 axis2_status_t AXIS2_CALL
-savan_subs_mgr_free_void_arg(
+savan_subs_mgr_svc_free_void_arg(
     void *svc_skeleton,
     const axutil_env_t *env);
 
@@ -50,7 +50,7 @@ savan_subs_mgr_free_void_arg(
  * This method invokes the right service method 
  */
 axiom_node_t* AXIS2_CALL 
-savan_subs_mgr_invoke(
+savan_subs_mgr_svc_invoke(
     axis2_svc_skeleton_t *svc_skeleton,
     const axutil_env_t *env,
     axiom_node_t *node,
@@ -58,45 +58,45 @@ savan_subs_mgr_invoke(
             
 
 int AXIS2_CALL 
-savan_subs_mgr_init(
+savan_subs_mgr_svc_init(
     axis2_svc_skeleton_t *svc_skeleton,
     const axutil_env_t *env);
 
 int AXIS2_CALL 
-savan_subs_mgr_init_with_conf(
+savan_subs_mgr_svc_init_with_conf(
     axis2_svc_skeleton_t *svc_skeleton,
     const axutil_env_t *env,
     axis2_conf_t *conf);
 
 axiom_node_t* AXIS2_CALL
-savan_subs_mgr_on_fault(
+savan_subs_mgr_svc_on_fault(
     axis2_svc_skeleton_t *svc_skeli, 
     const axutil_env_t *env, 
     axiom_node_t *node);
 
-static const axis2_svc_skeleton_ops_t savan_subs_mgr_skeleton_ops_var = {
-    savan_subs_mgr_init,
-    savan_subs_mgr_invoke,
-    savan_subs_mgr_on_fault,
-    savan_subs_mgr_free,
-    savan_subs_mgr_init_with_conf
+static const axis2_svc_skeleton_ops_t savan_subs_mgr_svc_skeleton_ops_var = {
+    savan_subs_mgr_svc_init,
+    savan_subs_mgr_svc_invoke,
+    savan_subs_mgr_svc_on_fault,
+    savan_subs_mgr_svc_free,
+    savan_subs_mgr_svc_init_with_conf
 };
 
 /*Create function */
 axis2_svc_skeleton_t *
-savan_subs_mgr_create(
+savan_subs_mgr_svc_create(
     const axutil_env_t *env)
 {
 
     axis2_svc_skeleton_t *svc_skeleton = NULL;
 
 	
-	AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "savan_subs_mgr service create called");
+	AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "savan_subs_mgr_svc service create called");
 
 	/* Allocate memory for the structs */
     svc_skeleton = AXIS2_MALLOC(env->allocator, sizeof(axis2_svc_skeleton_t));
 
-    svc_skeleton->ops = &savan_subs_mgr_skeleton_ops_var;
+    svc_skeleton->ops = &savan_subs_mgr_svc_skeleton_ops_var;
     svc_skeleton->func_array = NULL;
 
     /* Assign function pointers */
@@ -106,7 +106,7 @@ savan_subs_mgr_create(
 
 /* Initialize the service */
 int AXIS2_CALL
-savan_subs_mgr_init(
+savan_subs_mgr_svc_init(
     axis2_svc_skeleton_t *svc_skeleton,
     const axutil_env_t *env)
 {
@@ -114,7 +114,7 @@ savan_subs_mgr_init(
 }
 
 int AXIS2_CALL 
-savan_subs_mgr_init_with_conf(
+savan_subs_mgr_svc_init_with_conf(
     axis2_svc_skeleton_t *svc_skeleton,
     const axutil_env_t *env,
     axis2_conf_t *conf)
@@ -125,7 +125,7 @@ savan_subs_mgr_init_with_conf(
     axis2_op_t *op = NULL;
     int i = 0, size = 0;*/
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_init_with_conf");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_svc_init_with_conf");
 
     /*storage_mgr = savan_util_get_storage_mgr(env, NULL, conf);
     if(!storage_mgr)
@@ -137,7 +137,7 @@ savan_subs_mgr_init_with_conf(
         return AXIS2_FAILURE;
     }*/
 
-    savan_subs_mgr_init(svc_skeleton, env);
+    savan_subs_mgr_svc_init(svc_skeleton, env);
     /*subs_svc = axis2_conf_get_svc(conf, env, "subscription");
     op = axis2_svc_get_op_with_name(subs_svc, env, "get_topic_list");
     topic_param_list = axis2_op_get_all_params(op, env);
@@ -169,7 +169,7 @@ savan_subs_mgr_init_with_conf(
         }
     }*/
 
-    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_subs_mgr_init_with_conf");
+    AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] End:savan_subs_mgr_svc_init_with_conf");
 
     return AXIS2_SUCCESS;
 }
@@ -178,7 +178,7 @@ savan_subs_mgr_init_with_conf(
  * This method invokes the right service method 
  */
 axiom_node_t* AXIS2_CALL
-savan_subs_mgr_invoke(
+savan_subs_mgr_svc_invoke(
     axis2_svc_skeleton_t *svc_skeleton,
     const axutil_env_t *env,
     axiom_node_t *node,
@@ -200,17 +200,17 @@ savan_subs_mgr_invoke(
         if(op_name)
         {
             if (axutil_strcmp(op_name, "add_subscriber") == 0)
-                return savan_subs_mgr_add_subscriber(env, node, msg_ctx);
+                return savan_subs_mgr_svc_add_subscriber(env, node, msg_ctx);
             if (axutil_strcmp(op_name, "remove_subscriber") == 0)
-                return savan_subs_mgr_remove_subscriber(env, node, msg_ctx);
+                return savan_subs_mgr_svc_remove_subscriber(env, node, msg_ctx);
             if (axutil_strcmp(op_name, "get_subscriber") == 0)
-                return savan_subs_mgr_get_subscriber(env, node, msg_ctx);
+                return savan_subs_mgr_svc_get_subscriber(env, node, msg_ctx);
             if (axutil_strcmp(op_name, "get_subscriber_list") == 0)
-                return savan_subs_mgr_get_subscriber_list(env, node, msg_ctx);
+                return savan_subs_mgr_svc_get_subscriber_list(env, node, msg_ctx);
             if (axutil_strcmp(op_name, "get_topic_list") == 0)
-                return savan_subs_mgr_get_topic_list(env, node, msg_ctx);
+                return savan_subs_mgr_svc_get_topic_list(env, node, msg_ctx);
             /*if (axutil_strcmp(op_name, "add_topic") == 0)
-                return savan_subs_mgr_add_topic(env, node, msg_ctx);*/
+                return savan_subs_mgr_svc_add_topic(env, node, msg_ctx);*/
         }
     }
     return NULL;
@@ -218,7 +218,7 @@ savan_subs_mgr_invoke(
 
 /* On fault, handle the fault */
 axiom_node_t* AXIS2_CALL
-savan_subs_mgr_on_fault(
+savan_subs_mgr_svc_on_fault(
     axis2_svc_skeleton_t *svc_skeli, 
     const axutil_env_t *env, 
     axiom_node_t *node)
@@ -238,7 +238,7 @@ savan_subs_mgr_on_fault(
 
 /* Free the resources used */
 int AXIS2_CALL
-savan_subs_mgr_free(
+savan_subs_mgr_svc_free(
     axis2_svc_skeleton_t *svc_skeleton,
     const axutil_env_t *env)
 {
@@ -265,7 +265,7 @@ axis2_get_instance(
     axis2_svc_skeleton_t **inst,
     const axutil_env_t *env)
 {
-   *inst = savan_subs_mgr_create(env);
+   *inst = savan_subs_mgr_svc_create(env);
     if(!(*inst))
     {
         return AXIS2_FAILURE;

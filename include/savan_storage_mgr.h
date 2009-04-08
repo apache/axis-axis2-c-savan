@@ -14,11 +14,11 @@
  * limitations under the License.
  */
  
-#ifndef SAVAN_STORAGE_MGR_H
-#define SAVAN_STORAGE_MGR_H
+#ifndef SAVAN_SUBS_MGR_H
+#define SAVAN_SUBS_MGR_H
 
 /**
-  * @file savan_storage_mgr.h
+  * @file savan_subs_mgr.h
   * @brief 
   */
 #include <platforms/axutil_platform_auto_sense.h>
@@ -33,173 +33,173 @@ extern "C"
 #endif
 
 /** 
- * @ingroup savan_storage
+ * @ingroup savan subscription manager
  * @{
  */
  
-typedef struct savan_storage_mgr savan_storage_mgr_t;
-typedef struct savan_storage_mgr_ops savan_storage_mgr_ops_t;
+typedef struct savan_subs_mgr savan_subs_mgr_t;
+typedef struct savan_subs_mgr_ops savan_subs_mgr_ops_t;
 
  /**
- * @brief Storage Manager ops struct
- * Encapsulator struct for ops of savan_storage_mgr
+ * @brief Subscription Manager ops struct
+ * Encapsulator struct for ops of savan_subs_mgr
  */
-AXIS2_DECLARE_DATA struct savan_storage_mgr_ops
+AXIS2_DECLARE_DATA struct savan_subs_mgr_ops
 { 
     void (AXIS2_CALL * 
             free)(
-                savan_storage_mgr_t *storage_mgr,
+                savan_subs_mgr_t *subs_mgr,
                 const axutil_env_t *env);
 
     axis2_status_t (AXIS2_CALL *
             insert_subscriber)(
-                savan_storage_mgr_t *storage_mgr, 
+                savan_subs_mgr_t *subs_mgr, 
                 const axutil_env_t *env,
                 savan_subscriber_t *subscriber);
 
     axis2_status_t (AXIS2_CALL *
             update_subscriber)(
-                savan_storage_mgr_t *storage_mgr, 
+                savan_subs_mgr_t *subs_mgr, 
                 const axutil_env_t *env,
                 savan_subscriber_t *subscriber);
 
     axis2_status_t (AXIS2_CALL *
             remove_subscriber)(
-                savan_storage_mgr_t *storage_mgr, 
+                savan_subs_mgr_t *subs_mgr, 
                 const axutil_env_t *env,
                 const axis2_char_t *subscription_id);
 
     savan_subscriber_t *(AXIS2_CALL *
             retrieve_subscriber)(
-                savan_storage_mgr_t *storage_mgr, 
+                savan_subs_mgr_t *subs_mgr, 
                 const axutil_env_t *env,
                 const axis2_char_t *subscription_id);
 
     axutil_array_list_t *(AXIS2_CALL *
             retrieve_all_subscribers)(
-                savan_storage_mgr_t *storage_mgr, 
+                savan_subs_mgr_t *subs_mgr, 
                 const axutil_env_t *env,
                 const axis2_char_t *topic_name);
 
     axis2_status_t (AXIS2_CALL *
             insert_topic)(
-                savan_storage_mgr_t *storage_mgr, 
+                savan_subs_mgr_t *subs_mgr, 
                 const axutil_env_t *env,
                 const axis2_char_t *topic_name,
                 const axis2_char_t *topic_url);
 
 };
 
-AXIS2_DECLARE_DATA struct savan_storage_mgr
+AXIS2_DECLARE_DATA struct savan_subs_mgr
 {
-    const savan_storage_mgr_ops_t *ops;
+    const savan_subs_mgr_ops_t *ops;
 };
 
 
 /**
- * Create the savan storage manager.
+ * Create the savan subscription manager.
  * @param env environment object
  * @param conf axis2 configuration
  * @return status of the operation
  */
-AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-savan_storage_mgr_create(
+AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+savan_subs_mgr_create(
     const axutil_env_t *env,
     axis2_conf_t *conf);
 
-AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-savan_storage_mgr_create_with_connection_info(
+AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+savan_subs_mgr_create_with_connection_info(
     const axutil_env_t *env,
     axis2_char_t *connection_string,
     axis2_char_t *username,
     axis2_char_t *password);
 
 /**
- * Deallocate the storage.
- * @param storage_mgr
+ * Deallocate the subscription manager.
+ * @param subs_mgr
  * @param env environment object
  */
 AXIS2_EXTERN void AXIS2_CALL 
-savan_storage_mgr_free(
-    savan_storage_mgr_t *storage_mgr,
+savan_subs_mgr_free(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *envv);
 
 /**
  * Insert a subscriber.
- * @param storage_mgr
+ * @param subs_mgr
  * @param env environment object
  * @param subscriber subscriber instant
  * @return status of the operation
  */
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_storage_mgr_insert_subscriber(
-    savan_storage_mgr_t *storage_mgr, 
+savan_subs_mgr_insert_subscriber(
+    savan_subs_mgr_t *subs_mgr, 
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
 /**
  * Update a subscriber.
- * @param storage_mgr
+ * @param subs_mgr
  * @param env environment object
  * @param subscriber subscriber instant
  * @return status of the operation
  */
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_storage_mgr_update_subscriber(
-    savan_storage_mgr_t *storage_mgr, 
+savan_subs_mgr_update_subscriber(
+    savan_subs_mgr_t *subs_mgr, 
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
 /**
  * Remove a subscriber.
- * @param storage_mgr
+ * @param subs_mgr
  * @param env environment object
  * @param subscription_id subscriber's id
  * @return status of the operation
  */
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_storage_mgr_remove_subscriber(
-    savan_storage_mgr_t *storage_mgr, 
+savan_subs_mgr_remove_subscriber(
+    savan_subs_mgr_t *subs_mgr, 
     const axutil_env_t *env,
     const axis2_char_t *subscription_id);
 
 /**
  * Retrieve a subscriber.
- * @param storage_mgr
+ * @param subs_mgr
  * @param env environment object
  * @param subscription_id subscriber's id
  * @return subscriber corresponding to the passed subscription id
  */
 AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
-savan_storage_mgr_retrieve_subscriber(
-    savan_storage_mgr_t *storage_mgr, 
+savan_subs_mgr_retrieve_subscriber(
+    savan_subs_mgr_t *subs_mgr, 
     const axutil_env_t *env,
     const axis2_char_t *subscription_id);
 
 /**
  * Retrive all subscribers for a topic(event source).
- * @param storage_mgr
+ * @param subs_mgr
  * @param env environment object
  * @param topic_name topoic_name
  * @return all subscribers for the event source
  */
 AXIS2_EXTERN axutil_array_list_t *AXIS2_CALL
-savan_storage_mgr_retrieve_all_subscribers(
-    savan_storage_mgr_t *storage_mgr, 
+savan_subs_mgr_retrieve_all_subscribers(
+    savan_subs_mgr_t *subs_mgr, 
     const axutil_env_t *env,
     const axis2_char_t *filter);
 
 /**
  * Insert topic. Event source is mapped to a topic
- * @param storage_mgr
+ * @param subs_mgr
  * @param env environment object
  * @param topic_name topoic name
  * @param topic_url topoic url
  * @return status of the operation
  */
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_storage_mgr_insert_topic(
-    savan_storage_mgr_t *storage_mgr, 
+savan_subs_mgr_insert_topic(
+    savan_subs_mgr_t *subs_mgr, 
     const axutil_env_t *env,
     const axis2_char_t *topic_name,
     const axis2_char_t *topic_url);
@@ -209,4 +209,4 @@ savan_storage_mgr_insert_topic(
 }
 #endif
 
-#endif /*SAVAN_STORAGE_MGR_H*/
+#endif /*SAVAN_SUBS_MGR_H*/

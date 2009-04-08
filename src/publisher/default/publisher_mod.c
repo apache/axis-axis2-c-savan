@@ -61,7 +61,7 @@ savan_default_publisher_mod_publish(
     savan_publisher_mod_t *publishermod,
     const axutil_env_t *env,
     void *msg_ctx,
-    savan_storage_mgr_t *storage_mgr);
+    savan_subs_mgr_t *subs_mgr);
 
 static axis2_status_t
 savan_default_publisher_mod_publish_to_subscriber(
@@ -133,7 +133,7 @@ savan_default_publisher_mod_publish(
     savan_publisher_mod_t *publishermod,
     const axutil_env_t *env,
     void *msg_ctx,
-    savan_storage_mgr_t *storage_mgr)
+    savan_subs_mgr_t *subs_mgr)
 {
     savan_default_publisher_mod_t *publishermodimpl = NULL;
     axutil_array_list_t *subs_store = NULL;
@@ -154,9 +154,9 @@ savan_default_publisher_mod_publish(
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_default_publisher_mod_publish");
 
     axutil_allocator_switch_to_global_pool(env->allocator);
-    if(storage_mgr)
+    if(subs_mgr)
     {
-        subs_store = savan_storage_mgr_retrieve_all_subscribers(storage_mgr, env, filter);
+        subs_store = savan_subs_mgr_retrieve_all_subscribers(subs_mgr, env, filter);
     }
 
     if (!subs_store)

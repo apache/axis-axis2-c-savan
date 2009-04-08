@@ -27,7 +27,7 @@
 #include <sqlite3.h>
 
 /**
- * Savan sqlite storage manager maintain two database tables. They are namely
+ * Savan sqlite subscription manager maintain two database tables. They are namely
  * subscriber and topic.
  * subscriber table has following schema
  *  id varchar(100) primary key, 
@@ -48,33 +48,33 @@
  * @brief Savan Permanent Storage Manager Struct Impl
  *   Savan Permanent Storage Manager 
  */
-typedef struct savan_sqlite_storage_mgr
+typedef struct savan_sqlite_subs_mgr
 {
-    savan_storage_mgr_t storage_mgr;
+    savan_subs_mgr_t subs_mgr;
     axis2_char_t *dbname;
     axis2_conf_t *conf;
-} savan_sqlite_storage_mgr_t;
+} savan_sqlite_subs_mgr_t;
 
-typedef AXIS2_DECLARE_DATA struct savan_sqlite_storage_mgr_args
+typedef AXIS2_DECLARE_DATA struct savan_sqlite_subs_mgr_args
 {
     const axutil_env_t *env;
     void *data;
-} savan_sqlite_storage_mgr_args_t;
+} savan_sqlite_subs_mgr_args_t;
 
-#define SAVAN_INTF_TO_IMPL(trans) ((savan_sqlite_storage_mgr_t *) trans)
+#define SAVAN_INTF_TO_IMPL(trans) ((savan_sqlite_subs_mgr_t *) trans)
 
 static axis2_status_t
-savan_sqlite_storage_mgr_create_db(
+savan_sqlite_subs_mgr_create_db(
     const axutil_env_t *env,
     const axis2_char_t *dbname);
 
 static void * AXIS2_CALL
-savan_sqlite_storage_mgr_get_dbconn(
+savan_sqlite_subs_mgr_get_dbconn(
     const axutil_env_t *env,
     const axis2_char_t *dbname);
 
 static int
-savan_sqlite_storage_mgr_busy_handler(
+savan_sqlite_subs_mgr_busy_handler(
     sqlite3* dbconn,
     char *sql_stmt,
     int (*callback_func)(void *, int, char **, char **),
@@ -83,84 +83,84 @@ savan_sqlite_storage_mgr_busy_handler(
     int rc);
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_sqlite_storage_mgr_free(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_free(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_sqlite_storage_mgr_insert_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_insert_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_sqlite_storage_mgr_update_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_update_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_sqlite_storage_mgr_remove_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_remove_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *subscriber_id);
 
 AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
-savan_sqlite_storage_mgr_retrieve_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_retrieve_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *subcriber_id);
 
 AXIS2_EXTERN axutil_array_list_t * AXIS2_CALL
-savan_sqlite_storage_mgr_retrieve_all_subscribers(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_retrieve_all_subscribers(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *filter);
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_sqlite_storage_mgr_insert_topic(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_insert_topic(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *topic_name,
     const axis2_char_t *topic_url);
 
-static const savan_storage_mgr_ops_t storage_mgr_ops = 
+static const savan_subs_mgr_ops_t subs_mgr_ops = 
 {
-    savan_sqlite_storage_mgr_free,
-    savan_sqlite_storage_mgr_insert_subscriber,
-    savan_sqlite_storage_mgr_update_subscriber,
-    savan_sqlite_storage_mgr_remove_subscriber,
-    savan_sqlite_storage_mgr_retrieve_subscriber,
-    savan_sqlite_storage_mgr_retrieve_all_subscribers,
-    savan_sqlite_storage_mgr_insert_topic
+    savan_sqlite_subs_mgr_free,
+    savan_sqlite_subs_mgr_insert_subscriber,
+    savan_sqlite_subs_mgr_update_subscriber,
+    savan_sqlite_subs_mgr_remove_subscriber,
+    savan_sqlite_subs_mgr_retrieve_subscriber,
+    savan_sqlite_subs_mgr_retrieve_all_subscribers,
+    savan_sqlite_subs_mgr_insert_topic
 };
 
-AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-savan_storage_mgr_create(
+AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+savan_subs_mgr_create(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
-    savan_sqlite_storage_mgr_t *storage_mgr_impl = NULL;
+    savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
     
-    storage_mgr_impl = AXIS2_MALLOC(env->allocator, sizeof(savan_sqlite_storage_mgr_t));
-    if (!storage_mgr_impl)
+    subs_mgr_impl = AXIS2_MALLOC(env->allocator, sizeof(savan_sqlite_subs_mgr_t));
+    if (!subs_mgr_impl)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_STORAGE_MANAGER_CREATION_FAILED, AXIS2_FAILURE);
         return NULL;
     }
 
-    memset ((void *) storage_mgr_impl, 0, sizeof(savan_sqlite_storage_mgr_t));
+    memset ((void *) subs_mgr_impl, 0, sizeof(savan_sqlite_subs_mgr_t));
 
-    storage_mgr_impl->dbname = axutil_strdup(env, savan_util_get_resource_connection_string(env, conf));
-    storage_mgr_impl->conf = conf;
-    storage_mgr_impl->storage_mgr.ops = &storage_mgr_ops;
+    subs_mgr_impl->dbname = axutil_strdup(env, savan_util_get_resource_connection_string(env, conf));
+    subs_mgr_impl->conf = conf;
+    subs_mgr_impl->subs_mgr.ops = &subs_mgr_ops;
 
-    savan_sqlite_storage_mgr_create_db(env, storage_mgr_impl->dbname);
-    return (savan_storage_mgr_t *) storage_mgr_impl;
+    savan_sqlite_subs_mgr_create_db(env, subs_mgr_impl->dbname);
+    return (savan_subs_mgr_t *) subs_mgr_impl;
 }
 
-AXIS2_EXTERN savan_storage_mgr_t * AXIS2_CALL
-savan_storage_mgr_create_with_connection_info(
+AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+savan_subs_mgr_create_with_connection_info(
     const axutil_env_t *env,
     axis2_char_t *connection_string,
     axis2_char_t *username,
@@ -170,41 +170,41 @@ savan_storage_mgr_create_with_connection_info(
 }
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_sqlite_storage_mgr_free(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_free(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env)
 {
-    savan_sqlite_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sqlite_storage_mgr_free");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sqlite_subs_mgr_free");
 
-    if(storage_mgr_impl->dbname)
+    if(subs_mgr_impl->dbname)
     {
-        AXIS2_FREE(env->allocator, storage_mgr_impl->dbname);
-        storage_mgr_impl->dbname = NULL;
+        AXIS2_FREE(env->allocator, subs_mgr_impl->dbname);
+        subs_mgr_impl->dbname = NULL;
     }
 
-    storage_mgr_impl->conf = NULL;
+    subs_mgr_impl->conf = NULL;
 
-    if(storage_mgr_impl)
+    if(subs_mgr_impl)
     {
-        AXIS2_FREE(env->allocator, storage_mgr_impl);
-        storage_mgr_impl = NULL;
+        AXIS2_FREE(env->allocator, subs_mgr_impl);
+        subs_mgr_impl = NULL;
     }
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_sqlite_storage_mgr_free");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_sqlite_subs_mgr_free");
 }
 
 /*static int 
-savan_sqlite_storage_mgr_topic_find_callback(
+savan_sqlite_subs_mgr_topic_find_callback(
     void *not_used, 
     int argc, 
     char **argv, 
     char **col_name)
 {
     int i = 0;
-    savan_sqlite_storage_mgr_args_t *args = (savan_sqlite_storage_mgr_args_t *) not_used;
+    savan_sqlite_subs_mgr_args_t *args = (savan_sqlite_subs_mgr_args_t *) not_used;
     const axutil_env_t *env = args->env;
     axutil_array_list_t *topic_list = (axutil_array_list_t *) args->data;
     if(argc < 1)
@@ -229,7 +229,7 @@ savan_sqlite_storage_mgr_topic_find_callback(
 }*/
 
 static int
-savan_sqlite_storage_mgr_subscriber_find_callback(
+savan_sqlite_subs_mgr_subscriber_find_callback(
     void *not_used, 
     int argc, 
     char **argv, 
@@ -237,7 +237,7 @@ savan_sqlite_storage_mgr_subscriber_find_callback(
 {
     savan_subscriber_t *subscriber = NULL;
     int i = 0;
-    savan_sqlite_storage_mgr_args_t *args = (savan_sqlite_storage_mgr_args_t *) not_used;
+    savan_sqlite_subs_mgr_args_t *args = (savan_sqlite_subs_mgr_args_t *) not_used;
     const axutil_env_t *env = args->env;
     axutil_array_list_t *subscriber_list = (axutil_array_list_t *) args->data;
 
@@ -310,7 +310,7 @@ savan_sqlite_storage_mgr_subscriber_find_callback(
 }
 
 static int  
-savan_sqlite_storage_mgr_subs_retrieve_callback(
+savan_sqlite_subs_mgr_subs_retrieve_callback(
     void *not_used, 
     int argc, 
     char **argv, 
@@ -319,10 +319,10 @@ savan_sqlite_storage_mgr_subs_retrieve_callback(
     int i = 0;
 	savan_subscriber_t *subscriber = NULL;
 	const axutil_env_t *env = NULL;
-	savan_sqlite_storage_mgr_args_t *args = (savan_sqlite_storage_mgr_args_t *) not_used;
+	savan_sqlite_subs_mgr_args_t *args = (savan_sqlite_subs_mgr_args_t *) not_used;
     env = args->env;
 
-	AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sqlite_storage_mgr_subs_retrieve_callback");
+	AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sqlite_subs_mgr_subs_retrieve_callback");
 
      subscriber = (savan_subscriber_t *) args->data;
     if(argc < 1)
@@ -380,18 +380,18 @@ savan_sqlite_storage_mgr_subs_retrieve_callback(
         }
     }
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_sqlite_storage_mgr_subs_retrieve_callback");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_sqlite_subs_mgr_subs_retrieve_callback");
     return 0;
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_sqlite_storage_mgr_insert_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_insert_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber)
 {
-    savan_sqlite_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     axis2_char_t sql_insert[1028];
     sqlite3 *dbconn = NULL;
     axis2_char_t *id = NULL;
@@ -407,7 +407,7 @@ savan_sqlite_storage_mgr_insert_subscriber(
     struct sqlite3_stmt* insertqry;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_sqlite_storage_mgr_insert_subscriber");
+            "[savan] Entry:savan_sqlite_subs_mgr_insert_subscriber");
 
     sprintf(sql_insert, "%s", "insert into subscriber(id");
     
@@ -490,7 +490,7 @@ savan_sqlite_storage_mgr_insert_subscriber(
     }
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_insert:%s", sql_insert);
-    dbconn = (sqlite3 *) savan_sqlite_storage_mgr_get_dbconn(env, storage_mgr_impl->dbname);
+    dbconn = (sqlite3 *) savan_sqlite_subs_mgr_get_dbconn(env, subs_mgr_impl->dbname);
     if(!dbconn)
     {
         return AXIS2_FAILURE;
@@ -597,18 +597,18 @@ savan_sqlite_storage_mgr_insert_subscriber(
     sqlite3_close(dbconn);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_sqlite_storage_mgr_insert_subscriber");
+            "[savan] Exit:savan_sqlite_subs_mgr_insert_subscriber");
     return AXIS2_SUCCESS;
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_sqlite_storage_mgr_update_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_update_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     savan_subscriber_t *subscriber)
 {
-    savan_sqlite_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     axis2_char_t *sql_update = NULL;
     sqlite3 *dbconn = NULL;
     axis2_char_t *id = NULL;
@@ -624,7 +624,7 @@ savan_sqlite_storage_mgr_update_subscriber(
     struct sqlite3_stmt* updateqry;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_sqlite_storage_mgr_update_subscriber");
+            "[savan] Entry:savan_sqlite_subs_mgr_update_subscriber");
 
     sql_update = AXIS2_MALLOC(env->allocator, 1028);
     if(!sql_update)
@@ -703,7 +703,7 @@ savan_sqlite_storage_mgr_update_subscriber(
     }
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "sql_update:%s", sql_update);
-    dbconn = (sqlite3 *) savan_sqlite_storage_mgr_get_dbconn(env, storage_mgr_impl->dbname);
+    dbconn = (sqlite3 *) savan_sqlite_subs_mgr_get_dbconn(env, subs_mgr_impl->dbname);
     if(!dbconn)
     {
         AXIS2_FREE(env->allocator, sql_update);
@@ -812,27 +812,27 @@ savan_sqlite_storage_mgr_update_subscriber(
     sqlite3_close(dbconn);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_sqlite_storage_mgr_update_subscriber");
+            "[savan] Entry:savan_sqlite_subs_mgr_update_subscriber");
     return AXIS2_SUCCESS;
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_sqlite_storage_mgr_remove_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_remove_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *subscriber_id)
 {
-    savan_sqlite_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     axis2_char_t *error_msg = NULL;
     sqlite3 *dbconn = NULL;
     int rc = -1;
     axis2_char_t sql_remove[256];
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_sqlite_storage_mgr_remove_subscriber");
+            "[savan] Entry:savan_sqlite_subs_mgr_remove_subscriber");
 
-    dbconn = (sqlite3 *) savan_sqlite_storage_mgr_get_dbconn(env, storage_mgr_impl->dbname);
+    dbconn = (sqlite3 *) savan_sqlite_subs_mgr_get_dbconn(env, subs_mgr_impl->dbname);
     if(!dbconn)
     {
         return AXIS2_FAILURE;
@@ -841,21 +841,21 @@ savan_sqlite_storage_mgr_remove_subscriber(
     rc = sqlite3_exec(dbconn, "BEGIN;", 0, 0, &error_msg);
     if(rc == SQLITE_BUSY)
     {
-        rc = savan_sqlite_storage_mgr_busy_handler(dbconn, "BEGIN;", 0, 0, &error_msg, rc);
+        rc = savan_sqlite_subs_mgr_busy_handler(dbconn, "BEGIN;", 0, 0, &error_msg, rc);
     }
 
     sprintf(sql_remove, "delete from subscriber where id='%s'", subscriber_id);
     rc = sqlite3_exec(dbconn, sql_remove, 0, 0, &error_msg);
     if(rc == SQLITE_BUSY)
     {
-        rc = savan_sqlite_storage_mgr_busy_handler(dbconn, sql_remove, 0, 0, &error_msg, rc);
+        rc = savan_sqlite_subs_mgr_busy_handler(dbconn, sql_remove, 0, 0, &error_msg, rc);
     }
     if(rc != SQLITE_OK )
     {
         rc = sqlite3_exec(dbconn, "ROLLBACK;", 0, 0, &error_msg);
         if(rc == SQLITE_BUSY)
         {
-            rc = savan_sqlite_storage_mgr_busy_handler(dbconn, "ROLLBACK;", 0, 0, &error_msg, rc);
+            rc = savan_sqlite_subs_mgr_busy_handler(dbconn, "ROLLBACK;", 0, 0, &error_msg, rc);
         }
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
             "[savan] Error sql statement:%s. Sql remove error:%s", sql_remove, error_msg);
@@ -868,26 +868,26 @@ savan_sqlite_storage_mgr_remove_subscriber(
     rc = sqlite3_exec(dbconn, "COMMIT;", 0, 0, &error_msg);
     if(rc == SQLITE_BUSY)
     {
-        rc = savan_sqlite_storage_mgr_busy_handler(dbconn, "COMMIT;", 0, 0, &error_msg, rc);
+        rc = savan_sqlite_subs_mgr_busy_handler(dbconn, "COMMIT;", 0, 0, &error_msg, rc);
     }
 
     sqlite3_close(dbconn);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_sqlite_storage_mgr_remove_subscriber");
+            "[savan] Exit:savan_sqlite_subs_mgr_remove_subscriber");
     return AXIS2_SUCCESS;
 }
 
 AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
-savan_sqlite_storage_mgr_retrieve_subscriber(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_retrieve_subscriber(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *subcriber_id)
 {
-    savan_sqlite_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
-    savan_sqlite_storage_mgr_args_t *args = NULL;
+    savan_sqlite_subs_mgr_args_t *args = NULL;
     axis2_char_t *error_msg = NULL;
     savan_subscriber_t *subscriber = NULL;
     sqlite3 *dbconn = NULL;
@@ -895,16 +895,16 @@ savan_sqlite_storage_mgr_retrieve_subscriber(
     axis2_char_t sql_retrieve[256];
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_sqlite_storage_mgr_retrieve_subscriber");
+            "[savan] Entry:savan_sqlite_subs_mgr_retrieve_subscriber");
 
-    args = AXIS2_MALLOC(env->allocator, sizeof(savan_sqlite_storage_mgr_args_t));
+    args = AXIS2_MALLOC(env->allocator, sizeof(savan_sqlite_subs_mgr_args_t));
     if(!args)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_STORAGE_MANAGER_CREATION_FAILED, AXIS2_FAILURE);
         return NULL;
     }
 
-    dbconn = (sqlite3 *) savan_sqlite_storage_mgr_get_dbconn(env, storage_mgr_impl->dbname);
+    dbconn = (sqlite3 *) savan_sqlite_subs_mgr_get_dbconn(env, subs_mgr_impl->dbname);
     if(!dbconn)
     {
         AXIS2_FREE(env->allocator, args);
@@ -914,7 +914,7 @@ savan_sqlite_storage_mgr_retrieve_subscriber(
     rc = sqlite3_exec(dbconn, "BEGIN READ_ONLY;", 0, 0, &error_msg);
     if(rc == SQLITE_BUSY)
     {
-        rc = savan_sqlite_storage_mgr_busy_handler(dbconn, "BEGIN READ_ONLY;", 0, 0, &error_msg, rc);
+        rc = savan_sqlite_subs_mgr_busy_handler(dbconn, "BEGIN READ_ONLY;", 0, 0, &error_msg, rc);
     }
 
     args->env = (axutil_env_t*)env;
@@ -924,12 +924,12 @@ savan_sqlite_storage_mgr_retrieve_subscriber(
         "expires, filter, renewed from subscriber "\
         "where id='%s';", subcriber_id);
 
-    rc = sqlite3_exec(dbconn, sql_retrieve, savan_sqlite_storage_mgr_subs_retrieve_callback, args, 
+    rc = sqlite3_exec(dbconn, sql_retrieve, savan_sqlite_subs_mgr_subs_retrieve_callback, args, 
             &error_msg);
     if(rc == SQLITE_BUSY)
     {
-        rc = savan_sqlite_storage_mgr_busy_handler(dbconn, sql_retrieve, 
-                savan_sqlite_storage_mgr_subs_retrieve_callback, args, &error_msg, rc);
+        rc = savan_sqlite_subs_mgr_busy_handler(dbconn, sql_retrieve, 
+                savan_sqlite_subs_mgr_subs_retrieve_callback, args, &error_msg, rc);
     }
 
     if(rc != SQLITE_OK )
@@ -937,7 +937,7 @@ savan_sqlite_storage_mgr_retrieve_subscriber(
         rc = sqlite3_exec(dbconn, "ROLLBACK;", 0, 0, &error_msg);
         if(rc == SQLITE_BUSY)
         {
-            rc = savan_sqlite_storage_mgr_busy_handler(dbconn, "ROLLBACK;", 0, 0, &error_msg, rc);
+            rc = savan_sqlite_subs_mgr_busy_handler(dbconn, "ROLLBACK;", 0, 0, &error_msg, rc);
         }
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
             "[savan] Sql error statement:%s. Sql retrieve error:%s", sql_retrieve, error_msg);
@@ -963,25 +963,25 @@ savan_sqlite_storage_mgr_retrieve_subscriber(
     rc = sqlite3_exec(dbconn, "COMMIT;", 0, 0, &error_msg);
     if(rc == SQLITE_BUSY)
     {
-        rc = savan_sqlite_storage_mgr_busy_handler(dbconn, "COMMIT;", 0, 0, &error_msg, rc);
+        rc = savan_sqlite_subs_mgr_busy_handler(dbconn, "COMMIT;", 0, 0, &error_msg, rc);
     }
     sqlite3_close(dbconn);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_sqlite_storage_mgr_retrieve_subscriber");
+            "[savan] Exit:savan_sqlite_subs_mgr_retrieve_subscriber");
     return subscriber;
 }
 
 AXIS2_EXTERN axutil_array_list_t * AXIS2_CALL
-savan_sqlite_storage_mgr_retrieve_all_subscribers(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_retrieve_all_subscribers(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *filter)
 {
-    savan_sqlite_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
-    savan_sqlite_storage_mgr_args_t *args = NULL;
+    savan_sqlite_subs_mgr_args_t *args = NULL;
     axutil_array_list_t *data_list = NULL;
     int rc = -1;
     sqlite3 *dbconn = NULL;
@@ -989,7 +989,7 @@ savan_sqlite_storage_mgr_retrieve_all_subscribers(
     axis2_char_t sql_retrieve[256];
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_sqlite_storage_mgr_retrieve_all_subscribers");
+            "[savan] Entry:savan_sqlite_subs_mgr_retrieve_all_subscribers");
     data_list = axutil_array_list_create(env, 0);
     if(!data_list)
     {
@@ -997,7 +997,7 @@ savan_sqlite_storage_mgr_retrieve_all_subscribers(
         return NULL;
     }
 
-    args = AXIS2_MALLOC(env->allocator, sizeof(savan_sqlite_storage_mgr_args_t));
+    args = AXIS2_MALLOC(env->allocator, sizeof(savan_sqlite_subs_mgr_args_t));
     if(!args)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_STORAGE_MANAGER_CREATION_FAILED, AXIS2_FAILURE);
@@ -1007,7 +1007,7 @@ savan_sqlite_storage_mgr_retrieve_all_subscribers(
 
     args->env = (axutil_env_t*)env;
     args->data = NULL;
-    dbconn = (sqlite3 *) savan_sqlite_storage_mgr_get_dbconn(env, storage_mgr_impl->dbname);
+    dbconn = (sqlite3 *) savan_sqlite_subs_mgr_get_dbconn(env, subs_mgr_impl->dbname);
     if(!dbconn)
     {
         axutil_array_list_free(data_list, env);
@@ -1018,7 +1018,7 @@ savan_sqlite_storage_mgr_retrieve_all_subscribers(
     rc = sqlite3_exec(dbconn, "BEGIN READ_ONLY;", 0, 0, &error_msg);
     if(rc == SQLITE_BUSY)
     {
-        rc = savan_sqlite_storage_mgr_busy_handler(dbconn, "BEGIN READ_ONLY;", 0, 0, &error_msg, rc);
+        rc = savan_sqlite_subs_mgr_busy_handler(dbconn, "BEGIN READ_ONLY;", 0, 0, &error_msg, rc);
     }
    
     if(filter)
@@ -1032,12 +1032,12 @@ savan_sqlite_storage_mgr_retrieve_all_subscribers(
                 "renewed from subscriber;");
     }
 
-    rc = sqlite3_exec(dbconn, sql_retrieve, savan_sqlite_storage_mgr_subscriber_find_callback, args, &error_msg);
+    rc = sqlite3_exec(dbconn, sql_retrieve, savan_sqlite_subs_mgr_subscriber_find_callback, args, &error_msg);
 
     if(rc == SQLITE_BUSY)
     {
-        rc = savan_sqlite_storage_mgr_busy_handler(dbconn, sql_retrieve, 
-            savan_sqlite_storage_mgr_subscriber_find_callback, args, &error_msg, rc);
+        rc = savan_sqlite_subs_mgr_busy_handler(dbconn, sql_retrieve, 
+            savan_sqlite_subs_mgr_subscriber_find_callback, args, &error_msg, rc);
     }
 
     if(args->data)
@@ -1050,7 +1050,7 @@ savan_sqlite_storage_mgr_retrieve_all_subscribers(
         rc = sqlite3_exec(dbconn, "ROLLBACK;", 0, 0, &error_msg);
         if(rc == SQLITE_BUSY)
         {
-            rc = savan_sqlite_storage_mgr_busy_handler(dbconn,
+            rc = savan_sqlite_subs_mgr_busy_handler(dbconn,
                 "ROLLBACK;", 0, 0, &error_msg, rc);
         }
 
@@ -1083,35 +1083,35 @@ savan_sqlite_storage_mgr_retrieve_all_subscribers(
     rc = sqlite3_exec(dbconn, "COMMIT;", 0, 0, &error_msg);
     if(rc == SQLITE_BUSY)
     {
-        rc = savan_sqlite_storage_mgr_busy_handler(dbconn,
+        rc = savan_sqlite_subs_mgr_busy_handler(dbconn,
             "COMMIT;", 0, 0, &error_msg, rc);
     }
 
     sqlite3_close(dbconn);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_sqlite_storage_mgr_retrieve_all_subscribers");
+            "[savan] Exit:savan_sqlite_subs_mgr_retrieve_all_subscribers");
     return data_list;
 }
 
 AXIS2_EXTERN axis2_status_t AXIS2_CALL
-savan_sqlite_storage_mgr_insert_topic(
-    savan_storage_mgr_t *storage_mgr,
+savan_sqlite_subs_mgr_insert_topic(
+    savan_subs_mgr_t *subs_mgr,
     const axutil_env_t *env,
     const axis2_char_t *topic_name,
     const axis2_char_t *topic_url)
 {
-    savan_sqlite_storage_mgr_t *storage_mgr_impl = NULL;
-    storage_mgr_impl = SAVAN_INTF_TO_IMPL(storage_mgr);
+    savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
+    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     axis2_char_t *sql_insert = NULL;
     sqlite3 *dbconn = NULL;
     struct sqlite3_stmt* insertqry;
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Entry:savan_sqlite_storage_mgr_insert_topic");
+            "[savan] Entry:savan_sqlite_subs_mgr_insert_topic");
 
     sql_insert = "insert into topic(topic_name, topic_url) values(?, ?);";
-    dbconn = (sqlite3 *) savan_sqlite_storage_mgr_get_dbconn(env, storage_mgr_impl->dbname);
+    dbconn = (sqlite3 *) savan_sqlite_subs_mgr_get_dbconn(env, subs_mgr_impl->dbname);
     if(!dbconn)
     {
         return AXIS2_FAILURE;
@@ -1155,12 +1155,12 @@ savan_sqlite_storage_mgr_insert_topic(
     sqlite3_close(dbconn);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
-            "[savan] Exit:savan_sqlite_storage_mgr_insert_topic");
+            "[savan] Exit:savan_sqlite_subs_mgr_insert_topic");
     return AXIS2_SUCCESS;
 }
 
 static axis2_status_t
-savan_sqlite_storage_mgr_create_db(
+savan_sqlite_subs_mgr_create_db(
     const axutil_env_t *env,
     const axis2_char_t *dbname)
 {
@@ -1170,7 +1170,7 @@ savan_sqlite_storage_mgr_create_db(
     axis2_char_t *sql_stmt = NULL;
     axis2_status_t status = AXIS2_FAILURE;
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sqlite_storage_mgr_create_db");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sqlite_subs_mgr_create_db");
 
     if(AXIS2_SUCCESS == axutil_file_handler_access(dbname, AXIS2_F_OK))
     {
@@ -1178,7 +1178,7 @@ savan_sqlite_storage_mgr_create_db(
         return AXIS2_SUCCESS;
     }
 
-    dbconn = savan_sqlite_storage_mgr_get_dbconn(env, dbname);
+    dbconn = savan_sqlite_subs_mgr_get_dbconn(env, dbname);
 
     #if !defined(WIN32)
     {
@@ -1219,13 +1219,13 @@ savan_sqlite_storage_mgr_create_db(
         return AXIS2_FAILURE;
     }
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_sqlite_storage_mgr_create_db");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_sqlite_subs_mgr_create_db");
 
     return status;
 }
 
 static int
-savan_sqlite_storage_mgr_busy_handler(
+savan_sqlite_subs_mgr_busy_handler(
     sqlite3* dbconn,
     char *sql_stmt,
     int (*callback_func)(void *, int, char **, char **),
@@ -1249,7 +1249,7 @@ savan_sqlite_storage_mgr_busy_handler(
 }
 
 static void * AXIS2_CALL
-savan_sqlite_storage_mgr_get_dbconn(
+savan_sqlite_subs_mgr_get_dbconn(
     const axutil_env_t *env,
     const axis2_char_t *dbname)
 {

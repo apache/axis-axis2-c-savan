@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef WSFES_SUBSCRIPTION_H
-#define WSFES_SUBSCRIPTION_H
+#ifndef SAVAN_SUBS_MGR_H
+#define SAVAN_SUBS_MGR_H
 
 
 #include <axis2_svc_skeleton.h>
@@ -25,34 +25,34 @@
 #include <axiom_element.h>
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_subs_mgr_add_subscriber(
+savan_subs_mgr_svc_add_subscriber(
     const axutil_env_t *env,
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx);
 
 AXIS2_EXTERN void * AXIS2_CALL
-savan_subs_mgr_remove_subscriber(
+savan_subs_mgr_svc_remove_subscriber(
     const axutil_env_t *env,
     axiom_node_t *remove_sub_node,
     axis2_msg_ctx_t *msg_ctx);
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_subs_mgr_get_subscriber(
+savan_subs_mgr_svc_get_subscriber(
     const axutil_env_t *env,
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx);
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_subs_mgr_get_subscriber_list(
+savan_subs_mgr_svc_get_subscriber_list(
     const axutil_env_t *env,
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx);
 
 AXIS2_EXTERN axiom_node_t *AXIS2_CALL
-savan_subs_mgr_get_topic_list(
+savan_subs_mgr_svc_get_topic_list(
     const axutil_env_t *env,
     axiom_node_t *node,
     axis2_msg_ctx_t *msg_ctx);
 
-#endif /* WSFES_SUBSCRIPTION_H*/
+#endif /* SAVAN_SUBS_MGR_H*/
 

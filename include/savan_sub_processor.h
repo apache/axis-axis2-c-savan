@@ -110,7 +110,7 @@ extern "C"
     AXIS2_EXTERN savan_sub_processor_t * AXIS2_CALL
     savan_sub_processor_create(
         const axutil_env_t *env,
-        savan_storage_mgr_t *storage_mgr);
+        savan_subs_mgr_t *subs_mgr);
     
     /**
     * Freesf a subscription manager instance.

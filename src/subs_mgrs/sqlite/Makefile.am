@@ -1,8 +1,8 @@
-lib_LTLIBRARIES = libsavan_storage.la
+lib_LTLIBRARIES = libsavan_subs_mgr.la
 
-libsavan_storage_la_SOURCES = storage_mgr.c sqlite3.c
+libsavan_subs_mgr_la_SOURCES = storage_mgr.c sqlite3.c
 
-libsavan_storage_la_LIBADD = ../common/libsavan_common_storage.la
+libsavan_subs_mgr_la_LIBADD = ../common/libsavan_common_subs_mgr.la
 
 INCLUDES = -I$(top_builddir)/include \
 			-I$(top_builddir)/include/savan \
