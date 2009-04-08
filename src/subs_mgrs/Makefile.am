@@ -1,0 +1,1 @@
+SUBDIRS = common $(SVC_DIR) @SAVAN_STORAGE@
