@@ -27,7 +27,7 @@
 #include <axis2_conf.h>
 #include <axis2_msg_ctx.h>
 #include <axiom_node.h>
-#include <savan_storage_mgr.h>
+#include <savan_subs_mgr.h>
 
 #ifdef __cplusplus
 extern "C"
