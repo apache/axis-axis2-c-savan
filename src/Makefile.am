@@ -1,2 +1,2 @@
-SUBDIRS = handlers subscribers util filters storage publisher msgreceivers client core $(SVC_DIR)
+SUBDIRS = handlers subscribers util filters storage publisher msgreceivers client core
 EXTRA_DIST=data

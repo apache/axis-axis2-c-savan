@@ -1,33 +1,104 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-       "DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
 <head>
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-  <title>README</title>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>Manual</title>
 </head>
 
 <body>
-<h1>Engaging Savan/C Module</h1>
-<p>
-  Install Savan module into &lt;axis2 deploy folder&gt;/modules folder.
-</p>
-<p>
-In the services xml file for the service which require Savan enabled
-add the entry
- &lt;module ref="Savan"/&gt;
-If you need all services in the engine Savan enabled add the above entry into
-axis2.xml.
-</p>
-<p>
-You can use samples in the samples folder for testing.
-</p>
+<h1>Apache Savan/C Manual</h1>
 
-<h2>Known Issues</h2>
+<p>This document guide you through the architecture of Savan/C</p>
 
-Please keep in mind the following when using Savan/C with Axis2/C.
+<p>Please send your feedback to the developer mailing list: <a
+href="mailto:axis-c-dev@ws.apache.org">axis-c-dev@ws.apache.org</a>
+(Subscription details are available on the <a
+href="http://ws.apache.org/sandesha/savan/c">Savan site</a>.) Please remember
+to prefix the subject with [Savan/C].</p>
+
+<h2>Contents</h2>
+<ul>
+  <li><a href="#linux">What is eventing.</a> 
+    <ul>
+      <li><a href="#linux_source">Using the Source Release</a></li>
+    </ul>
+  </li>
+  <li><a href="#win">Specifications<br></a> 
+    <ul>
+      <li><a href="#win_source">Using the Source Release</a></li>
+    </ul>
+  </li>
+  <li><a href="#win">Savan/C components<br></a> 
+    <ul>
+      <li><a href="#win_source">Using the Source Release</a></li>
+    </ul>
+  </li>
+  <li><a href="#win">Understanding the source<br></a> 
+    <ul>
+      <li><a href="#win_source">Using the Source Release</a></li>
+    </ul>
+  </li>
+</ul>
+<a id="linux"></a>
+    <h2>
+       What is eventing
+    </h2>
+    <h2>
+       Understanding the source 
+    </h2>
+     <p>libmod_savan.so depends on</p>
+   	<br>handlers
+   	<br>util
+   	<br>savan_storage
+
+     <p>libsavan_msgreceivers.so depends on</p>
+   publisher
+   storage
+   util
+
+libsavan_util.so
+depends on
+   subscribers
+
+libsavan_client.so
+depends on
+   util
+   storage
+   filter
+
+registry storage depends on
+   common_storage
+   registry_client
+
+sqlite storage depends on
+   common_storage
+   sqlite
+
+esb publisher depends on
+   util
+   common_publisher_mod
+
+default publisher depends on
+   util
+   filter
+   common_publisher
+
+xpath filter depends on
+ common_filter
+ libxml2 
+      </p>
+<a id="win"></a> 
+
+
+<h3>Notes</h3>
 <ol>
-<li>
-</ol> 
+  <li>
+        Savan/C&nbsp;&nbsp; 
+        <p></p>
+  </li>
+  <li>Savan/C&nbsp;&nbsp;</li>
+</ol>
 </body>
 </html>
