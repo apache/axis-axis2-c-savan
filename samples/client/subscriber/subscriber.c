@@ -100,11 +100,11 @@ int main(int argc, char** argv)
      * Following commented lines show how to use filtering when savan server side is
      * built and running with filtering enabled.
      */
-    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
+    /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING,
         "//weather_report");
 
     axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
-        XPATH_FILTER_DIALECT);
+        XPATH_FILTER_DIALECT);*/
     
     /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING, "weather/4");
 
