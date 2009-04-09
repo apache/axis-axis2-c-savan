@@ -14,11 +14,11 @@
  * limitations under the License.
  */
  
-#ifndef SAVAN_PUBLISHER_MOD_H
-#define SAVAN_PUBLISHER_MOD_H
+#ifndef SAVAN_PUBLISHER_H
+#define SAVAN_PUBLISHER_H
 
 /**
-  * @file savan_publisher_mod.h
+  * @file savan_publisher.h
   * @brief 
   */
 #include <platforms/axutil_platform_auto_sense.h>
@@ -35,36 +35,36 @@ extern "C"
 #endif
 
 /** 
- * @ingroup savan_publisher_mod
+ * @ingroup savan_publisher
  * @{
  */
  
-typedef struct savan_publisher_mod savan_publisher_mod_t;
-typedef struct savan_publisher_mod_ops savan_publisher_mod_ops_t;
+typedef struct savan_publisher savan_publisher_t;
+typedef struct savan_publisher_ops savan_publisher_ops_t;
 
  /**
  * @brief Publisher ops struct
- * Encapsulator struct for ops of savan_publisher_mod
+ * Encapsulator struct for ops of savan_publisher
  */
-AXIS2_DECLARE_DATA struct savan_publisher_mod_ops
+AXIS2_DECLARE_DATA struct savan_publisher_ops
 { 
     void (AXIS2_CALL * 
             free)(
-                savan_publisher_mod_t *publisher,
+                savan_publisher_t *publisher,
                 const axutil_env_t *env);
 
     void (AXIS2_CALL *
             publish)(
-                savan_publisher_mod_t *publisher, 
+                savan_publisher_t *publisher, 
                 const axutil_env_t *env,
                 void *msg_ctx,
                 savan_subs_mgr_t *subs_mgr);
 
 };
 
-AXIS2_DECLARE_DATA struct savan_publisher_mod
+AXIS2_DECLARE_DATA struct savan_publisher
 {
-    const savan_publisher_mod_ops_t *ops;
+    const savan_publisher_ops_t *ops;
 };
 
 
@@ -74,8 +74,8 @@ AXIS2_DECLARE_DATA struct savan_publisher_mod
  * @param conf axis2 configuration
  * @return status of the operation
  */
-AXIS2_EXTERN savan_publisher_mod_t * AXIS2_CALL
-savan_publisher_mod_create_with_conf(
+AXIS2_EXTERN savan_publisher_t * AXIS2_CALL
+savan_publisher_create_with_conf(
     const axutil_env_t *env,
     axis2_conf_t *conf);
 
@@ -84,8 +84,8 @@ savan_publisher_mod_create_with_conf(
  * @param env environment object
  * @return status of the operation
  */
-AXIS2_EXTERN savan_publisher_mod_t * AXIS2_CALL
-savan_publisher_mod_create(
+AXIS2_EXTERN savan_publisher_t * AXIS2_CALL
+savan_publisher_create(
     const axutil_env_t *env);
 
 /**
@@ -94,8 +94,8 @@ savan_publisher_mod_create(
  * @param env environment object
  */
 AXIS2_EXTERN void AXIS2_CALL 
-savan_publisher_mod_free(
-    savan_publisher_mod_t *publishermod,
+savan_publisher_free(
+    savan_publisher_t *publishermod,
     const axutil_env_t *env);
 
 /**
@@ -105,8 +105,8 @@ savan_publisher_mod_free(
  * @param msg_ctx Message context of the incoming event message.
  */
 AXIS2_EXTERN void AXIS2_CALL
-savan_publisher_mod_publish(
-    savan_publisher_mod_t *publishermod, 
+savan_publisher_publish(
+    savan_publisher_t *publishermod, 
     const axutil_env_t *env,
     void *msg_ctx,
     savan_subs_mgr_t *subs_mgr);
@@ -116,4 +116,4 @@ savan_publisher_mod_publish(
 }
 #endif
 
-#endif /*SAVAN_PUBLISHER_MOD_H*/
+#endif /*SAVAN_PUBLISHER_H*/
