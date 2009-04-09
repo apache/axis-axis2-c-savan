@@ -29,7 +29,7 @@
 #include <savan_error.h>
 #include <savan_subscriber.h>
 #include <savan_subs_mgr.h>
-#include <savan_publisher_mod.h>
+#include <savan_publisher.h>
 #include <savan_msg_recv.h>
 
 axis2_status_t AXIS2_CALL
@@ -113,7 +113,7 @@ savan_msg_recv_handle_event(
 {
     axis2_conf_t *conf = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
-    savan_publisher_mod_t *pub_mod = NULL;
+    savan_publisher_t *pub_mod = NULL;
     savan_subs_mgr_t *subs_mgr = NULL;
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_event");
@@ -121,11 +121,11 @@ savan_msg_recv_handle_event(
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
 
-    pub_mod = savan_publisher_mod_create_with_conf(env, conf);
+    pub_mod = savan_publisher_create_with_conf(env, conf);
 
     subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
-    savan_publisher_mod_publish(pub_mod, env, msg_ctx, subs_mgr);
-    savan_publisher_mod_free(pub_mod, env);
+    savan_publisher_publish(pub_mod, env, msg_ctx, subs_mgr);
+    savan_publisher_free(pub_mod, env);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_msg_recv_handle_event");
     return AXIS2_SUCCESS;

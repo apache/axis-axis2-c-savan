@@ -30,7 +30,7 @@
 #include <savan_subscriber.h>
 #include <savan_sub_processor.h>
 #include <savan_subs_mgr.h>
-#include <savan_publisher_mod.h>
+#include <savan_publisher.h>
 #include <savan_filter_mod.h>
 #include <axiom_node.h>
 #include <axiom_element.h>

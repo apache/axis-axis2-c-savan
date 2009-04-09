@@ -251,10 +251,10 @@ AC_CONFIG_FILES([Makefile \
     src/filters/Makefile\
     src/filters/common/Makefile\
     src/filters/xpath/Makefile\
-    src/publisher/Makefile\
-    src/publisher/common/Makefile\
-    src/publisher/esb/Makefile\
-    src/publisher/default/Makefile\
+    src/publishers/Makefile\
+    src/publishers/common/Makefile\
+    src/publishers/esb/Makefile\
+    src/publishers/default/Makefile\
     src/data/Makefile\
     src/util/Makefile
     ])
