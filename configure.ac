@@ -168,7 +168,7 @@ AC_ARG_WITH(xpath,
 
 #Default for savan publisher
 SAVAN_PUBLISHER="default"
-SAVAN_PUBLISHER_LIB="default/libsavan_publisher_mod.la"
+SAVAN_PUBLISHER_LIB="default/libsavan_publisher.la"
 
 AC_MSG_CHECKING(To Use esb based publisher . This is an optional module to build Savan C)
 AC_ARG_WITH(esbpub,
@@ -185,7 +185,7 @@ AC_ARG_WITH(esbpub,
   *)
     AC_MSG_RESULT(yes)
     SAVAN_PUBLISHER="esb"
-    SAVAN_PUBLISHER_LIB=esb/libsavan_publisher_mod.la
+    SAVAN_PUBLISHER_LIB=esb/libsavan_publisher.la
     dnl Find esbc include dir in the path
     if test -d $withval; then
         esbpubinc="-I$withval"
