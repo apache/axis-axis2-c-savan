@@ -1,9 +1,9 @@
-lib_LTLIBRARIES = libsavan_publisher_mod.la
+lib_LTLIBRARIES = libsavan_publisher.la
 
-libsavan_publisher_mod_la_SOURCES = publisher_mod.c
-libsavan_publisher_mod_la_LIBADD = $(top_builddir)/src/util/libsavan_util.la \
+libsavan_publisher_la_SOURCES = publisher.c
+libsavan_publisher_la_LIBADD = $(top_builddir)/src/util/libsavan_util.la \
 							../../filters/@SAVAN_FILTER_LIB@ \
-							../common/libsavan_common_publisher_mod.la
+							../common/libsavan_common_publisher.la
 
 data_DATA=
 

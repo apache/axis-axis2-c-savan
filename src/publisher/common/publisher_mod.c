@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-#include <savan_publisher_mod.h>
+#include <savan_publisher.h>
 #include <savan_constants.h>
 #include <savan_error.h>
 #include <savan_util.h>
@@ -26,16 +26,16 @@
 #include <axis2_msg_ctx.h>
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_publisher_mod_free(
-    savan_publisher_mod_t *publishermod,
+savan_publisher_free(
+    savan_publisher_t *publishermod,
     const axutil_env_t *env)
 {
      return publishermod->ops->free(publishermod, env);
 }
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_publisher_mod_publish(
-    savan_publisher_mod_t *publishermod, 
+savan_publisher_publish(
+    savan_publisher_t *publishermod, 
     const axutil_env_t *env,
     void *msg_ctx,
     savan_subs_mgr_t *subs_mgr)

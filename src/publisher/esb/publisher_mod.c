@@ -14,7 +14,7 @@
  * limitations under the License.
  */
  
-#include <savan_publisher_mod.h>
+#include <savan_publisher.h>
 #include <axutil_log.h>
 #include <axutil_hash.h>
 #include <axutil_property.h>
@@ -40,91 +40,91 @@
  * @brief Savan XPath Publisher Struct Impl
  *   Savan XPath Publisher 
  */
-typedef struct savan_esb_publisher_mod
+typedef struct savan_esb_publisher
 {
-    savan_publisher_mod_t publishermod;
+    savan_publisher_t publishermod;
     axis2_conf_t *conf;
-} savan_esb_publisher_mod_t;
+} savan_esb_publisher_t;
 
-#define SAVAN_INTF_TO_IMPL(publishermod) ((savan_esb_publisher_mod_t *) publishermod)
+#define SAVAN_INTF_TO_IMPL(publishermod) ((savan_esb_publisher_t *) publishermod)
 
 static axis2_status_t
-savan_esb_publisher_mod_publish_to_subscriber(
-    savan_publisher_mod_t *publishermod,
+savan_esb_publisher_publish_to_subscriber(
+    savan_publisher_t *publishermod,
     const axutil_env_t *env,
     void *msg_ctx,
     savan_subscriber_t *subscriber);
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_esb_publisher_mod_free(
-    savan_publisher_mod_t *publishermod,
+savan_esb_publisher_free(
+    savan_publisher_t *publishermod,
     const axutil_env_t *env);
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_esb_publisher_mod_publish(
-    savan_publisher_mod_t *publishermod,
+savan_esb_publisher_publish(
+    savan_publisher_t *publishermod,
     const axutil_env_t *env,
     void *msg_ctx,
     savan_subs_mgr_t *subs_mgr);
 
-static const savan_publisher_mod_ops_t savan_publisher_mod_ops = 
+static const savan_publisher_ops_t savan_publisher_ops = 
 {
-    savan_esb_publisher_mod_free,
-    savan_esb_publisher_mod_publish
+    savan_esb_publisher_free,
+    savan_esb_publisher_publish
 };
 
-AXIS2_EXTERN savan_publisher_mod_t * AXIS2_CALL
-savan_publisher_mod_create(
+AXIS2_EXTERN savan_publisher_t * AXIS2_CALL
+savan_publisher_create(
     const axutil_env_t *env)
 {
-    savan_esb_publisher_mod_t *publishermodimpl = NULL;
+    savan_esb_publisher_t *publishermodimpl = NULL;
     
-    publishermodimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_esb_publisher_mod_t));
+    publishermodimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_esb_publisher_t));
     if (!publishermodimpl)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FILTER_CREATION_FAILED, AXIS2_FAILURE);
         return NULL;
     }
 
-    memset ((void *) publishermodimpl, 0, sizeof(savan_esb_publisher_mod_t));
+    memset ((void *) publishermodimpl, 0, sizeof(savan_esb_publisher_t));
 
     publishermodimpl->conf = NULL;
-    publishermodimpl->publishermod.ops = &savan_publisher_mod_ops;
+    publishermodimpl->publishermod.ops = &savan_publisher_ops;
 
-    return (savan_publisher_mod_t *) publishermodimpl;
+    return (savan_publisher_t *) publishermodimpl;
 }
 
-AXIS2_EXTERN savan_publisher_mod_t * AXIS2_CALL
-savan_publisher_mod_create_with_conf(
+AXIS2_EXTERN savan_publisher_t * AXIS2_CALL
+savan_publisher_create_with_conf(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
-    savan_esb_publisher_mod_t *publishermodimpl = NULL;
+    savan_esb_publisher_t *publishermodimpl = NULL;
     
-    publishermodimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_esb_publisher_mod_t));
+    publishermodimpl = AXIS2_MALLOC(env->allocator, sizeof(savan_esb_publisher_t));
     if (!publishermodimpl)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FILTER_CREATION_FAILED, AXIS2_FAILURE);
         return NULL;
     }
 
-    memset ((void *) publishermodimpl, 0, sizeof(savan_esb_publisher_mod_t));
+    memset ((void *) publishermodimpl, 0, sizeof(savan_esb_publisher_t));
 
     publishermodimpl->conf = conf;
-    publishermodimpl->publishermod.ops = &savan_publisher_mod_ops;
+    publishermodimpl->publishermod.ops = &savan_publisher_ops;
 
-    return (savan_publisher_mod_t *) publishermodimpl;
+    return (savan_publisher_t *) publishermodimpl;
 }
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_esb_publisher_mod_free(
-    savan_publisher_mod_t *publishermod,
+savan_esb_publisher_free(
+    savan_publisher_t *publishermod,
     const axutil_env_t *env)
 {
-    savan_esb_publisher_mod_t *publishermodimpl = NULL;
+    savan_esb_publisher_t *publishermodimpl = NULL;
     publishermodimpl = SAVAN_INTF_TO_IMPL(publishermod);
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_esb_publisher_mod_free");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_esb_publisher_free");
 
     publishermodimpl->conf = NULL;
 
@@ -134,17 +134,17 @@ savan_esb_publisher_mod_free(
         publishermodimpl = NULL;
     }
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_esb_publisher_mod_free");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_esb_publisher_free");
 }
 
 AXIS2_EXTERN void AXIS2_CALL
-savan_esb_publisher_mod_publish(
-    savan_publisher_mod_t *publishermod,
+savan_esb_publisher_publish(
+    savan_publisher_t *publishermod,
     const axutil_env_t *env,
     void *esb_ctx,
     savan_subs_mgr_t *subs_mgr)
 {
-    savan_esb_publisher_mod_t *publishermodimpl = NULL;
+    savan_esb_publisher_t *publishermodimpl = NULL;
 
     axutil_array_list_t *subs_store = NULL;
     int i = 0, size = 0;
@@ -152,7 +152,7 @@ savan_esb_publisher_mod_publish(
 
     publishermodimpl = SAVAN_INTF_TO_IMPL(publishermod);
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_esb_publisher_mod_publish");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_esb_publisher_publish");
 
     axutil_allocator_switch_to_global_pool(env->allocator);
     if(subs_mgr)
@@ -181,7 +181,7 @@ savan_esb_publisher_mod_publish(
              * subscriber. However until Axis2/C provide a good thread pool to handle
              * such tasks I use this sequential publishing to subscribers.
              */
-            if(!savan_esb_publisher_mod_publish_to_subscriber(publishermod, env, esb_ctx, sub))
+            if(!savan_esb_publisher_publish_to_subscriber(publishermod, env, esb_ctx, sub))
             {
                 axis2_endpoint_ref_t *notifyto = savan_subscriber_get_notify_to(sub, env);
                 const axis2_char_t *address = NULL;
@@ -201,12 +201,12 @@ savan_esb_publisher_mod_publish(
     axutil_allocator_switch_to_local_pool(env->allocator);
 
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_esb_publisher_mod_publish");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_esb_publisher_publish");
 }
 
 static axis2_status_t
-savan_esb_publisher_mod_publish_to_subscriber(
-    savan_publisher_mod_t *publishermod,
+savan_esb_publisher_publish_to_subscriber(
+    savan_publisher_t *publishermod,
     const axutil_env_t *env,
     void *esb_ctx,
     savan_subscriber_t *subscriber)
@@ -222,7 +222,7 @@ savan_esb_publisher_mod_publish_to_subscriber(
     axis2_msg_ctx_t *msg_ctx = NULL;
     msg_ctx = ((esb_ctx_t *) esb_ctx)->in_in_msg_ctx;
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_esb_publisher_mod_publish_to_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_esb_publisher_publish_to_subscriber");
 
     notifyto = savan_subscriber_get_notify_to(subscriber, env);
     if(notifyto)
@@ -247,7 +247,7 @@ savan_esb_publisher_mod_publish_to_subscriber(
     axiom_node_detach(payload, env); /*insert this to prevent payload corruption in subsequent 
                                        "publish" calls with some payload.*/
 
-    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_esb_publisher_mod_publish_to_subscriber");
+    AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_esb_publisher_publish_to_subscriber");
 
     return status;
 }
