@@ -827,19 +827,14 @@ savan_util_create_subscriber_node(
     }
 
     /* Filter element */
-    filter_elem = axiom_element_create(env, sub_node, ELEM_NAME_FILTER, ns, &filter_node);
-    axiom_element_set_text(filter_elem, env, filter, filter_node);
+    if(filter && filter_dialect)
+    {
+        filter_elem = axiom_element_create(env, sub_node, ELEM_NAME_FILTER, ns, &filter_node);
+        axiom_element_set_text(filter_elem, env, filter, filter_node);
 
-	if(!filter_dialect) 
-	{
-		dialect = axiom_attribute_create(env, "Dialect", DEFAULT_FILTER_DIALECT, NULL);
-	}
-	else
-	{
 		dialect = axiom_attribute_create(env, "Dialect", filter_dialect, NULL);
-	}
-
-	axiom_element_add_attribute(filter_elem, env, dialect ,filter_node);
+	    axiom_element_add_attribute(filter_elem, env, dialect ,filter_node);
+    }
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_util_create_subscriber_node");
     return sub_node;
