@@ -20,85 +20,111 @@ to prefix the subject with [Savan/C].</p>
 
 <h2>Contents</h2>
 <ul>
-  <li><a href="#linux">What is eventing.</a> 
-    <ul>
-      <li><a href="#linux_source">Using the Source Release</a></li>
-    </ul>
+  <li><a href="#what_is_eventing">What is web services eventing.</a> 
   </li>
-  <li><a href="#win">Specifications<br></a> 
-    <ul>
-      <li><a href="#win_source">Using the Source Release</a></li>
-    </ul>
+  <li><a href="#components">Savan/C components<br></a> 
+	<ul>
+		<li><a href="#subs_mgr">Subscription Manager</a></li>
+		<li><a href="#publisher">Publisher</a></li>
+		<li><a href="#filters">Filters</a></li>
+	</ul>
   </li>
-  <li><a href="#win">Savan/C components<br></a> 
-    <ul>
-      <li><a href="#win_source">Using the Source Release</a></li>
-    </ul>
-  </li>
-  <li><a href="#win">Understanding the source<br></a> 
-    <ul>
-      <li><a href="#win_source">Using the Source Release</a></li>
-    </ul>
+  <li><a href="#understanding_internal">Understanding the internal dependancies<br></a>
   </li>
 </ul>
-<a id="linux"></a>
+<a id="what_is_eventing"></a>
     <h2>
-       What is eventing
+      What is eventing
+      <br />
     </h2>
+<p>For a long time web services lacked a standerd for event notification. On 20 January 2004, Akamai, The Globus Alliance, Hewlett-Packard, IBM, Sonic Software and TIBCO Software proposed two new Web services specifications. The first, WS-Notification, seeks to provide a standards-based means of publish-and-subscribe message delivery. On 7 January 2004, BEA Systems, Microsoft and TIBCO also published a specification for a Web services                     publish-and-subscribe standard, known as WS-Eventing.</p>
+<p>Web Services Eventing is about using the Web services framework for implementing a Subscriber-Publisher model. A client will send a request message for a subscription to an Event Publishing Service (EPS), with information as to who it is and from where it can receive notifications from the server . The Publishing Service publishes its data, as and when available, to all client endpoints given by respective subscribers when making subscription requests. These endpoints can be an application running on the same machine as the client application (subscriber) or, it can be an application running on a different machine.</p>
+<p>Savan/C is an implementation of the WS-Eventing specification. It started developement at the beginning of 2007 by some developers at WSO2 Inc. From the beginning the code was donated to Apache foundation. The company was in the process of implementating a complete web services stack for C which will be then used in C++ and most of the scripting languages like PHP, Pearl and Ruby.</p>
+<p>By now the complete C stack called Axis2/C is very matured and C++, PHP stacks based on it also has gained wide popularity. Savan/C team first released it's 0.90 version in 05 November 2007. Since then lot of improvements were done to the code base leading to it's first major release on May 2009. </p>
+
+<a id="components"></a>
     <h2>
-       Understanding the source 
+      Savan/C components
+      <br />
     </h2>
-     <p>libmod_savan.so depends on</p>
-   	<br>handlers
-   	<br>util
-   	<br>savan_storage
+<p>Savan/C code is designed with scalability and performance in mind. As an eventing implementation the main components should invariably be the subscription manager and publisher. Then we need filter implementations. Since these threee components are the most important components for the Savan/C user special care has been taken in designing these components. These three components are written as pluggable components. User has the options of using the implementations provided by the Savan/C for these components or write his own component implementing the corresponding API. The API's are savan_subs_mgr.h, savan_publisher.h and savan_filter_mod.h respectively. I'll explain these three components separately in following sections.</p>
+<p>Apart from these three important components there is a client component which implement the client API whic is used by Savan/C subscribers to subscribe, renew, query status of the subscription and unsubscribe.</p>
+<p>Rest of the components are just implementation specific and bear no interest for the Savan/C user. They are core component which is the main Savan/C module for Axis2/C, util component which provide common utility functions and msgreceivers which is Savan/C specific message receiver for Axis2/C and subscribers which is the internal representation of a subscriber.</p>
 
-     <p>libsavan_msgreceivers.so depends on</p>
-   publisher
-   storage
-   util
+<a id="subs_mgr"></a>
+<h3>Subscription Manager</h3>
+<p>xxx</p>
 
-libsavan_util.so
-depends on
-   subscribers
+<a id="publisher"></a>
+<h3>Publisher</h3>
+<p>xxx</p>
 
-libsavan_client.so
-depends on
-   util
-   storage
-   filter
+<a id="filters"></a>
+<h3>Filters</h3>
+<p>xxx</p>
 
-registry storage depends on
-   common_storage
-   registry_client
+<a id="understanding_internal"></a>
+<h2>Understanding the internal dependancies</h2>
+<p>It is useful to understand the dependancies between the Savan/C components.</p>
+<p>libmod_savan.so depends on</p>
+<ul>
+   <li>handlers</li>
+   <li>util</li>
+   <li>savan_storage</li>
+</ul>
 
-sqlite storage depends on
-   common_storage
-   sqlite
+<p>libsavan_msgreceivers.so depends on</p>
+<ul>
+   <li>publisher</li>
+   <li>storage</li>
+   <li>util</li>
+</ul>
 
-esb publisher depends on
-   util
-   common_publisher
+<p>libsavan_util.so depends on</p>
+<ul>
+   <li>subscribers</li>
+</ul>
 
-default publisher depends on
-   util
-   filter
-   common_publisher
+<p>libsavan_client.so depends on</p>
+<ul>
+   <li>util</li>
+   <li>storage</li>
+   <li>filter</li>
+</ul>
 
-xpath filter depends on
- common_filter
- libxml2 
-      </p>
-<a id="win"></a> 
+<p>registry storage depends on</p>
+<ul>
+   <li>common_storage</li>
+   <li>registry_client</li>
+</ul>
 
+<p>sqlite storage depends on</p>
+<ul>
+   <li>common_storage</li>
+   <li>sqlite</li>
+</ul>
+
+<p>esb publisher depends on</p>
+<ul>
+   <li>util</li>
+   <li>common_publisher</li>
+</ul>
+<p>default publisher depends on</p>
+<ul>
+   <li>util</li>
+   <li>filter</li>
+   <li>common_publisher</li>
+</ul>
+<p>xpath filter depends on</p>
+<ul>
+ <li>common_filter</li>
+ <li>libxml2</li>
+</ul>
 
 <h3>Notes</h3>
 <ol>
-  <li>
-        Savan/C&nbsp;&nbsp; 
-        <p></p>
-  </li>
-  <li>Savan/C&nbsp;&nbsp;</li>
+  <li>Note1</li>
+  <li>Note2</li>
 </ol>
 </body>
 </html>
