@@ -18,10 +18,16 @@ to prefix the subject with [Savan/C].</p>
   <li><a href="#components">Savan/C components<br></a> 
 	<ul>
 		<li><a href="#subs_mgr">Subscription Manager</a></li>
+		<ul>
+			<li><a href="#sqlite_based">Sqlite based</a></li>
+			<li><a href="#svc_based">Service based</a></li>
+			<li><a href="#registry_based">WSO2 registry based</a></li>
+		</ul>
 		<li><a href="#publisher">Publisher</a></li>
 		<li><a href="#filters">Filters</a></li>
 	</ul>
   </li>
+  <li><a href="#how_it_work">How it work together<br></a></li>
   <li><a href="#understanding_internal">Understanding the internal dependancies<br></a>
   </li>
 </ul>
@@ -41,12 +47,29 @@ to prefix the subject with [Savan/C].</p>
       <br />
     </h2>
 <p>Savan/C code is designed with scalability and performance in mind. As an eventing implementation the main components should invariably be the subscription manager and publisher. Then we need filter implementations. Since these threee components are the most important components for the Savan/C user special care has been taken in designing these components. These three components are written as pluggable components. User has the options of using the implementations provided by the Savan/C for these components or write his own component implementing the corresponding API. The API's are savan_subs_mgr.h, savan_publisher.h and savan_filter_mod.h respectively. I'll explain these three components separately in following sections.</p>
+<img src="images/savanc_architecture.png" alt="Architecture" width="757" height="362" />
 <p>Apart from these three important components there is a client component which implement the client API whic is used by Savan/C subscribers to subscribe, renew, query status of the subscription and unsubscribe.</p>
 <p>Rest of the components are just implementation specific and bear no interest for the Savan/C user. They are core component which is the main Savan/C module for Axis2/C, util component which provide common utility functions and msgreceivers which is Savan/C specific message receiver for Axis2/C and subscribers which is the internal representation of a subscriber.</p>
-
+<p>Savan/C specific message receiver plays an important role within the Savan/C as you understand in next paragraph. Basically it handles the subscription related requests from the subscribers and handle the reqeusts for event brokering. </p>
 <a id="subs_mgr"></a>
 <h3>Subscription Manager</h3>
-<p>xxx</p>
+<p>Subscription manager basically support CRUD operations on subscribers. When a subcriber related operation hit the Savan/C message receiver it call on one of the CRUD operation defined in the subscription manager api with the retrieved information from the message. The subscription manager implementation is pluggable meaning that the usr can implement his own storage manager and configure Savan/C to accept his subscription manager instead of the default. Savan/C ships with three subscription managers. They ar sqlite based subscription manager and service based subscription manager. By default sqlite based subscription manager is activated which result in storing the subscriber infomation in a embedded sqlite database.</p>
+<a id="sqlite_based"></a>
+<p><strong>Sqlite based:</strong></p>
+<p>Sqlite based subscription manager uses an embedded sqlite database to store the subscriptions. This option is enabled by default when configuring Savan/C. The savan_resource parameter in module.xml should be supplied with the path where the sqlite database should be created as in
+<pre>&lt;parameter name="savan_resource" locked="false"&gt;/tmp/savan_db&lt;/parameter&gt;</pre>
+where you have to replace /tmp with your own path.</p>
+<a id="svc_based"></a>
+<p><strong>Service based:</strong></p>
+<p>Service based subscription manager connect to a remote web services through a Savan specific soap API to store subscribers. The remote web service is implemented as a Axis2/c web service. It provides CRUD operations to store subscribers perhaps using a embedded sqlite subscription manager internally deployed. In otherwords this subscription storage service internally use Savan/C subscription manager api's to store it's data. So in the server where this subscription storage service running Axis2/C should be running with the storage service deployed and Savan/C should be engaged to the service. Also an subscription manager should be configured for that service.</p>
+<a id="registry_based"></a>
+<p><strong>WSO2 registry based:</strong></p>
+<p><a href="http://wso2.org/projects/registry">WSO2 registry</a> is an enterprise-ready opensource product governing SOA deployments. With WSO2 registry, you can store, catalog, index and manage enterprise metada in a simple and scalable model. Savan/C can be configured to use a registry based subscription manager. This subscription manager depends on WSO2 regisry client to access the registry remotely through an ATOM API. For this subscription manager the savan_resource parameter in module.xml should be supplied with the registry access arguments as in
+
+<pre>&lt;parameter name="savan_resource" locked="false"&gt;http://localhost:9763/registry&lt;/parameter&gt;
+&lt;parameter name="username" locked="false"&gt;admin&lt;/parameter&gt;
+&lt;parameter name="password" locked="false"&gt;admin&lt;/parameter&gt;</pre>
+where you have to replace the registry url with your own registry url.</p> </p>
 
 <a id="publisher"></a>
 <h3>Publisher</h3>
@@ -56,6 +79,9 @@ to prefix the subject with [Savan/C].</p>
 <h3>Filters</h3>
 <p>xxx</p>
 
+<a id="how_it_work"></a>
+<h2>How it work together</h2>
+<p></p>
 <a id="understanding_internal"></a>
 <h2>Understanding the internal dependancies</h2>
 <p>It is useful to understand the dependancies between the Savan/C components.</p>
@@ -119,4 +145,4 @@ to prefix the subject with [Savan/C].</p>
   <li>Note1</li>
   <li>Note2</li>
 </ol>
-</div></div></div></div><div class="clear"><hr></hr></div><div id="footer"><div class="xright">© 2005-2007, Apache Software Foundation</div><div class="clear"><hr></hr></div></div></body></html>
+</div></div></div></div><div class="clear"><hr></hr></div><div id="footer"><div class="xright">ï¿½ 2005-2007, Apache Software Foundation</div><div class="clear"><hr></hr></div></div></body></html>
