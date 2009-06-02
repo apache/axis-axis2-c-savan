@@ -34,6 +34,7 @@
 #include <axutil_env.h>
 #include <axis2_conf_ctx.h>
 #include <axutil_array_list.h>
+#include <savan_subscriber.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -121,7 +122,43 @@ extern "C"
     savan_sub_processor_free(
         savan_sub_processor_t * sub_processor,
         const axutil_env_t * env);
-    
+ 
+    AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
+    savan_sub_processor_get_subscriber_from_msg(
+        const axutil_env_t *env,
+        axis2_msg_ctx_t *msg_ctx,
+        struct savan_subs_mgr *subs_mgr,
+        const axis2_char_t *sub_id);
+
+    AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
+    savan_sub_processor_get_subscriber_from_renew_msg(
+        const axutil_env_t *env,
+        axis2_msg_ctx_t *msg_ctx,
+        struct savan_subs_mgr *subs_mgr,
+        const axis2_char_t *sub_id);
+
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
+    savan_sub_processor_add_subscriber(
+        const axutil_env_t *env,
+        axis2_msg_ctx_t *msg_ctx,
+        struct savan_subs_mgr *subs_mgr,
+        savan_subscriber_t *subscriber);
+
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
+    savan_sub_processor_update_subscriber(
+        const axutil_env_t *env,
+        axis2_msg_ctx_t *msg_ctx,
+        struct savan_subs_mgr *subs_mgr,
+        savan_subscriber_t *subscriber);
+
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
+    savan_sub_processor_remove_subscriber(
+        const axutil_env_t *env,
+        axis2_msg_ctx_t *msg_ctx,
+        struct savan_subs_mgr *subs_mgr,
+        savan_subscriber_t *subscriber);
+
+   
 /** @} */
 #ifdef __cplusplus
 }

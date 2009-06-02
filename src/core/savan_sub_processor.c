@@ -137,7 +137,7 @@ savan_sub_processor_subscribe(
 		return status;
 	}
 
-    if(AXIS2_SUCCESS != (status = savan_util_add_subscriber(env, msg_ctx, 
+    if(AXIS2_SUCCESS != (status = savan_subs_mgr_add_subscriber(env, msg_ctx, 
                     sub_processor->subs_mgr, subscriber)))
 	{
         savan_subscriber_free(subscriber, env);
@@ -160,7 +160,7 @@ savan_sub_processor_unsubscribe(
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_sub_processor_unsubscribe");
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, sub_processor->subs_mgr, NULL);
+    subscriber = savan_subs_mgr_get_subscriber_from_msg(env, msg_ctx, sub_processor->subs_mgr, NULL);
     if (!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to find the subscriber"); 
@@ -172,7 +172,7 @@ savan_sub_processor_unsubscribe(
     savan_sub_processor_set_sub_id_to_msg_ctx(env, msg_ctx, id);
 
     /* Remove from store */
-    status = savan_util_remove_subscriber(env, msg_ctx, sub_processor->subs_mgr, subscriber);
+    status = savan_subs_mgr_remove_subscriber_with_msg_ctx(env, msg_ctx, sub_processor->subs_mgr, subscriber);
     if (status != AXIS2_SUCCESS)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Failed to remove the subscriber"); 
@@ -214,7 +214,7 @@ savan_sub_processor_renew_subscription(
         return AXIS2_FAILURE;
     }
 
-    subscriber = savan_util_get_subscriber_from_renew_msg(env, msg_ctx, sub_processor->subs_mgr, NULL);
+    subscriber = savan_subs_mgr_get_subscriber_from_renew_msg(env, msg_ctx, sub_processor->subs_mgr, NULL);
     if (!subscriber)
     {
         axis2_char_t *reason = NULL;
@@ -530,4 +530,5 @@ savan_sub_processor_free(
         AXIS2_FREE(env->allocator, sub_processor);
     }
 }
+
 

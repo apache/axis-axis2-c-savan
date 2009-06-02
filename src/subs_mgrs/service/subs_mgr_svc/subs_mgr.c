@@ -98,7 +98,7 @@ savan_subs_mgr_svc_add_subscriber(
         }
     }
 
-    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    subs_mgr = savan_subs_mgr_get_subs_mgr(env, conf_ctx, conf);
     if(!subs_mgr)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
@@ -161,7 +161,7 @@ savan_subs_mgr_svc_remove_subscriber(
     
     sprintf(sql_remove, "delete from subscriber where id='%s'", subscriber_id);
 
-    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    subs_mgr = savan_subs_mgr_get_subs_mgr(env, conf_ctx, conf);
     if(!subs_mgr)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
@@ -248,7 +248,7 @@ savan_subs_mgr_svc_get_subscriber(
         return NULL;
     }
 
-    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    subs_mgr = savan_subs_mgr_get_subs_mgr(env, conf_ctx, conf);
     if(!subs_mgr)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
@@ -341,7 +341,7 @@ savan_subs_mgr_svc_get_subscriber_list(
         return NULL;
     }
 
-    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    subs_mgr = savan_subs_mgr_get_subs_mgr(env, conf_ctx, conf);
     if(!subs_mgr)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);

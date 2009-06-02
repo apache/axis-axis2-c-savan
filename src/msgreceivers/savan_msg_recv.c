@@ -123,7 +123,7 @@ savan_msg_recv_handle_event(
 
     pub_mod = savan_publisher_create_with_conf(env, conf);
 
-    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    subs_mgr = savan_subs_mgr_get_subs_mgr(env, conf_ctx, conf);
     savan_publisher_publish(pub_mod, env, msg_ctx, subs_mgr);
     savan_publisher_free(pub_mod, env);
     
@@ -281,7 +281,7 @@ savan_msg_recv_handle_sub_request(
     axiom_element_set_text(id_elem, env, id, id_node);
     
     /* Expires element. Get expiry time from subscriber and set */
-    /*subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, subs_mgr, id);*/
+    /*subscriber = savan_subs_mgr_get_subscriber_from_msg(env, msg_ctx, subs_mgr, id);*/
     subs_prop = axis2_msg_ctx_get_property(msg_ctx, env, SAVAN_SUBSCRIBER);
     if(subs_prop)
     {
@@ -336,7 +336,7 @@ savan_msg_recv_handle_unsub_request(
      * the store */
     
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    subs_mgr = savan_subs_mgr_get_subs_mgr(env, conf_ctx, conf);
     if(!subs_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
@@ -346,7 +346,7 @@ savan_msg_recv_handle_unsub_request(
         return AXIS2_FAILURE;
     }
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
+    subscriber = savan_subs_mgr_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
     if (subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
@@ -405,7 +405,7 @@ savan_msg_recv_handle_renew_request(
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_msg_recv_handle_renew_request");
 
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    subs_mgr = savan_subs_mgr_get_subs_mgr(env, conf_ctx, conf);
     if(!subs_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
@@ -415,7 +415,7 @@ savan_msg_recv_handle_renew_request(
         return AXIS2_FAILURE;
     }
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
+    subscriber = savan_subs_mgr_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
     if (!subscriber)
     {
         AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
@@ -495,7 +495,7 @@ savan_msg_recv_handle_get_status_request(
     axis2_msg_info_headers_set_action(info_header, env, SAVAN_ACTIONS_GET_STATUS_RESPONSE);
     
     conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
-    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    subs_mgr = savan_subs_mgr_get_subs_mgr(env, conf_ctx, conf);
     if(!subs_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
@@ -524,7 +524,7 @@ savan_msg_recv_handle_get_status_request(
 
     /* Expires element */
 
-    subscriber = savan_util_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
+    subscriber = savan_subs_mgr_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
     if(!subscriber)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 

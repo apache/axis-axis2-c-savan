@@ -127,7 +127,7 @@ savan_subs_mgr_svc_init_with_conf(
 
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Start:savan_subs_mgr_svc_init_with_conf");
 
-    /*subs_mgr = savan_util_get_subs_mgr(env, NULL, conf);
+    /*subs_mgr = savan_subs_mgr_get_subs_mgr(env, NULL, conf);
     if(!subs_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the database. Check \

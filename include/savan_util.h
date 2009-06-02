@@ -126,38 +126,6 @@ struct savan_subs_mgr;
         axis2_msg_ctx_t *msg_ctx);
 
     /**
-    * Find the subscriber instacne from the store using the given messsage context.
-    * @param env pointer to environment struct
-    * @param msg_ctx pointer to message context
-    * @param sub_id pointer to subscription id 
-    * @return a pointer to subscriber on success, else NULL
-    */
-
-    AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
-    savan_util_get_subscriber_from_msg(
-        const axutil_env_t *env,
-        axis2_msg_ctx_t *msg_ctx,
-        struct savan_subs_mgr *subs_mgr,
-        const axis2_char_t *sub_id);
-
-    /**
-    * Parse the renew message to retrieve subscriber id and requested expire date. Then retrieve
-    * the subscriber instance from the store using the given messsage and set the expire date
-    * requested as allowed by policy.
-    * @param env pointer to environment struct
-    * @param msg_ctx pointer to message context
-    * @param sub_id pointer to subscription id 
-    * @return a pointer to subscriber on success, else NULL
-    */
-
-    AXIS2_EXTERN savan_subscriber_t * AXIS2_CALL
-    savan_util_get_subscriber_from_renew_msg(
-        const axutil_env_t *env,
-        axis2_msg_ctx_t *msg_ctx,
-        struct savan_subs_mgr *subs_mgr,
-        const axis2_char_t *sub_id);
-
-    /**
     * Get the subscriber store from the service
     * Note that if the subscription manager is a separate service from
     * the publisher service then both SubscriptionMgrName and SubscriptionMgrURL
@@ -171,51 +139,6 @@ struct savan_subs_mgr;
     savan_util_get_subscriber_store(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx);
-
-    /**
-    * Add the subscriber to subscription manager services' store
-    * Note that if the subscription manager is a separate service from
-    * the publisher service then both SubscriptionMgrName and SubscriptionMgrURL
-    * must be set in the publishers services.xml
-    * @param env pointer to environment struct
-    * @param msg_ctx pointer to message context
-    * @param subs_mgr pointer to subs_mgr
-    * @param subscriber
-    * @return the store on success, else NULL
-    */
-
-    AXIS2_EXTERN axis2_status_t AXIS2_CALL
-    savan_util_add_subscriber(
-        const axutil_env_t *env,
-        axis2_msg_ctx_t *msg_ctx,
-        struct savan_subs_mgr *subs_mgr,
-        savan_subscriber_t *subscriber);
-
-    AXIS2_EXTERN axis2_status_t AXIS2_CALL
-    savan_util_update_subscriber(
-        const axutil_env_t *env,
-        axis2_msg_ctx_t *msg_ctx,
-        struct savan_subs_mgr *subs_mgr,
-        savan_subscriber_t *subscriber);
-
-    /**
-    * Remove the subscriber from subscription manager services' store
-    * Note that if the subscription manager is a separate service from
-    * the publisher service then both SubscriptionMgrName and SubscriptionMgrURL
-    * must be set in the publishers services.xml
-    * @param env pointer to environment struct
-    * @param msg_ctx pointer to message context
-    * @param subs_mgr pointer to subs_mgr
-    * @param subscriber
-    * @return the store on success, else NULL
-    */
-
-    AXIS2_EXTERN axis2_status_t AXIS2_CALL
-    savan_util_remove_subscriber(
-        const axutil_env_t *env,
-        axis2_msg_ctx_t *msg_ctx,
-        struct savan_subs_mgr *subs_mgr,
-        savan_subscriber_t *subscriber);
 
     /**
     * Calculate and return an expiry time for the subscription
@@ -251,21 +174,6 @@ struct savan_subs_mgr;
         const axutil_env_t *env,
         axis2_char_t *store_name);
 
-    /**
-    * Get the subscribers registered for a topic
-    * @param env pointer to environment struct
-    * @param topic topic for which the subscribers are registered
-    * @param subs_mgr_url url of the subscription manager
-    * @return subscribers in a array list
-    */
-    AXIS2_EXTERN axutil_array_list_t *AXIS2_CALL
-    savan_util_get_subscriber_list_from_remote_subs_mgr(
-        const axutil_env_t *env,
-        axis2_char_t *topic,
-        axis2_char_t *subs_mgr_url,
-        void *svc_client,
-        axis2_conf_t *conf);
-
     AXIS2_EXTERN axis2_char_t *AXIS2_CALL
     savan_util_get_topic_name_from_topic_url(
         const axutil_env_t *env,
@@ -299,26 +207,6 @@ struct savan_subs_mgr;
         axis2_conf_t *conf,
         axis2_char_t *name);
 
-    /**
-    * Get the topics registered in a subscription manager
-    * @param env pointer to environment struct
-    * @param subs_mgr_url url of the subscription manager
-    * @return subscribers in a array list
-    */
-    AXIS2_EXTERN axutil_array_list_t *AXIS2_CALL
-    savan_util_get_topic_list_from_remote_subs_mgr(
-        const axutil_env_t *env,
-        axis2_char_t *subs_mgr_url,
-        void *s_client);
-
-    AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
-    savan_util_get_subscriber_from_remote_subs_mgr(
-        const axutil_env_t *env,
-        axis2_char_t *subs_id,
-        axis2_char_t *subs_mgr_url,
-        void *s_client,
-        axis2_conf_t *conf);
-
     AXIS2_EXTERN void *AXIS2_CALL
     savan_util_get_svc_client(
         const axutil_env_t *env);
@@ -341,21 +229,6 @@ struct savan_subs_mgr;
         const axutil_env_t *env, 
         savan_subscriber_t *subscriber,
         axiom_node_t *parent_node);
-
-    /**
-     * Retrieve subs mgr. If it is already created for this request scope then it should be 
-     * available as a message context property. Otherwise create it and set as message context
-     * property.
-     * @param env environment object
-     * @param conf_ctx configuration context instance
-     * @param conf Axis2 main configuration instance
-     * @return subs manager
-     */
-    AXIS2_EXTERN struct savan_subs_mgr * AXIS2_CALL
-    savan_util_get_subs_mgr(
-        const axutil_env_t *env,
-        axis2_conf_ctx_t *conf_ctx,
-        axis2_conf_t *conf);
 
     /**
      * Retrieve filter handler. If it is already created for this request scope then it should be 

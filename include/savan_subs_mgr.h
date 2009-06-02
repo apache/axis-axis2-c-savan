@@ -39,6 +39,7 @@ extern "C"
  
 typedef struct savan_subs_mgr savan_subs_mgr_t;
 typedef struct savan_subs_mgr_ops savan_subs_mgr_ops_t;
+struct axis2_conf_ctx;
 
  /**
  * @brief Subscription Manager ops struct
@@ -203,6 +204,57 @@ savan_subs_mgr_insert_topic(
     const axutil_env_t *env,
     const axis2_char_t *topic_name,
     const axis2_char_t *topic_url);
+
+AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
+savan_subs_mgr_get_subscriber_from_msg(
+        const axutil_env_t *env,
+        axis2_msg_ctx_t *msg_ctx,
+        savan_subs_mgr_t *subs_mgr,
+        const axis2_char_t *sub_id);
+
+AXIS2_EXTERN savan_subscriber_t *AXIS2_CALL
+savan_subs_mgr_get_subscriber_from_renew_msg(
+        const axutil_env_t *env,
+        axis2_msg_ctx_t *msg_ctx,
+        savan_subs_mgr_t *subs_mgr,
+        const axis2_char_t *sub_id);
+
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_subs_mgr_add_subscriber(
+    const axutil_env_t *env,
+    axis2_msg_ctx_t *msg_ctx,
+    savan_subs_mgr_t *subs_mgr,
+    savan_subscriber_t *subscriber);
+
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_subs_mgr_update_subscriber_with_msg_ctx(
+    const axutil_env_t *env,
+    axis2_msg_ctx_t *msg_ctx,
+    savan_subs_mgr_t *subs_mgr,
+    savan_subscriber_t *subscriber);
+
+AXIS2_EXTERN axis2_status_t AXIS2_CALL
+savan_subs_mgr_remove_subscriber_with_msg_ctx(
+    const axutil_env_t *env,
+    axis2_msg_ctx_t *msg_ctx,
+    savan_subs_mgr_t *subs_mgr,
+    savan_subscriber_t *subscriber);
+
+/**
+ * Retrieve subs mgr. If it is already created for this request scope then it should be 
+ * available as a message context property. Otherwise create it and set as message context
+ * property.
+ * @param env environment object
+ * @param conf_ctx configuration context instance
+ * @param conf Axis2 main configuration instance
+ * @return subs manager
+ */
+AXIS2_EXTERN struct savan_subs_mgr * AXIS2_CALL
+savan_subs_mgr_get_subs_mgr(
+    const axutil_env_t *env,
+    struct axis2_conf_ctx *conf_ctx,
+    axis2_conf_t *conf);
+
 
 /** @} */
 #ifdef __cplusplus
