@@ -46,6 +46,8 @@ extern "C"
  * @{
  */
 
+struct savan_subs_mgr;
+
 	/**
      * Create the fault envelope, to be sent
      * to the client.
@@ -135,7 +137,7 @@ extern "C"
     savan_util_get_subscriber_from_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_subs_mgr_t *subs_mgr,
+        struct savan_subs_mgr *subs_mgr,
         const axis2_char_t *sub_id);
 
     /**
@@ -152,7 +154,7 @@ extern "C"
     savan_util_get_subscriber_from_renew_msg(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_subs_mgr_t *subs_mgr,
+        struct savan_subs_mgr *subs_mgr,
         const axis2_char_t *sub_id);
 
     /**
@@ -186,14 +188,14 @@ extern "C"
     savan_util_add_subscriber(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_subs_mgr_t *subs_mgr,
+        struct savan_subs_mgr *subs_mgr,
         savan_subscriber_t *subscriber);
 
     AXIS2_EXTERN axis2_status_t AXIS2_CALL
     savan_util_update_subscriber(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_subs_mgr_t *subs_mgr,
+        struct savan_subs_mgr *subs_mgr,
         savan_subscriber_t *subscriber);
 
     /**
@@ -212,7 +214,7 @@ extern "C"
     savan_util_remove_subscriber(
         const axutil_env_t *env,
         axis2_msg_ctx_t *msg_ctx,
-        savan_subs_mgr_t *subs_mgr,
+        struct savan_subs_mgr *subs_mgr,
         savan_subscriber_t *subscriber);
 
     /**
@@ -349,7 +351,7 @@ extern "C"
      * @param conf Axis2 main configuration instance
      * @return subs manager
      */
-    AXIS2_EXTERN savan_subs_mgr_t * AXIS2_CALL
+    AXIS2_EXTERN struct savan_subs_mgr * AXIS2_CALL
     savan_util_get_subs_mgr(
         const axutil_env_t *env,
         axis2_conf_ctx_t *conf_ctx,

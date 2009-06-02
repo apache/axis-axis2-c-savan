@@ -27,7 +27,6 @@
 #include <axis2_conf.h>
 #include <axis2_msg_ctx.h>
 #include <axiom_node.h>
-#include <savan_subs_mgr.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -41,6 +40,7 @@ extern "C"
  
 typedef struct savan_publisher savan_publisher_t;
 typedef struct savan_publisher_ops savan_publisher_ops_t;
+struct savan_subs_mgr;
 
  /**
  * @brief Publisher ops struct
@@ -58,7 +58,7 @@ AXIS2_DECLARE_DATA struct savan_publisher_ops
                 savan_publisher_t *publisher, 
                 const axutil_env_t *env,
                 void *msg_ctx,
-                savan_subs_mgr_t *subs_mgr);
+                struct savan_subs_mgr *subs_mgr);
 
 };
 
@@ -109,7 +109,7 @@ savan_publisher_publish(
     savan_publisher_t *publishermod, 
     const axutil_env_t *env,
     void *msg_ctx,
-    savan_subs_mgr_t *subs_mgr);
+    struct savan_subs_mgr *subs_mgr);
 
 /** @} */
 #ifdef __cplusplus

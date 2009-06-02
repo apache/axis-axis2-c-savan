@@ -106,10 +106,10 @@ int main(int argc, char** argv)
     axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
         XPATH_FILTER_DIALECT);*/
     
-    /*axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING, "weather/4");
+    axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER, AXIS2_HASH_KEY_STRING, "weather/4");
 
     axutil_hash_set(savan_options, SAVAN_OP_KEY_FILTER_DIALECT, AXIS2_HASH_KEY_STRING,
-        SYNAPSE_FILTER_DIALECT);*/
+        SYNAPSE_FILTER_DIALECT);
 
     /* Create a savan client */
     savan_client = savan_client_create(env);

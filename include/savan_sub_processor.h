@@ -34,7 +34,6 @@
 #include <axutil_env.h>
 #include <axis2_conf_ctx.h>
 #include <axutil_array_list.h>
-#include <savan_subs_mgr.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -42,6 +41,7 @@ extern "C"
 #endif
     
     typedef struct savan_sub_processor savan_sub_processor_t;
+    struct savan_subs_mgr;
 
     /**
     * This method creates a subcription object from the incoming message
@@ -110,7 +110,7 @@ extern "C"
     AXIS2_EXTERN savan_sub_processor_t * AXIS2_CALL
     savan_sub_processor_create(
         const axutil_env_t *env,
-        savan_subs_mgr_t *subs_mgr);
+        struct savan_subs_mgr *subs_mgr);
     
     /**
     * Freesf a subscription manager instance.
