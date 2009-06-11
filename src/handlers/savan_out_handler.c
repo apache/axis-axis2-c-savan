@@ -83,7 +83,7 @@ savan_out_handler_invoke(
     conf = axis2_conf_ctx_get_conf(conf_ctx, env);
 
 
-    subs_mgr = savan_util_get_subs_mgr(env, conf_ctx, conf);
+    subs_mgr = savan_subs_mgr_get_subs_mgr(env, conf_ctx, conf);
     if(!subs_mgr)
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the database. Check \
