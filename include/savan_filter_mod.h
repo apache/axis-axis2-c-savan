@@ -84,7 +84,7 @@ savan_filter_mod_create(
  * @param filter
  * @param env environment object
  */
-void AXIS2_CALL 
+AXIS2_EXTERN void AXIS2_CALL 
 savan_filter_mod_free(
     savan_filter_mod_t *filtermod,
     const axutil_env_t *envv);
