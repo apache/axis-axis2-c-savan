@@ -391,7 +391,6 @@ savan_sqlite_subs_mgr_insert_subscriber(
     savan_subscriber_t *subscriber)
 {
     savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
-    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     axis2_char_t sql_insert[1028];
     sqlite3 *dbconn = NULL;
     axis2_char_t *id = NULL;
@@ -405,6 +404,7 @@ savan_sqlite_subs_mgr_insert_subscriber(
     axis2_endpoint_ref_t *notifyto_epr = NULL;
     int counter = 1;
     struct sqlite3_stmt* insertqry;
+	subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_sqlite_subs_mgr_insert_subscriber");
@@ -608,7 +608,6 @@ savan_sqlite_subs_mgr_update_subscriber(
     savan_subscriber_t *subscriber)
 {
     savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
-    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     axis2_char_t *sql_update = NULL;
     sqlite3 *dbconn = NULL;
     axis2_char_t *id = NULL;
@@ -617,11 +616,12 @@ savan_sqlite_subs_mgr_update_subscriber(
     axis2_char_t *delivery_mode = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *filter = NULL;
-    int renewed = 0;
     axis2_endpoint_ref_t *endto_epr = NULL;
     axis2_endpoint_ref_t *notifyto_epr = NULL;
-    int counter = 1;
     struct sqlite3_stmt* updateqry;
+	int renewed = 0;
+	int counter = 1;
+	subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_sqlite_subs_mgr_update_subscriber");
@@ -823,11 +823,11 @@ savan_sqlite_subs_mgr_remove_subscriber(
     const axis2_char_t *subscriber_id)
 {
     savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
-    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     axis2_char_t *error_msg = NULL;
     sqlite3 *dbconn = NULL;
     int rc = -1;
     axis2_char_t sql_remove[256];
+	subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_sqlite_subs_mgr_remove_subscriber");
@@ -885,7 +885,6 @@ savan_sqlite_subs_mgr_retrieve_subscriber(
     const axis2_char_t *subcriber_id)
 {
     savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
-    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     savan_sqlite_subs_mgr_args_t *args = NULL;
     axis2_char_t *error_msg = NULL;
@@ -893,6 +892,7 @@ savan_sqlite_subs_mgr_retrieve_subscriber(
     sqlite3 *dbconn = NULL;
     int rc = -1;
     axis2_char_t sql_retrieve[256];
+	subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_sqlite_subs_mgr_retrieve_subscriber");
@@ -979,7 +979,6 @@ savan_sqlite_subs_mgr_retrieve_all_subscribers(
     const axis2_char_t *filter)
 {
     savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
-    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     savan_sqlite_subs_mgr_args_t *args = NULL;
     axutil_array_list_t *data_list = NULL;
@@ -987,6 +986,8 @@ savan_sqlite_subs_mgr_retrieve_all_subscribers(
     sqlite3 *dbconn = NULL;
     axis2_char_t *error_msg = NULL;
     axis2_char_t sql_retrieve[256];
+
+	subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_sqlite_subs_mgr_retrieve_all_subscribers");
@@ -1102,10 +1103,10 @@ savan_sqlite_subs_mgr_insert_topic(
     const axis2_char_t *topic_url)
 {
     savan_sqlite_subs_mgr_t *subs_mgr_impl = NULL;
-    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     axis2_char_t *sql_insert = NULL;
     sqlite3 *dbconn = NULL;
     struct sqlite3_stmt* insertqry;
+	subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_sqlite_subs_mgr_insert_topic");
