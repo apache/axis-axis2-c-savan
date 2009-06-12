@@ -173,6 +173,7 @@ savan_subs_mgr_create_with_connection_info(
     axis2_char_t *username,
     axis2_char_t *password)
 {
+	return NULL;
 }
 
 AXIS2_EXTERN void AXIS2_CALL
@@ -303,7 +304,7 @@ savan_service_subs_mgr_retrieve_all_subscribers(
     const axis2_char_t *filter)
 {
     savan_service_subs_mgr_t *subs_mgr_impl = NULL;
-    subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
+   
     
     axis2_endpoint_ref_t* endpoint_ref = NULL;
     axis2_options_t *options = NULL;
@@ -311,7 +312,7 @@ savan_service_subs_mgr_retrieve_all_subscribers(
     axiom_node_t *payload = NULL;
     axiom_node_t *ret_node = NULL;
     axutil_array_list_t *subscriber_list = NULL;
-
+	subs_mgr_impl = SAVAN_INTF_TO_IMPL(subs_mgr);
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_service_subs_mgr_retrieve_all_subscribers");
     
@@ -626,7 +627,7 @@ savan_service_subs_mgr_process_savan_specific_subscriber_node(
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 
             "[savan] Entry:savan_service_subs_mgr_process_savan_specific_subscriber_node");
 
-    AXIS2_PARAM_CHECK(env->error, subs_node, AXIS2_FAILURE);
+    AXIS2_PARAM_CHECK(env->error, subs_node, NULL);
 
     subscriber = savan_subscriber_create(env);
     if (!subscriber)
