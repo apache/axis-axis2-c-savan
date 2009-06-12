@@ -19,28 +19,34 @@ MODSAVANDLL = mod_savan
 SAVAN_CLIENT = savan_client
 SAVAN_MSG_RECV = savan_msgreceivers
 
-SAVAN_CODE = $(SAVANSRC)\src\client\*.c \
-		 $(SAVANSRC)\src\util\*.c \
-		 $(SAVANSRC)\src\subscribers\*.c \
-		 $(SAVANSRC)\src\storage\common\*.c \
-		 $(SAVANSRC)\src\storage\inmemory\*.c \
-		 $(SAVANSRC)\src\publisher\common\*.c 
+SAVAN_CODE = $(SAVANSRC)\src\util\*.c \
+	     $(SAVANSRC)\src\subscribers\*.c \
+	     $(SAVANSRC)\src\subs_mgrs\common\*.c
+
+SAVAN_CODE1 = $(SAVANSRC)\src\subs_mgrs\sqlite\*.c  
 
 MOD_SAVAN_CODE = $(SAVANSRC)\src\core\*.c \
 		 $(SAVANSRC)\src\handlers\*.c \
 
-SAVAN_MSG_RECV_CODE = $(SAVANSRC)\src\msgreceivers\*.c
+SAVAN_MSG_RECV_CODE = $(SAVANSRC)\src\msgreceivers\*.c \
+		      $(SAVANSRC)\src\publishers\common\*.c
+
+SAVAN_MSG_RECV_CODE1 = $(SAVANSRC)\src\publishers\default\*.c
+
+SAVAN_CLIENT_CODE = $(SAVANSRC)\src\client\*.c \
+		    $(SAVANSRC)\src\filters\common\*.c \
+		    $(SAVANSRC)\src\filters\xpath\*.c 
 		
 #compiler options
 CC = @cl.exe
 
 CFLAGS = /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "AXIS2_DECLARE_EXPORT" /D_WIN32_WINNT=0x0400  /w /nologo \
-	/I$(AXIS2_BIN_DIR)\include /I$(SAVANSRC)\include $(CRUNTIME) 
+	/I$(AXIS2_BIN_DIR)\include /I$(SAVANSRC)\include $(CRUNTIME) /I$(LIBXSLT_BIN_DIR)\include /I$(LIBXML2_BIN_DIR)\include /I$(ICONV_BIN_DIR)\include
 
 #linker options 
 LD = @link.exe
-LDFLAGS = /nologo /LIBPATH:$(AXIS2_BIN_DIR)\lib /LIBPATH:$(SAVANDISTDIR)\lib
-LIBS = axutil.lib axiom.lib axis2_parser.lib axis2_engine.lib axis2_http_receiver.lib axis2_http_sender.lib
+LDFLAGS = /nologo /LIBPATH:$(AXIS2_BIN_DIR)\lib /LIBPATH:$(SAVANDISTDIR)\lib /LIBPATH:$(LIBXSLT_BIN_DIR)\lib /LIBPATH:$(LIBXML2_BIN_DIR)\lib
+LIBS = axutil.lib axiom.lib axis2_parser.lib axis2_engine.lib axis2_http_receiver.lib axis2_http_sender.lib libxslt.lib libxml2.lib
 
 #debug symbols
 !if "$(DEBUG)" == "1"
@@ -83,6 +89,7 @@ distdir:
 
 intdir:
 	if not exist $(SAVANINTDIR) mkdir $(SAVANINTDIR)
+	if not exist $(SAVANINTDIR)\s mkdir $(SAVANINTDIR)\s
 	if not exist $(SAVANINTDIR)\client mkdir $(SAVANINTDIR)\client
 	if not exist $(SAVANINTDIR)\samples mkdir $(SAVANINTDIR)\samples
 	if not exist $(SAVANINTDIR)\samples\subscriber mkdir $(SAVANINTDIR)\samples\subscriber
@@ -113,7 +120,8 @@ copy_include:
 
 $(SAVANDISTDIR)\lib\$(SAVANDLL).dll:
 	$(CC) $(CFLAGS) $(SAVAN_CODE) /Fo$(SAVANINTDIR)\ /c
-	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\*.obj /DLL \
+	$(CC) $(CFLAGS) $(SAVAN_CODE1) /Fo$(SAVANINTDIR)\s\ /c
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANINTDIR)\*.obj $(SAVANINTDIR)\s\*.obj /DLL \
 	/OUT:$(SAVANDISTDIR)\lib\$(SAVANDLL).dll /IMPLIB:$(SAVANDISTDIR)\lib\$(SAVANDLL).lib
 	-@$(_VC_MANIFEST_EMBED_DLL)
 
@@ -122,7 +130,7 @@ savan: $(SAVANDISTDIR)\lib\$(SAVANDLL).dll
 $(SAVANDISTDIR)\modules\savan\$(MODSAVANDLL).dll:
 	if not exist $(SAVANINTDIR)\mod_savan mkdir $(SAVANINTDIR)\mod_savan
 	$(CC) $(CFLAGS) $(MOD_SAVAN_CODE) /Fo$(SAVANINTDIR)\mod_savan\ /c
-	$(LD) $(LDFLAGS) $(LIBS) $(SAVANDLL).lib $(SAVAN_MSG_RECV).lib $(SAVANINTDIR)\mod_savan\*.obj /DLL \
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANDLL).lib $(SAVANINTDIR)\mod_savan\*.obj /DLL \
 	/OUT:$(SAVANDISTDIR)\modules\savan\$(MODSAVANDLL).dll /IMPLIB:$(SAVANDISTDIR)\modules\savan\$(MODSAVANDLL).lib
 	-@$(_VC_MANIFEST_EMBED_DLL)
 	@copy $(SAVANSRC)\src\data\module.xml $(SAVANDISTDIR)\modules\savan\module.xml
@@ -130,13 +138,10 @@ $(SAVANDISTDIR)\modules\savan\$(MODSAVANDLL).dll:
 mod_savan: $(SAVANDISTDIR)\modules\savan\$(MODSAVANDLL).dll
 
 ##### savan client
-SAVAN_CLIENT_SRC = $(SAVANSRC)\src\client\*.c \
-		   $(SAVANSRC)\src\util\*.c \
-		   $(SAVANSRC)\src\subscribers\*.c
 
 $(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll :
 	if not exist $(SAVANINTDIR)\client mkdir $(SAVANINTDIR)\client
-	$(CC) $(CFLAGS) $(SAVAN_CLIENT_SRC) /Fo$(SAVANINTDIR)\client\ /c
+	$(CC) $(CFLAGS) $(SAVAN_CLIENT_CODE) /Fo$(SAVANINTDIR)\client\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANDLL).lib $(SAVANINTDIR)\client\*.obj /DLL \
 	/OUT:$(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll /IMPLIB:$(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).lib
 	-@$(_VC_MANIFEST_EMBED_DLL)
@@ -145,8 +150,10 @@ savan_client: $(SAVANDISTDIR)\lib\$(SAVAN_CLIENT).dll
 
 $(SAVANDISTDIR)\lib\$(SAVAN_MSG_RECV).dll :
 	if not exist $(SAVANINTDIR)\msg_recv mkdir $(SAVANINTDIR)\msg_recv
+	if not exist $(SAVANINTDIR)\msg_recv1 mkdir $(SAVANINTDIR)\msg_recv1
 	$(CC) $(CFLAGS) $(SAVAN_MSG_RECV_CODE) /Fo$(SAVANINTDIR)\msg_recv\ /c
-	$(LD) $(LDFLAGS) $(LIBS) $(SAVANDLL).lib $(SAVAN_CLIENT).lib $(SAVANINTDIR)\msg_recv\*.obj /DLL \
+	$(CC) $(CFLAGS) $(SAVAN_MSG_RECV_CODE1) /Fo$(SAVANINTDIR)\msg_recv1\ /c
+	$(LD) $(LDFLAGS) $(LIBS) $(SAVANDLL).lib $(SAVANINTDIR)\msg_recv\*.obj $(SAVANINTDIR)\msg_recv1\*.obj /DLL \
 	/OUT:$(SAVANDISTDIR)\lib\$(SAVAN_MSG_RECV).dll /IMPLIB:$(SAVANDISTDIR)\lib\$(SAVAN_MSG_RECV).lib
 	-@$(_VC_MANIFEST_EMBED_DLL)
 
@@ -155,12 +162,15 @@ savan_msg_recv: $(SAVANDISTDIR)\lib\$(SAVAN_MSG_RECV).dll
 
 ###samples
 
+SUBSCRIPTION_SRC=$(SAVANSRC)\src\subs_mgrs\service\subs_mgr_svc\*.c \
+		 $(SAVANSRC)\src\subs_mgrs\service\*.c 
+
 $(SAVANDISTDIR)\services\subscription\subscription.dll :
-	$(CC) $(CFLAGS) $(SAVANSRC)\src\subs_mgr\*.c /Fo$(SAVANINTDIR)\samples\subscription\ /c
+	$(CC) $(CFLAGS) $(SUBSCRIPTION_SRC) /Fo$(SAVANINTDIR)\samples\subscription\ /c
 	$(LD) $(LDFLAGS) $(LIBS) $(SAVANDLL).lib $(SAVANINTDIR)\samples\subscription\*.obj  $(SAVAN_CLIENT).lib /DLL \
 	/OUT:$(SAVANDISTDIR)\services\subscription\subscription.dll
 	-@$(_VC_MANIFEST_EMBED_DLL)
-	@copy $(SAVANSRC)\src\subs_mgr\services.xml $(SAVANDISTDIR)\services\subscription\
+	@copy $(SAVANSRC)\src\subs_mgrs\service\subs_mgr_svc\services.xml $(SAVANDISTDIR)\services\subscription\
 
 subscription: $(SAVANDISTDIR)\services\subscription\subscription.dll
 
@@ -190,20 +200,4 @@ $(SAVANDISTDIR)\samples\bin\savanc\subscriber.exe :
 
 subscriber: $(SAVANDISTDIR)\samples\bin\savanc\subscriber.exe
 	
-dist: clean distdir intdir savan savan_client savan_msg_recv mod_savan listener weather subscription subscriber copy_include copy_samples copy_extra
-
-
-	 
-
-
-	
-
-
-
-
-
-
-	
-
-
-
+dist: clean distdir intdir savan mod_savan savan_msg_recv savan_client listener weather subscription subscriber copy_include copy_samples copy_extra
