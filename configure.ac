@@ -47,7 +47,7 @@ AC_SUBST(abs_top_builddir)
 
 AC_MSG_CHECKING(path to use Axis2C . This is a compulsory to build Savan/C)
 AC_ARG_WITH(axis2,
-[  --with-axis2[=PATH]      use axis2c.],
+[  --with-axis2[=PATH]      use axis2c. (default=yes)],
 [ case "$withval" in
   no)
     AC_MSG_RESULT(no)
@@ -112,7 +112,7 @@ AC_ARG_WITH(registry,
 [  --with-registry[=PATH]     Find the REGISTRY header files in 'PATH'.
     'PATH' should point to REGISTRY include files location.
     If you omit the '=PATH' part completely, the configure script will search
-    '$(AXIS2C_HOME)/include/registry-0.1.0' for REGISTRY headers.],
+    '$(AXIS2C_HOME)/include/registry-0.1.0' for REGISTRY headers. (default=no)],
 [ case "$withval" in
   no)
     AC_MSG_RESULT(no)
@@ -138,12 +138,9 @@ AC_ARG_WITH(registry,
 )
 
 AC_MSG_CHECKING(To Use XPath based filter . This is an optional module to build Savan C)
-AC_ARG_WITH(xpath,
-[  --with-xpath[=PATH]     Find the libxml2 header files in 'PATH'.
-    'PATH' should point to libxml2 include files location.
-    If you omit the '=PATH' part completely, the configure script will assume
-    libxml2 is installed in default paths.],
-[ case "$withval" in
+AC_ARG_ENABLE(xpath, [  --enable-xpath
+                      Enable XPath filtering support (default=yes)],
+[ case "${enableval}" in
   no)
     AC_MSG_RESULT(no)
     SAVAN_FILTER=""
@@ -154,13 +151,11 @@ AC_ARG_WITH(xpath,
     SAVAN_FILTER="xpath"
     SAVAN_FILTER_LIB=xpath/libsavan_filter_mod.la
     dnl Find libxml2 include dir in the path
-    if test -d $withval; then
-        xpathinc="-I$withval"
-    dnl else find the libxml2 include dir in /usr/local/include
-    elif test -d '/usr/local/include'; then
-        xpathinc="-I/usr/local/include"
+    dnl Find the libxml2/libxslt include dir in /usr/include
+    if test -d '/usr/include'; then
+        xpathinc="-I/usr/include"
     else
-        AC_MSG_ERROR(could not find libxml2. stop)
+        AC_MSG_ERROR(could not find libxml2/libxslt. Assume set in CFLAGS)
     fi
     PKG_CHECK_MODULES(XSLT, libxslt)
     CFLAGS="$CFLAGS -DSAVAN_FILTERING $XSLT_CFLAGS"
@@ -179,7 +174,7 @@ AC_ARG_WITH(esbpub,
 [  --with-esbpub[=PATH]     Find the esbc header files in 'PATH'.
     'PATH' should point to esbc include files location.
     If you omit the '=PATH' part completely, the configure script will assume
-    esbc is installed in default paths.],
+    esbc is installed in default paths. (default=no)],
 [ case "$withval" in
   no)
     AC_MSG_RESULT(no)
