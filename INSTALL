@@ -2,8 +2,7 @@ This document guides you on how to install Savan/C with Axis2/C, and
 run the server and client samples on Linux and Microsoft Windows operating
 systems.
 
-This release comes in two forms, source and binary. This document covers
-both forms.
+This release comes in source form.
 
 Please send your feedback to the developer mailing list: 
 
@@ -14,7 +13,7 @@ remember to prefix the subject with [Axis2].
 
 1. Installing and Running on Linux
 
-This can be done using binary or source distributions.
+This can be done using source distributions.
 
 http://ws.apache.org/savan/c/download.cgi 
 
@@ -28,7 +27,7 @@ and install.
     Download Savan source distribution
     Extract the source distribution and go to extracted directory
     Run configure with AXIS2 include path.
-    ./configure --prefix=<AXIS2C_HOME> --enable-static=no --with-axis2=<AXIS2C_HOME>/include/axis2-<version> --enable-filtering=no/yes
+    ./configure --prefix=<AXIS2C_HOME> --enable-static=no --with-axis2=<AXIS2C_HOME>/include/axis2-<version>
     make
     make install
     
@@ -39,48 +38,33 @@ for database storage. The database name should be savan_db.
 It will also install libsavan_client.so savan client
 library in <AXIS2C_HOME>/lib folder. This client library is needed for savan clients to be linked with.
 To test the installation you can run the subscriber sample by running 
-<AXIS2C_HOME/bin/samples/savan/subscriber
+<AXIS2C_HOME/samples/bin/savan/subscriber
 
 
-1.2. Installing Savan/C Binary Release on Linux
+1.2. Savan/C install struture on Linux
 
-Savan/C binary distribution for Linux has the following folder structure. 
+Savan/C installation for Linux has the following folder structure. 
     Savan
         |
         + - modules/savan (savan module library and module.xml file)
         + - docs
         |
-        + - samples
-               |
-               + - source files of samples in folders
         + - services (Contain Subscription Manager service and sample data source services)
         |
         + - include ( header files)
         + - bin
-        + - bin/samples/savan ( sample executables)
+        + - samples/bin/savan ( sample executables)
         + - lib
-    To deploy Savan/C in Axis2/C running environment do the following
-    1. Copy the modules/savan into <AXIS2C_HOME>/modules folder.
-    2  In the module.xml file give a valid path for database storage. savan_db should be the database name.
-        <parameter name="savan_db" locked="false">/tmp/savan_db</parameter>
-    3. Copy the libsavan_client.so into <AXIS2C_HOME>/lib folder. This client library is needed for savan clients 
-        to be linked with.
-    4. Copy the samples/server/axis2.xml into <AXIS2C_HOME> or do neccessary changes as described in README 
-        document to existing axis2.xml in repository.
-    5. Copy the services/subscription service into <AXIS2C_HOME>/serivces folder.
-    6. If you need deploy server samples copy services/pubisher and services/listener service into 
-        <AXIS2C_HOME>/serivces folder.
-    7. Now you can run the client subscriber sample from bin/samples/savan
 
 2. Installing and Running on Microsoft Windows
 
-This too can be done using binary or source distributions.
+This too can be done using source distributions.
 
 http://ws.apache.org/savan/c/download.cgi
 
 
 2.1. Installing Savan/C Source Release on Windows
-    You need to have unziped Axis2/C 1.1.0 release binary to some folder.
+    You need to have unziped Axis2/C 1.1.0 release to some folder.
     On your cmd.exe cd to <savan src>\build\win32 
       Edit configure.in file with your binary locations. 
     
@@ -88,9 +72,9 @@ http://ws.apache.org/savan/c/download.cgi
     Run nmake dist command on command line. This will build the Savan/C binary and samples to a directory savan in <savan src>\build\savan. 
 
 
-2. 2. Installing Savan/C Binary Release on Windows
+2. 2. Savan/C install struture on Windows
 
-Savan/C binary distribution will have following directory structure. 
+Savan/C installation will have following directory structure. 
     Savan
         |
         + - Savan (savan module dll and module.xml file)
@@ -102,19 +86,6 @@ Savan/C binary distribution will have following directory structure.
                + - source files of samples in folders
         |
         + - include ( header files)
-
-    1 Copy Savan directory ( containing savan dll and module.xml ) to <AXIS2C_HOME>\modules directory.
-    2  In the module.xml file give a valid path for database storage. savan_db should be the database name.
-        <parameter name="savan_db" locked="false">/tmp/savan_db</parameter>
-    3. Copy the savan_client.dll into <AXIS2C_HOME>/lib folder. This client library is needed for savan clients 
-        to be linked with.
-    4. Copy the samples/server/axis2.xml into <AXIS2C_HOME> or do neccessary changes as described in README 
-        document to existing axis2.xml in repository.
-    5. Copy the services/subscription service into <AXIS2C_HOME>/serivces folder.
-    6. If you need deploy server samples copy services/pubisher and services/listener service into 
-        <AXIS2C_HOME>/serivces folder.
-    7. Now you can run the client subscriber sample from bin/samples/savan
-    
 
 Notes:
        Savan/C has a persistent storage mechanism for storing subscriber information and data source information. 
