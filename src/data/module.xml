@@ -1,7 +1,7 @@
 <module name="savan" class="mod_savan">
    <!-- Resource parameters -->
    <!-- savan_storage could be one of inmemory, sqlite and service-->
-   <parameter name="savan_resource" locked="false">/tmp/savan_db</parameter>
+   <!--parameter name="savan_resource" locked="false">/tmp/savan_db</parameter>-->
    <!--parameter name="savan_resource" locked="false">http://localhost:9763/registry</parameter>
    <parameter name="username" locked="false">admin</parameter>
    <parameter name="password" locked="false">admin</parameter-->

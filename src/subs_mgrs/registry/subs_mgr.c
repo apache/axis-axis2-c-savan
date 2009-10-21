@@ -143,7 +143,7 @@ savan_subs_mgr_create(
     memset ((void *) subsmgrimpl, 0, sizeof(savan_registry_subs_mgr_t));
 
     subsmgrimpl->remote_registry = NULL;
-    subsmgrimpl->reg_url = axutil_strdup(env, savan_util_get_resource_connection_string(env, conf));
+    subsmgrimpl->reg_url = savan_util_get_resource_connection_string(env, conf);
     subsmgrimpl->username = axutil_strdup(env, savan_util_get_resource_username(env, conf));
     subsmgrimpl->password = axutil_strdup(env, savan_util_get_resource_password(env, conf));
     subsmgrimpl->conf = conf;

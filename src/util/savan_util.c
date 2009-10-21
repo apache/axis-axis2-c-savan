@@ -326,7 +326,7 @@ savan_util_get_resource_connection_string(
     const axutil_env_t *env,
     axis2_conf_t *conf)
 {
-    axis2_char_t *resource_str = "./savan_db";
+    axis2_char_t *resource_str = NULL;
     axis2_module_desc_t *module_desc = NULL;
     axutil_qname_t *qname = NULL;
 
@@ -338,11 +338,26 @@ savan_util_get_resource_connection_string(
         resource_param = axis2_module_desc_get_param(module_desc, env, SAVAN_RESOURCE);
         if(resource_param)
         {
-            resource_str = (axis2_char_t *) axutil_param_get_value(resource_param, env);
+            resource_str = axutil_strdup(
+                env, (axis2_char_t *) axutil_param_get_value(resource_param, env));
         }
     }
     axutil_qname_free(qname, env);
     
+    if(!resource_str)
+    {
+        axis2_char_t *home = NULL;
+        home = AXIS2_GETENV("AXIS2C_HOME");
+        if(home)
+        {
+            resource_str = axutil_stracat(env, home, "/savan_db");
+        }
+        else
+        {
+            resource_str = axutil_strdup(env, "./savan_db");
+        }
+    }
+
     return resource_str;
 }
 

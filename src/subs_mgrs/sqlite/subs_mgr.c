@@ -151,7 +151,7 @@ savan_subs_mgr_create(
 
     memset ((void *) subs_mgr_impl, 0, sizeof(savan_sqlite_subs_mgr_t));
 
-    subs_mgr_impl->dbname = axutil_strdup(env, savan_util_get_resource_connection_string(env, conf));
+    subs_mgr_impl->dbname = savan_util_get_resource_connection_string(env, conf);
     subs_mgr_impl->conf = conf;
     subs_mgr_impl->subs_mgr.ops = &subs_mgr_ops;
 
