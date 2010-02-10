@@ -500,8 +500,14 @@ savan_msg_recv_handle_get_status_request(
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "[savan] Could not create the data resource. Check \
             whether resource path is correct and accessible. Exit loading the Savan module");
-        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_DATABASE_CREATION_ERROR, AXIS2_FAILURE);
+        return AXIS2_FAILURE;
+    }
 
+    subscriber = savan_subs_mgr_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
+    if(!subscriber)
+    {
+        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
+                "[savan] Failed get subscriber using msg from subs manager"); 
         return AXIS2_FAILURE;
     }
 
@@ -510,7 +516,6 @@ savan_msg_recv_handle_get_status_request(
     {
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
                 "[savan] Failed to build soap envelope for response message"); 
-        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FAILED_TO_BUILD_SOAP_ENV, AXIS2_FAILURE);
         return AXIS2_FAILURE;
     }
 
@@ -524,15 +529,6 @@ savan_msg_recv_handle_get_status_request(
 
     /* Expires element */
 
-    subscriber = savan_subs_mgr_get_subscriber_from_msg(env, msg_ctx, subs_mgr, NULL);
-    if(!subscriber)
-    {
-        AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, 
-                "[savan] Failed get subscriber using msg from subs manager"); 
-        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_SUBSCRIBER_NOT_FOUND, AXIS2_FAILURE);
-
-        return AXIS2_FAILURE;
-    }
     expires = savan_subscriber_get_expires(subscriber, env);
     if(expires)
     {
