@@ -148,6 +148,7 @@ savan_default_publisher_publish(
     axiom_soap_body_t *body = NULL;
     axiom_node_t *body_node = NULL;
     axis2_char_t *filter = NULL;
+    axis2_conf_ctx_t *conf_ctx = NULL;
 
     publishermodimpl = SAVAN_INTF_TO_IMPL(publishermod);
 
@@ -165,7 +166,12 @@ savan_default_publisher_publish(
         AXIS2_LOG_WARNING(env->log, AXIS2_LOG_SI, "[savan] Subscriber store is NULL"); 
     }
 
-    path = AXIS2_GETENV("AXIS2C_HOME");
+    conf_ctx = axis2_msg_ctx_get_conf_ctx(msg_ctx, env);
+    path = axis2_conf_ctx_get_root_dir(conf_ctx, env);
+    if(!path)
+    {
+        path = AXIS2_GETENV("AXIS2C_HOME");
+    }
     svc_client = axis2_svc_client_create(env, path);
 
     if(!svc_client)
@@ -195,7 +201,6 @@ savan_default_publisher_publish(
     body_node = axiom_soap_body_get_base_node(body, env);
 
     payload = axiom_node_get_first_child(body_node, env);
-
     size = axutil_array_list_size(subs_store, env);
     for(i = 0; i < size; i++)
     {
