@@ -6,8 +6,7 @@ noinst_HEADERS = listener.h
 SUBDIRS =
 liblistener_la_SOURCES = listener.c listener_skeleton.c
 liblistener_la_LIBADD  =
-INCLUDES =  -I@AXIS2INC@ \
-		@AXIS2INC@ \
+INCLUDES =  @AXIS2INC@ \
 		@SAVANINC@
 
 EXTRA_DIST=services.xml
