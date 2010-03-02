@@ -139,21 +139,24 @@ savan_default_publisher_publish(
     axutil_array_list_t *subs_store = NULL;
     int i = 0, size = 0;
     savan_filter_mod_t *filtermod = NULL;
-    axis2_char_t *path = NULL;
-    axis2_conf_ctx_t *client_conf_ctx = NULL;
-    axis2_svc_t *client_svc = NULL;
-    axis2_svc_client_t *svc_client = NULL;
+    const axis2_char_t *path = NULL;
     axiom_node_t *payload = NULL;
     axiom_soap_envelope_t *envelope = NULL;
     axiom_soap_body_t *body = NULL;
     axiom_node_t *body_node = NULL;
-    axis2_char_t *filter = NULL;
+    const axis2_char_t *filter = NULL;
     axis2_conf_ctx_t *conf_ctx = NULL;
+    axutil_property_t *topic_property = NULL;
 
     publishermodimpl = SAVAN_INTF_TO_IMPL(publishermod);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_default_publisher_publish");
 
+    topic_property = axis2_msg_ctx_get_property(msg_ctx, env, "topic");
+    if(topic_property)
+    {
+        filter = axutil_property_get_value(topic_property, env);
+    }
     axutil_allocator_switch_to_global_pool(env->allocator);
     if(subs_mgr)
     {
@@ -172,17 +175,6 @@ savan_default_publisher_publish(
     {
         path = AXIS2_GETENV("AXIS2C_HOME");
     }
-    svc_client = axis2_svc_client_create(env, path);
-
-    if(!svc_client)
-    {
-        axutil_allocator_switch_to_local_pool(env->allocator);
-        AXIS2_LOG_ERROR (env->log, AXIS2_LOG_SI, 
-            "[savan]svc_client creation failed, unable to continue");
-    }
-
-    client_conf_ctx = axis2_svc_client_get_conf_ctx(svc_client, env);
-    client_svc = axis2_svc_client_get_svc(svc_client, env);
 
     envelope =  axis2_msg_ctx_get_soap_envelope((axis2_msg_ctx_t *) msg_ctx, env);
     if (!envelope)
@@ -213,8 +205,7 @@ savan_default_publisher_publish(
             axis2_char_t *id = savan_subscriber_get_id(sub, env);
             AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "[savan] Publishing to:%s", id);
 
-            svc_client = axis2_svc_client_create_with_conf_ctx_and_svc(env, path, client_conf_ctx, 
-                    client_svc);
+            svc_client = axis2_svc_client_create(env, path);
             filtermod = savan_util_get_filter_module(env, publishermodimpl->conf);
             /* Ideally publishing to each subscriber should happen within a thread for each 
              * subscriber. However until Axis2/C provide a good thread pool to handle
@@ -242,10 +233,6 @@ savan_default_publisher_publish(
         }
     }
 
-    if(svc_client)
-    {
-        axis2_svc_client_free(svc_client, env);
-    }
     axutil_allocator_switch_to_local_pool(env->allocator);
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Exit:savan_default_publisher_publish");
@@ -275,6 +262,8 @@ savan_default_publisher_publish_to_subscriber(
         options = axis2_options_create(env);
         axis2_svc_client_set_options(svc_client, env, options);
     }
+    axis2_options_set_action(options, env, "http://ws.apache.org/ws/2007/05/eventing-extended/Publish");
+    axis2_svc_client_engage_module(svc_client, env, AXIS2_MODULE_ADDRESSING);
 
     notifyto = savan_subscriber_get_notify_to(subscriber, env);
     if(notifyto)
@@ -289,28 +278,35 @@ savan_default_publisher_publish_to_subscriber(
     }
     axis2_options_set_xml_parser_reset(options, env, AXIS2_FALSE);
 
-    /* If this is a filtering request and we cannot find any filter module to filter then error */
-    if(savan_subscriber_get_filter(subscriber, env) && !filtermod)
-    {
-        AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FILTER_MODULE_COULD_NOT_BE_RETRIEVED, AXIS2_FAILURE);
-        return AXIS2_FAILURE;
-    }
-
 #ifdef SAVAN_FILTERING
     /* If this is a filtering request and filter module is defined then filter the request.
      */
-    if(filtermod && savan_subscriber_get_filter(subscriber, env))
     {
-	    /* Apply the filter, and check whether it evaluates to success */
-        filter_apply = savan_filter_mod_apply(filtermod ,env, subscriber, payload);
-        if(!filter_apply)
+        axis2_char_t *filter_dialect = NULL;
+        filter_dialiect = savan_subscriber_get_filter_dialect(subscriber, env);
+        if(!axutil_strcmp(filter_dialect, SYNAPSE_FILTER_DIALECT))
         {
-            status = axutil_error_get_status_code(env->error);
-            if(AXIS2_SUCCESS != status)
+            /* Do nothing */
+        }
+        else if(filtermod && savan_subscriber_get_filter(subscriber, env))
+        {
+            /* Apply the filter, and check whether it evaluates to success */
+            filter_apply = savan_filter_mod_apply(filtermod ,env, subscriber, payload);
+            if(!filter_apply)
             {
-                axiom_node_detach(payload, env);
-                return status;
+                status = axutil_error_get_status_code(env->error);
+                if(AXIS2_SUCCESS != status)
+                {
+                    axiom_node_detach(payload, env);
+                    return status;
+                }
             }
+        }
+        else
+        {
+            AXIS2_HANDLE_ERROR(env, SAVAN_ERROR_FILTER_MODULE_COULD_NOT_BE_RETRIEVED, 
+                    AXIS2_FAILURE);
+            return AXIS2_FAILURE;
         }
     }
 #endif
