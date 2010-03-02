@@ -152,7 +152,7 @@ savan_default_publisher_publish(
 
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, "[savan] Entry:savan_default_publisher_publish");
 
-    topic_property = axis2_msg_ctx_get_property(msg_ctx, env, "topic");
+    topic_property = axis2_msg_ctx_get_property(msg_ctx, env, ELEM_NAME_TOPIC);
     if(topic_property)
     {
         filter = axutil_property_get_value(topic_property, env);
