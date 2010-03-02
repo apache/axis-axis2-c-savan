@@ -736,19 +736,6 @@ savan_util_get_filter_module(
         }
     }
 
-    if(!filtermod)
-    {
-#ifdef SAVAN_FILTERING
-        filtermod = savan_filter_mod_create(env, conf);
-#endif
-
-        if(filtermod)
-        {
-            filter_param = axutil_param_create(env, SAVAN_FILTER, filtermod);
-            axis2_conf_add_param(conf, env, filter_param);
-        }
-    }
-
     return filtermod;
 }
 
