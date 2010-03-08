@@ -139,7 +139,7 @@ AC_ARG_WITH(registry,
 
 AC_MSG_CHECKING(To Use XPath based filter . This is an optional module to build Savan C)
 AC_ARG_ENABLE(xpath, [  --enable-xpath
-                      Enable XPath filtering support (default=yes)],
+                      Enable XPath filtering support (default=no)],
 [ case "${enableval}" in
   no)
     AC_MSG_RESULT(no)
