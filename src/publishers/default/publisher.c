@@ -283,7 +283,7 @@ savan_default_publisher_publish_to_subscriber(
      */
     {
         axis2_char_t *filter_dialect = NULL;
-        filter_dialiect = savan_subscriber_get_filter_dialect(subscriber, env);
+        filter_dialect = savan_subscriber_get_filter_dialect(subscriber, env);
         if(!axutil_strcmp(filter_dialect, SYNAPSE_FILTER_DIALECT))
         {
             /* Do nothing */
