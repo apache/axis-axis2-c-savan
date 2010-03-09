@@ -1,4 +1,4 @@
-noinst_LTLIBRARIES = libsavan_publisher.la
+lib_LTLIBRARIES = libsavan_publisher.la
 libsavan_publisher_la_SOURCES = publisher.c
 data_DATA=
 libsavan_publisher_la_LIBADD = $(top_builddir)/src/util/libsavan_util.la \
