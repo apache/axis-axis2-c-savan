@@ -1,2 +1,2 @@
-SUBDIRS = handlers subscribers util filters publishers client subs_mgrs msgreceivers core
+SUBDIRS = handlers subscribers util filters client subs_mgrs publishers msgreceivers core
 EXTRA_DIST=data
