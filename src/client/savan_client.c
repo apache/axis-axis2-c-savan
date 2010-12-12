@@ -324,7 +324,6 @@ savan_client_get_status(
     axiom_node_t *status_node = NULL;
     axiom_node_t *expires_node = NULL;
     axiom_element_t *status_elem = NULL;
-    axiom_element_t *renew_elem = NULL;
     axiom_element_t *expires_elem = NULL;
     axis2_char_t *expires = NULL;
     axis2_char_t *status_elem_localname = NULL;
@@ -371,7 +370,7 @@ savan_client_get_status(
     
     /* Now read Expires sub element */
     qname = axutil_qname_create(env, ELEM_NAME_EXPIRES, EVENTING_NAMESPACE, NULL);
-    expires_elem = axiom_element_get_first_child_with_qname(renew_elem, env, qname, reply, 
+    expires_elem = axiom_element_get_first_child_with_qname(status_elem, env, qname, reply, 
             &expires_node);
     axutil_qname_free(qname, env);
     if(!expires_node)
